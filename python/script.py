@@ -3,12 +3,10 @@ import json
 import requests
 
 # Ask municipality code from user
-# Develop further by creating a dict of name:code
-#municipality_code = "KU" + input("Give municipality code in 3-number format (add leading zeros): ")
-municipality_code = "KU091"
+municipality_code = "KU" + input("Give municipality code in 3-number format (add leading zeros): ")
+#municipality_code = "KU091"
 
 # Access and read JSON-query file produced in https://trafi2.stat.fi/PXWeb/pxweb/fi/TraFi/ from the same folder
-
 with open("query.json", "r", encoding="utf-8") as file:
     content = file.read()
     query = json.loads(content)
@@ -16,11 +14,11 @@ with open("query.json", "r", encoding="utf-8") as file:
 # Replace municipality code with the user given
 query['query'][0]['selection']['values'][0] = municipality_code
 
-# Rather than owerwriting the original, create a new one with a different name
+# Rewrite the json query file
 with open("query.json", 'w', encoding="utf-8") as file:
     file.write(json.dumps(query))
     
-# Get JSON response by sending POST with json query
+# Get JSON response with URL + json query
 url = "https://trafi2.stat.fi:443/PXWeb/api/v1/fi/TraFi/Liikennekaytossa_olevat_ajoneuvot/010_kanta_tau_101.px"
 session = requests.Session()
 response = session.post(url, json=query)
@@ -42,6 +40,25 @@ for i in response_json['data']:
 print(energy_modes)
 
 # Add dictionary contents to database
-conn = psycopg2.connect("host=localhost dbname=postgres user=postgres password=Teemo90")
+# Connect to database
+conn = psycopg2.connect("host=localhost dbname=postgres user=postgres password=Teemo90 port=5432")
+cursor = conn.cursor()
 
+# Create a new table
+cursor.execute("DROP TABLE IF EXISTS energy_modes")
+create_table ='''CREATE TABLE energy_modes(
+   id SERIAL PRIMARY KEY,
+   municipality TEXT,
+   energy_mode TEXT,
+   amount int
+)'''
+cursor.execute(create_table)
 
+# Add data to the table
+for key, value in energy_modes.items():
+    cursor.execute("""INSERT INTO energy_modes(municipality, energy_mode, amount) 
+                  VALUES (%s, %s, %s);""", (municipality_code, key, value))
+
+conn.commit()
+cursor.close()
+conn.close()
