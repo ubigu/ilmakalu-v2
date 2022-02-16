@@ -27,17 +27,27 @@ Käyttövoimakoodit:
 '''
 
 # Ask municipality code from user
-municipality_code = "KU" + input("Give municipality code in 3-number format (add leading zeros): ")
+mun_code = int(input("Give municipality code: "))
 
-# Access and read JSON-query file produced in https://trafi2.stat.fi/PXWeb/pxweb/fi/TraFi/ from the same folder
+# Access and read automobile JSON-query file produced in https://trafi2.stat.fi/PXWeb/pxweb/fi/TraFi/ from the same folder
 with open("query.json", "r", encoding="utf-8") as file:
     content = file.read()
     query = json.loads(content)
 
 # Replace municipality code with the user given
-query['query'][0]['selection']['values'][0] = municipality_code
+json_mun_code = ""
+if len(str(mun_code)) == 1:
+    json_mun_code = "KU00" + str(mun_code)
+elif len(str(mun_code)) == 2:
+    json_mun_code = "KU0" + str(mun_code)
+else:
+    json_mun_code = "KU" + str(mun_code)
 
-# Rewrite the json query file
+print(json_mun_code)
+
+query['query'][0]['selection']['values'][0] = json_mun_code
+
+# Rewrite the automobile energy mode distribution json query file
 with open("query.json", 'w', encoding="utf-8") as file:
     file.write(json.dumps(query))
     
@@ -46,11 +56,12 @@ url = "https://trafi2.stat.fi:443/PXWeb/api/v1/fi/TraFi/Liikennekaytossa_olevat_
 session = requests.Session()
 response = session.post(url, json=query)
 response_json = json.loads(response.content.decode('utf-8-sig'))
+#print(response_json)
 
 # Create a initial dictionary for key value pairs
 energy_modes_init = {}
 
-# loop through the response and save to dictionary
+# loop through the response and save energy mode values to dictionary
 for i in response_json['data']:
     key = i["key"][3]
     value = i["values"][0]
@@ -58,7 +69,7 @@ for i in response_json['data']:
         energy_modes_init[key] = 0
     else:
         energy_modes_init[key] = value
-    
+
 # Check initial dictionary contents
 #print(energy_modes_init)
 
@@ -80,10 +91,10 @@ print(energy_modes_ref)
 # Add dictionary contents to database
 
 # Connect to database
-host = ""
-dbname = ""
-user = ""
-password = ""
+host = "localhost"
+dbname = "postgres"
+user = "postgres"
+password = "Teemo90"
 port = "5432"
 cs = "dbname=%s user=%s password=%s host=%s port=%s" % (dbname, user, password, host, port)
 
@@ -94,7 +105,10 @@ cursor = conn.cursor()
 cursor.execute("DROP TABLE IF EXISTS energy_modes")
 create_table ='''CREATE TABLE energy_modes(
    id SERIAL PRIMARY KEY,
-   municipality TEXT,
+   mun INT4,
+   scenario VARCHAR,
+   year INT4,
+   kmuoto VARCHAR,
    kvoima_bensiini DECIMAL(10,3),
    kvoima_diesel DECIMAL(10,3),
    kvoima_etanoli DECIMAL(10,3),
@@ -107,14 +121,14 @@ create_table ='''CREATE TABLE energy_modes(
 )'''
 cursor.execute(create_table)
 
-# Insert values from python dictionary to the table
-insert_into = ("""INSERT INTO energy_modes(municipality, kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+# Insert automobile energy mode distribution to the table
+insert_into = ("""INSERT INTO energy_modes(mun, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-
-cursor.execute(insert_into, (municipality_code, energy_modes_ref["kvoima_bensiini"], energy_modes_ref["kvoima_diesel"], energy_modes_ref["kvoima_etanoli"], 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 2021,'hlauto', energy_modes_ref["kvoima_bensiini"], energy_modes_ref["kvoima_diesel"], energy_modes_ref["kvoima_etanoli"], 
               energy_modes_ref["kvoima_kaasu"], energy_modes_ref["kvoima_phev_b"], energy_modes_ref["kvoima_phev_d"], energy_modes_ref["kvoima_ev"],
               energy_modes_ref["kvoima_vety"], energy_modes_ref["kvoima_muut"]))
+
 
 # Finalize
 conn.commit()
