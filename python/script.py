@@ -80,7 +80,14 @@ print(energy_modes_ref)
 # Add dictionary contents to database
 
 # Connect to database
-conn = psycopg2.connect("host=localhost dbname=postgres user=postgres password=Teemo90 port=5432")
+host = ""
+dbname = ""
+user = ""
+password = ""
+port = "5432"
+cs = "dbname=%s user=%s password=%s host=%s port=%s" % (dbname, user, password, host, port)
+
+conn = psycopg2.connect(cs)
 cursor = conn.cursor()
 
 # Create a new table
