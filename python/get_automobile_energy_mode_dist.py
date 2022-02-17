@@ -1,6 +1,11 @@
 import psycopg2
 import json
 import requests
+from config.credentials import Config
+
+# Create a config object
+cfg = Config()
+cfg.user_credentials('database')
 
 '''
 Käyttövoimakoodit:
@@ -91,14 +96,11 @@ print(energy_modes_ref)
 # Add dictionary contents to database
 
 # Connect to database
-host = "localhost"
-dbname = "postgres"
-user = "postgres"
-password = "Teemo90"
-port = "5432"
-cs = "dbname=%s user=%s password=%s host=%s port=%s" % (dbname, user, password, host, port)
+try:
+    conn = psycopg2.connect(cfg.postgresql_string())
+except: 
+    raise Exception("Couldn't connect to database")
 
-conn = psycopg2.connect(cs)
 cursor = conn.cursor()
 
 # Create a new table

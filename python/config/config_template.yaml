@@ -1,0 +1,15 @@
+# Copy this file as config.yaml. Configure following fields, in order to be used in Config-module.
+# Name is used to refer to configuration settings (here: database).
+#
+# Usage in python module:
+#
+# from config.credentials import Config
+# cfg = Config()
+# cfg.user_credentials('<env_name>')
+
+database:
+  user: <user>
+  pass: <password>
+  host: <host>
+  port: <port>
+  database: <database>
