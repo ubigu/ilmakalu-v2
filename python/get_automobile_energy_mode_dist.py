@@ -34,12 +34,12 @@ Käyttövoimakoodit:
 # Ask municipality code from user
 mun_code = int(input("Give municipality code: "))
 
-# Access and read automobile JSON-query file produced in https://trafi2.stat.fi/PXWeb/pxweb/fi/TraFi/ from the same folder
-with open("query.json", "r", encoding="utf-8") as file:
+# Access and read passenger car JSON-query file produced in https://trafi2.stat.fi/PXWeb/pxweb/fi/TraFi/ from the same folder
+with open("passenger_car_query.json", "r", encoding="utf-8") as file:
     content = file.read()
     query = json.loads(content)
 
-# Replace municipality code with the user given
+# Replace municipality code with the user given to passenger car JSON query
 json_mun_code = ""
 if len(str(mun_code)) == 1:
     json_mun_code = "KU00" + str(mun_code)
@@ -52,21 +52,21 @@ print(json_mun_code)
 
 query['query'][0]['selection']['values'][0] = json_mun_code
 
-# Rewrite the automobile energy mode distribution json query file
-with open("query.json", 'w', encoding="utf-8") as file:
+# Rewrite the passenger car energy mode distribution JSON query file
+with open("passenger_car_query.json", 'w', encoding="utf-8") as file:
     file.write(json.dumps(query))
     
-# Get JSON response with URL + json query
+# Get passenger car JSON response (POST with edited JSON query)
 url = "https://trafi2.stat.fi:443/PXWeb/api/v1/fi/TraFi/Liikennekaytossa_olevat_ajoneuvot/010_kanta_tau_101.px"
 session = requests.Session()
 response = session.post(url, json=query)
 response_json = json.loads(response.content.decode('utf-8-sig'))
 #print(response_json)
 
-# Create a initial dictionary for key value pairs
+# Create a initial dictionary for key value pairs for passenger cars
 energy_modes_init = {}
 
-# loop through the response and save energy mode values to dictionary
+# loop through the response and save energy mode values to dictionary for passenger cars
 for i in response_json['data']:
     key = i["key"][3]
     value = i["values"][0]
@@ -78,7 +78,7 @@ for i in response_json['data']:
 # Check initial dictionary contents
 #print(energy_modes_init)
 
-# Create a refined dictionary with proper key names, energy mode combinations and proportional shares
+# Create a refined dictionary with proper key names, energy mode combinations and proportional shares for passenger cars
 energy_modes_ref = {}
 energy_modes_ref["kvoima_bensiini"] = int(energy_modes_init["01"]) / int(energy_modes_init["YH"])
 energy_modes_ref["kvoima_diesel"] = int(energy_modes_init["02"]) / int(energy_modes_init["YH"])

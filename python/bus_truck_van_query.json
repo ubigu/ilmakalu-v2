@@ -1,0 +1,39 @@
+{
+    "query": [
+      {
+        "code": "Maakunta",
+        "selection": {
+          "filter": "item",
+          "values": [
+            "MK01"
+          ]
+        }
+      },
+      {
+        "code": "Ajoneuvoluokka",
+        "selection": {
+          "filter": "item",
+          "values": [
+            "02",
+            "03",
+            "04"
+          ]
+        }
+      },
+      {
+        "code": "Vuosineljännes",
+        "selection": {
+          "filter": "item",
+          "values": [
+            "2021Q1",
+            "2021Q2",
+            "2021Q3",
+            "2021Q4"
+          ]
+        }
+      }
+    ],
+    "response": {
+      "format": "json"
+    }
+  }
