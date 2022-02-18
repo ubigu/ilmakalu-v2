@@ -123,7 +123,7 @@ create_table ='''CREATE TABLE energy_modes(
 )'''
 cursor.execute(create_table)
 
-# Insert automobile energy mode distribution to the table
+# Insert passenger cars
 insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
@@ -132,11 +132,18 @@ cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', energy_modes_ref["
               energy_modes_ref["kvoima_vety"], energy_modes_ref["kvoima_muut"]))
 
 
-# Insert walking and biking energy mode distribution to the table
+# Insert walking and biking
 insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
 cursor.execute(insert_into, (mun_code, 'wem', 2021,'jalkapyora', 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
+
+# Insert other modes of transport
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021,'muu', 0, 0, 0, 0, 0, 0, 0, 0, 1))
 
 
 # Finalize
