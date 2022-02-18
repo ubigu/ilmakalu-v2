@@ -1,0 +1,1 @@
+{"query": [{"code": "Alue", "selection": {"filter": "item", "values": ["KU091"]}}, {"code": "Merkki", "selection": {"filter": "item", "values": ["YH"]}}, {"code": "K\u00e4ytt\u00f6\u00f6nottovuosi", "selection": {"filter": "item", "values": ["YH"]}}], "response": {"format": "json"}}
