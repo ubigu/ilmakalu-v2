@@ -124,12 +124,19 @@ create_table ='''CREATE TABLE energy_modes(
 cursor.execute(create_table)
 
 # Insert automobile energy mode distribution to the table
-insert_into = ("""INSERT INTO energy_modes(mun, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 2021,'hlauto', energy_modes_ref["kvoima_bensiini"], energy_modes_ref["kvoima_diesel"], energy_modes_ref["kvoima_etanoli"], 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', energy_modes_ref["kvoima_bensiini"], energy_modes_ref["kvoima_diesel"], energy_modes_ref["kvoima_etanoli"], 
               energy_modes_ref["kvoima_kaasu"], energy_modes_ref["kvoima_phev_b"], energy_modes_ref["kvoima_phev_d"], energy_modes_ref["kvoima_ev"],
               energy_modes_ref["kvoima_vety"], energy_modes_ref["kvoima_muut"]))
+
+
+# Insert walking and biking energy mode distribution to the table
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021,'jalkapyora', 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 
 # Finalize
