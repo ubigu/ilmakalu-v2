@@ -48,36 +48,56 @@ response_json_heavy_cars = json.loads(response_heavy_cars.content.decode('utf-8-
 #print("HEAVY CARS:")
 #print(response_json_heavy_cars)
 
-# Create a initial dictionaries for parsing JSON responses
-passenger_cars_energy_modes = {}
-heavy_cars_energy_modes = {}
+
+# Save heavy cars json response for dev purposes
+#with open("heavy_cars_json_response.json", "w", encoding="utf-8") as file:
+#    file.write(json.dumps(response_json_heavy_cars))
+
 
 # loop through responses and save energy mode values to dictionary
 # passenger cars
+passenger_cars_energy_modes = {}
+
 for i in response_json_passenger_cars['data']:
     key = i["key"][3]
-    value = i["values"][0]
-    if value == "-":
-        passenger_cars_energy_modes[key] = 0
+    if i["values"][0] == "-":
+        value = 0
     else:
-        passenger_cars_energy_modes[key] = value
+        value = i["values"][0]
+    
+    passenger_cars_energy_modes[key] = value
 
-# heavy cars <-- here the fact that stats are by a quarter requires aggregation
-# This is still a direct copy from passenger cars and won't produce correct results
-# it won't give an error though, just wrong result
+
+# heavy cars: dictionary where key is transport mode (02, 03, 04)...
+# ...and value is another dictionary with fuel type and count
+heavy_cars_energy_modes = {"02":{},"03":{},"04":{}}
+
+# Better to loop through all the values first and change "-" with 0?
 for i in response_json_heavy_cars['data']:
-    key = i["key"][3]
-    value = i["values"][0]
-    if value == "-":
-        heavy_cars_energy_modes[key] = 0
+    transport_mode = i["key"][1] # get transport mode
+    fuel = i["key"][2] # get fuel type
+    
+    # get the actual value
+    if i["values"][0] == "-":
+        value = 0
     else:
-        heavy_cars_energy_modes[key] = value
+        value = int(i["values"][0])
+
+    #print(i)
+    #print(transport_mode)
+    #print(fuel)
+    #print(value)
+    
+    if fuel not in heavy_cars_energy_modes[transport_mode]:
+        heavy_cars_energy_modes[transport_mode][fuel] = value
+    else:
+        heavy_cars_energy_modes[transport_mode][fuel] += value
 
 # Check initial dictionary contents
 #print(passenger_cars_energy_modes)
 #print(heavy_cars_energy_modes)
 
-# Create a refined dictionary with proper key names, energy mode combinations and proportional shares for passenger cars
+# Create refined dictionary for passenger cars
 passenger_car_energy_modes_ref = {}
 passenger_car_energy_modes_ref["kvoima_bensiini"] = int(passenger_cars_energy_modes["01"]) / int(passenger_cars_energy_modes["YH"])
 passenger_car_energy_modes_ref["kvoima_diesel"] = int(passenger_cars_energy_modes["02"]) / int(passenger_cars_energy_modes["YH"])
@@ -88,10 +108,54 @@ passenger_car_energy_modes_ref["kvoima_phev_d"] = int(passenger_cars_energy_mode
 passenger_car_energy_modes_ref["kvoima_ev"] = int(passenger_cars_energy_modes["04"]) / int(passenger_cars_energy_modes["YH"])
 passenger_car_energy_modes_ref["kvoima_vety"] = int(passenger_cars_energy_modes["05"]) / int(passenger_cars_energy_modes["YH"])
 passenger_car_energy_modes_ref["kvoima_muut"] = (int(passenger_cars_energy_modes["33"]) + int(passenger_cars_energy_modes["34"]) + int(passenger_cars_energy_modes["38"]) + int(passenger_cars_energy_modes["40"]) + int(passenger_cars_energy_modes["41"]) + int(passenger_cars_energy_modes["42"]) + int(passenger_cars_energy_modes["43"]) + int(passenger_cars_energy_modes["Y"])) / int(passenger_cars_energy_modes["YH"])
+print("Passenger cars:")
+print(passenger_car_energy_modes_ref)
+print()
 
-# Check refined dictionary contents
-#print(energy_modes_ref)
+# Create refined dictionary for vans
+vans_energy_modes_ref = {}
+vans_energy_modes_ref["kvoima_bensiini"] = int(heavy_cars_energy_modes["02"]["01"]) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_diesel"] = (int(heavy_cars_energy_modes["02"]["02"]) + int(heavy_cars_energy_modes["02"]["10"])) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_etanoli"] = int(heavy_cars_energy_modes["02"]["37"]) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_kaasu"] = (int(heavy_cars_energy_modes["02"]["06"]) + int(heavy_cars_energy_modes["02"]["11"]) + int(heavy_cars_energy_modes["02"]["13"]) + int(heavy_cars_energy_modes["02"]["56"]) + int(heavy_cars_energy_modes["02"]["65"])) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_phev_b"] = int(heavy_cars_energy_modes["02"]["39"]) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_phev_d"] = int(heavy_cars_energy_modes["02"]["44"]) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_ev"] = int(heavy_cars_energy_modes["02"]["04"]) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_vety"] = int(heavy_cars_energy_modes["02"]["05"]) / int(heavy_cars_energy_modes["02"]["YH"])
+vans_energy_modes_ref["kvoima_muut"] = (int(heavy_cars_energy_modes["02"]["03"]) + int(heavy_cars_energy_modes["02"]["31"]) + int(heavy_cars_energy_modes["02"]["33"]) + int(heavy_cars_energy_modes["02"]["34"]) + int(heavy_cars_energy_modes["02"]["38"]) + int(heavy_cars_energy_modes["02"]["40"]) + int(heavy_cars_energy_modes["02"]["42"]) + int(heavy_cars_energy_modes["02"]["43"]) + int(heavy_cars_energy_modes["02"]["67"]) + int(heavy_cars_energy_modes["02"]["Y"])) / int(heavy_cars_energy_modes["02"]["YH"])
+print("Vans:")
+print(vans_energy_modes_ref)
+print()
 
+# Create refined dictionary for trucks
+trucks_energy_modes_ref = {}
+trucks_energy_modes_ref["kvoima_bensiini"] = int(heavy_cars_energy_modes["03"]["01"]) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_diesel"] = (int(heavy_cars_energy_modes["03"]["02"]) + int(heavy_cars_energy_modes["03"]["10"])) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_etanoli"] = int(heavy_cars_energy_modes["03"]["37"]) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_kaasu"] = (int(heavy_cars_energy_modes["03"]["06"]) + int(heavy_cars_energy_modes["03"]["11"]) + int(heavy_cars_energy_modes["03"]["13"]) + int(heavy_cars_energy_modes["03"]["56"]) + int(heavy_cars_energy_modes["03"]["65"])) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_phev_b"] = int(heavy_cars_energy_modes["03"]["39"]) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_phev_d"] = int(heavy_cars_energy_modes["03"]["44"]) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_ev"] = int(heavy_cars_energy_modes["03"]["04"]) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_vety"] = int(heavy_cars_energy_modes["03"]["05"]) / int(heavy_cars_energy_modes["03"]["YH"])
+trucks_energy_modes_ref["kvoima_muut"] = (int(heavy_cars_energy_modes["03"]["03"]) + int(heavy_cars_energy_modes["03"]["31"]) + int(heavy_cars_energy_modes["03"]["33"]) + int(heavy_cars_energy_modes["03"]["34"]) + int(heavy_cars_energy_modes["03"]["38"]) + int(heavy_cars_energy_modes["03"]["40"]) + int(heavy_cars_energy_modes["03"]["42"]) + int(heavy_cars_energy_modes["03"]["43"]) + int(heavy_cars_energy_modes["03"]["67"]) + int(heavy_cars_energy_modes["03"]["Y"])) / int(heavy_cars_energy_modes["03"]["YH"])
+print("Trucks:")
+print(trucks_energy_modes_ref)
+print()
+
+# Create refined dictionary for busses
+busses_energy_modes_ref = {}
+busses_energy_modes_ref["kvoima_bensiini"] = int(heavy_cars_energy_modes["04"]["01"]) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_diesel"] = (int(heavy_cars_energy_modes["04"]["02"]) + int(heavy_cars_energy_modes["04"]["10"])) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_etanoli"] = int(heavy_cars_energy_modes["04"]["37"]) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_kaasu"] = (int(heavy_cars_energy_modes["04"]["06"]) + int(heavy_cars_energy_modes["04"]["11"]) + int(heavy_cars_energy_modes["04"]["13"]) + int(heavy_cars_energy_modes["04"]["56"]) + int(heavy_cars_energy_modes["04"]["65"])) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_phev_b"] = int(heavy_cars_energy_modes["04"]["39"]) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_phev_d"] = int(heavy_cars_energy_modes["04"]["44"]) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_ev"] = int(heavy_cars_energy_modes["04"]["04"]) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_vety"] = int(heavy_cars_energy_modes["04"]["05"]) / int(heavy_cars_energy_modes["04"]["YH"])
+busses_energy_modes_ref["kvoima_muut"] = (int(heavy_cars_energy_modes["04"]["03"]) + int(heavy_cars_energy_modes["04"]["31"]) + int(heavy_cars_energy_modes["04"]["33"]) + int(heavy_cars_energy_modes["04"]["34"]) + int(heavy_cars_energy_modes["04"]["38"]) + int(heavy_cars_energy_modes["04"]["40"]) + int(heavy_cars_energy_modes["04"]["42"]) + int(heavy_cars_energy_modes["04"]["43"]) + int(heavy_cars_energy_modes["04"]["67"]) + int(heavy_cars_energy_modes["04"]["Y"])) / int(heavy_cars_energy_modes["04"]["YH"])
+print("Busses:")
+print(busses_energy_modes_ref)
+print()
 
 # Add dictionary contents to database
 # Connect to database
@@ -129,19 +193,11 @@ cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', passenger_car_ener
               passenger_car_energy_modes_ref["kvoima_kaasu"], passenger_car_energy_modes_ref["kvoima_phev_b"], passenger_car_energy_modes_ref["kvoima_phev_d"], passenger_car_energy_modes_ref["kvoima_ev"],
               passenger_car_energy_modes_ref["kvoima_vety"], passenger_car_energy_modes_ref["kvoima_muut"]))
 
-
 # Insert walking and biking
 insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
 cursor.execute(insert_into, (mun_code, 'wem', 2021,'jalkapyora', 0, 0, 0, 0, 0, 0, 0, 0, 0))
-
-
-# Insert other modes of transport
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021,'muu', 0, 0, 0, 0, 0, 0, 0, 0, 1))
 
 # Insert rail
 insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
@@ -149,6 +205,35 @@ insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
 cursor.execute(insert_into, (mun_code, 'wem', 2021,'raide', 0, 0, 0, 0, 0, 0, 1, 0, 0))
 
+# Insert vans
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021, 'pauto', vans_energy_modes_ref["kvoima_bensiini"], vans_energy_modes_ref["kvoima_diesel"], vans_energy_modes_ref["kvoima_etanoli"], 
+              vans_energy_modes_ref["kvoima_kaasu"], vans_energy_modes_ref["kvoima_phev_b"], vans_energy_modes_ref["kvoima_phev_d"], vans_energy_modes_ref["kvoima_ev"],
+              vans_energy_modes_ref["kvoima_vety"], vans_energy_modes_ref["kvoima_muut"]))
+
+# Insert trucks
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021, 'kauto', trucks_energy_modes_ref["kvoima_bensiini"], trucks_energy_modes_ref["kvoima_diesel"], trucks_energy_modes_ref["kvoima_etanoli"], 
+              trucks_energy_modes_ref["kvoima_kaasu"], trucks_energy_modes_ref["kvoima_phev_b"], trucks_energy_modes_ref["kvoima_phev_d"], trucks_energy_modes_ref["kvoima_ev"],
+              trucks_energy_modes_ref["kvoima_vety"], trucks_energy_modes_ref["kvoima_muut"]))
+
+# Insert busses
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021, 'bussi', busses_energy_modes_ref["kvoima_bensiini"], busses_energy_modes_ref["kvoima_diesel"], busses_energy_modes_ref["kvoima_etanoli"], 
+              busses_energy_modes_ref["kvoima_kaasu"], busses_energy_modes_ref["kvoima_phev_b"], busses_energy_modes_ref["kvoima_phev_d"], busses_energy_modes_ref["kvoima_ev"],
+              busses_energy_modes_ref["kvoima_vety"], busses_energy_modes_ref["kvoima_muut"]))
+
+# Insert other modes of transport
+insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+cursor.execute(insert_into, (mun_code, 'wem', 2021,'muu', 0, 0, 0, 0, 0, 0, 0, 0, 1))
 
 # Finalize
 conn.commit()
