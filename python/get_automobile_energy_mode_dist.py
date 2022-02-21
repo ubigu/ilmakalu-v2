@@ -43,16 +43,9 @@ response_heavy_cars = session.post(url_heavy_cars, json=heavy_cars_query)
 response_json_passenger_cars = json.loads(response_passenger_cars.content.decode('utf-8-sig'))
 response_json_heavy_cars = json.loads(response_heavy_cars.content.decode('utf-8-sig'))
 
-#print("PASSENGER CARS:")
-#print(response_json_passenger_cars)
-#print("HEAVY CARS:")
-#print(response_json_heavy_cars)
-
-
 # Save heavy cars json response for dev purposes
 #with open("heavy_cars_json_response.json", "w", encoding="utf-8") as file:
 #    file.write(json.dumps(response_json_heavy_cars))
-
 
 # loop through responses and save energy mode values to dictionary
 # passenger cars
@@ -108,6 +101,7 @@ passenger_car_energy_modes_ref["kvoima_phev_d"] = int(passenger_cars_energy_mode
 passenger_car_energy_modes_ref["kvoima_ev"] = int(passenger_cars_energy_modes["04"]) / int(passenger_cars_energy_modes["YH"])
 passenger_car_energy_modes_ref["kvoima_vety"] = int(passenger_cars_energy_modes["05"]) / int(passenger_cars_energy_modes["YH"])
 passenger_car_energy_modes_ref["kvoima_muut"] = (int(passenger_cars_energy_modes["33"]) + int(passenger_cars_energy_modes["34"]) + int(passenger_cars_energy_modes["38"]) + int(passenger_cars_energy_modes["40"]) + int(passenger_cars_energy_modes["41"]) + int(passenger_cars_energy_modes["42"]) + int(passenger_cars_energy_modes["43"]) + int(passenger_cars_energy_modes["Y"])) / int(passenger_cars_energy_modes["YH"])
+print()
 print("Passenger cars:")
 print(passenger_car_energy_modes_ref)
 print()
