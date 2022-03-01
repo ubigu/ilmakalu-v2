@@ -1,12 +1,7 @@
-import psycopg2
 import json
 import requests
-from config.credentials import Config
 from area_code_handler import mun_code_handler, reg_code_handler
-
-# Create a config object
-cfg = Config()
-cfg.user_credentials('database')
+from database_handler import create_table, insert_passenger_cars, insert_walking_biking, insert_rail, insert_vans, insert_trucks, insert_busses, insert_others
 
 # Ask municipality code from user
 mun_code = int(input("Give municipality code: "))
@@ -151,88 +146,29 @@ print("Busses:")
 print(busses_energy_modes_ref)
 print()
 
-# Add dictionary contents to database
-# Connect to database
-try:
-    conn = psycopg2.connect(cfg.postgresql_string())
-except: 
-    raise Exception("Couldn't connect to database")
-cursor = conn.cursor()
+# Create table by calling database handler module
+create_table()
 
-# Create a new table
-cursor.execute("DROP TABLE IF EXISTS energy_modes")
-create_table ='''CREATE TABLE energy_modes(
-   id SERIAL PRIMARY KEY,
-   mun INT4,
-   scenario VARCHAR,
-   year INT4,
-   kmuoto VARCHAR,
-   kvoima_bensiini DECIMAL(10,3),
-   kvoima_diesel DECIMAL(10,3),
-   kvoima_etanoli DECIMAL(10,3),
-   kvoima_kaasu DECIMAL(10,3),
-   kvoima_phev_b DECIMAL(10,3),
-   kvoima_phev_d DECIMAL(10,3),
-   kvoima_ev DECIMAL(10,3),
-   kvoima_vety DECIMAL(10,3),
-   kvoima_muut DECIMAL(10,3)
-)'''
-cursor.execute(create_table)
+# Insert passenger cars into the table
+insert_passenger_cars(mun_code, passenger_car_energy_modes_ref)
 
-# Insert passenger cars
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', passenger_car_energy_modes_ref["kvoima_bensiini"], passenger_car_energy_modes_ref["kvoima_diesel"], passenger_car_energy_modes_ref["kvoima_etanoli"], 
-              passenger_car_energy_modes_ref["kvoima_kaasu"], passenger_car_energy_modes_ref["kvoima_phev_b"], passenger_car_energy_modes_ref["kvoima_phev_d"], passenger_car_energy_modes_ref["kvoima_ev"],
-              passenger_car_energy_modes_ref["kvoima_vety"], passenger_car_energy_modes_ref["kvoima_muut"]))
+# insert walking and biking into the table
+insert_walking_biking(mun_code)
 
-# Insert walking and biking
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021,'jalkapyora', 0, 0, 0, 0, 0, 0, 0, 0, 0))
+# insert rail into the table
+insert_rail(mun_code)
 
-# Insert rail
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021,'raide', 0, 0, 0, 0, 0, 0, 1, 0, 0))
+# insert vans into the table
+insert_vans(mun_code, vans_energy_modes_ref)
 
-# Insert vans
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021, 'pauto', vans_energy_modes_ref["kvoima_bensiini"], vans_energy_modes_ref["kvoima_diesel"], vans_energy_modes_ref["kvoima_etanoli"], 
-              vans_energy_modes_ref["kvoima_kaasu"], vans_energy_modes_ref["kvoima_phev_b"], vans_energy_modes_ref["kvoima_phev_d"], vans_energy_modes_ref["kvoima_ev"],
-              vans_energy_modes_ref["kvoima_vety"], vans_energy_modes_ref["kvoima_muut"]))
+# insert trucks into the table
+insert_trucks(mun_code, trucks_energy_modes_ref)
 
-# Insert trucks
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021, 'kauto', trucks_energy_modes_ref["kvoima_bensiini"], trucks_energy_modes_ref["kvoima_diesel"], trucks_energy_modes_ref["kvoima_etanoli"], 
-              trucks_energy_modes_ref["kvoima_kaasu"], trucks_energy_modes_ref["kvoima_phev_b"], trucks_energy_modes_ref["kvoima_phev_d"], trucks_energy_modes_ref["kvoima_ev"],
-              trucks_energy_modes_ref["kvoima_vety"], trucks_energy_modes_ref["kvoima_muut"]))
+# insert busses into the table
+insert_busses(mun_code, busses_energy_modes_ref)
 
-# Insert busses
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021, 'bussi', busses_energy_modes_ref["kvoima_bensiini"], busses_energy_modes_ref["kvoima_diesel"], busses_energy_modes_ref["kvoima_etanoli"], 
-              busses_energy_modes_ref["kvoima_kaasu"], busses_energy_modes_ref["kvoima_phev_b"], busses_energy_modes_ref["kvoima_phev_d"], busses_energy_modes_ref["kvoima_ev"],
-              busses_energy_modes_ref["kvoima_vety"], busses_energy_modes_ref["kvoima_muut"]))
-
-# Insert other modes of transport
-insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
-              kvoima_ev, kvoima_vety, kvoima_muut) 
-              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-cursor.execute(insert_into, (mun_code, 'wem', 2021,'muu', 0, 0, 0, 0, 0, 0, 0, 0, 1))
-
-# Finalize
-conn.commit()
-cursor.close()
-conn.close()
+# insert other modes of transport into the table
+insert_others(mun_code)
 
 # Tell user that no errors were encountered
 print()
