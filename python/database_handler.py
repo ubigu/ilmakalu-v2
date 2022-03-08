@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from config.credentials import Config
 import psycopg2
 
@@ -46,7 +47,7 @@ def create_table():
     cursor.close()
     conn.close()
 
-def insert_passenger_cars(mun_code:str, cars_dict:dict):
+def insert_passenger_cars(mun_code:str, data:dict):
     try:
         conn = psycopg2.connect(cfg.postgresql_string())
     except: 
@@ -58,9 +59,9 @@ def insert_passenger_cars(mun_code:str, cars_dict:dict):
               kvoima_ev, kvoima_vety, kvoima_muut) 
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
     try:
-        cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', cars_dict["kvoima_bensiini"], cars_dict["kvoima_diesel"], cars_dict["kvoima_etanoli"], 
-                cars_dict["kvoima_kaasu"], cars_dict["kvoima_phev_b"], cars_dict["kvoima_phev_d"], cars_dict["kvoima_ev"],
-                cars_dict["kvoima_vety"], cars_dict["kvoima_muut"]))
+        cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', data["kvoima_bensiini"], data["kvoima_diesel"], data["kvoima_etanoli"], 
+                data["kvoima_kaasu"], data["kvoima_phev_b"], data["kvoima_phev_d"], data["kvoima_ev"],
+                data["kvoima_vety"], data["kvoima_muut"]))
     except:
         raise RuntimeError("Couldn't insert into table")
 
@@ -103,7 +104,7 @@ def insert_rail(mun_code:str):
     cursor.close()
     conn.close()
 
-def insert_vans(mun_code:str, vans_dict:dict):
+def insert_vans(mun_code:str, data:dict):
     try:
         conn = psycopg2.connect(cfg.postgresql_string())
     except: 
@@ -113,16 +114,16 @@ def insert_vans(mun_code:str, vans_dict:dict):
     insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-    cursor.execute(insert_into, (mun_code, 'wem', 2021, 'pauto', vans_dict["kvoima_bensiini"], vans_dict["kvoima_diesel"], vans_dict["kvoima_etanoli"], 
-              vans_dict["kvoima_kaasu"], vans_dict["kvoima_phev_b"], vans_dict["kvoima_phev_d"], vans_dict["kvoima_ev"],
-              vans_dict["kvoima_vety"], vans_dict["kvoima_muut"]))
+    cursor.execute(insert_into, (mun_code, 'wem', 2021, 'pauto', data["kvoima_bensiini"], data["kvoima_diesel"], data["kvoima_etanoli"], 
+              data["kvoima_kaasu"], data["kvoima_phev_b"], data["kvoima_phev_d"], data["kvoima_ev"],
+              data["kvoima_vety"], data["kvoima_muut"]))
 
     # commit and close
     conn.commit()
     cursor.close()
     conn.close()
 
-def insert_trucks(mun_code:str, trucks_dict:dict):
+def insert_trucks(mun_code:str, data:dict):
     try:
         conn = psycopg2.connect(cfg.postgresql_string())
     except: 
@@ -132,9 +133,9 @@ def insert_trucks(mun_code:str, trucks_dict:dict):
     insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
               kvoima_ev, kvoima_vety, kvoima_muut) 
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
-    cursor.execute(insert_into, (mun_code, 'wem', 2021, 'kauto', trucks_dict["kvoima_bensiini"], trucks_dict["kvoima_diesel"], trucks_dict["kvoima_etanoli"], 
-              trucks_dict["kvoima_kaasu"], trucks_dict["kvoima_phev_b"], trucks_dict["kvoima_phev_d"], trucks_dict["kvoima_ev"],
-              trucks_dict["kvoima_vety"], trucks_dict["kvoima_muut"]))
+    cursor.execute(insert_into, (mun_code, 'wem', 2021, 'kauto', data["kvoima_bensiini"], data["kvoima_diesel"], data["kvoima_etanoli"], 
+              data["kvoima_kaasu"], data["kvoima_phev_b"], data["kvoima_phev_d"], data["kvoima_ev"],
+              data["kvoima_vety"], data["kvoima_muut"]))
 
     # commit and close
     conn.commit()
@@ -176,3 +177,56 @@ def insert_others(mun_code:str):
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def insert_data(mun_code:str, transport_type:str, data:dict):
+
+    # check that transport type is among accepted values
+    if transport_type not in ("passenger car", "van", "truck", "bus", "rail", "walking/biking", "other"):
+        raise ValueError("Transport type must be one of the following: passenger car, van, truck, bus, rail, walking/biking, other")
+    
+    # connect to database
+    try:
+        conn = psycopg2.connect(cfg.postgresql_string())
+    except: 
+        raise Exception("Couldn't connect to database")
+    cursor = conn.cursor()
+
+    # add data to database according to transport type
+    try:
+        # passenger cars
+        if transport_type == "passenger car":
+            insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+                kvoima_ev, kvoima_vety, kvoima_muut) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+            cursor.execute(insert_into, (mun_code, 'wem', 2021, 'hlauto', data["kvoima_bensiini"], data["kvoima_diesel"], data["kvoima_etanoli"], 
+                    data["kvoima_kaasu"], data["kvoima_phev_b"], data["kvoima_phev_d"], data["kvoima_ev"],
+                    data["kvoima_vety"], data["kvoima_muut"]))
+
+        # vans
+        elif transport_type == "van":
+            insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+                kvoima_ev, kvoima_vety, kvoima_muut) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+            cursor.execute(insert_into, (mun_code, 'wem', 2021, 'pauto', data["kvoima_bensiini"], data["kvoima_diesel"], data["kvoima_etanoli"], 
+                data["kvoima_kaasu"], data["kvoima_phev_b"], data["kvoima_phev_d"], data["kvoima_ev"],
+                data["kvoima_vety"], data["kvoima_muut"]))
+        
+        # trucks
+        elif transport_type == "truck":
+            insert_into = ("""INSERT INTO energy_modes(mun, scenario, year, kmuoto , kvoima_bensiini, kvoima_diesel, kvoima_etanoli, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, 
+              kvoima_ev, kvoima_vety, kvoima_muut) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""")
+        cursor.execute(insert_into, (mun_code, 'wem', 2021, 'kauto', data["kvoima_bensiini"], data["kvoima_diesel"], data["kvoima_etanoli"], 
+                data["kvoima_kaasu"], data["kvoima_phev_b"], data["kvoima_phev_d"], data["kvoima_ev"],
+                data["kvoima_vety"], data["kvoima_muut"]))
+                
+    except:
+        raise RuntimeError(f"Couldn't insert {transport_type} data into the table")
+
+    # commit changes and close database connection
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+
