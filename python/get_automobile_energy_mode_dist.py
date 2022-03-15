@@ -1,7 +1,7 @@
 import json
 import requests
 from area_code_handler import mun_code_handler, reg_code_handler
-from database_handler import create_table, insert_passenger_cars, insert_walking_biking, insert_rail, insert_vans, insert_trucks, insert_busses, insert_others, insert_data
+from database_handler import create_table, insert_data
 
 # Ask municipality code from user
 mun_code = int(input("Give municipality code: "))
@@ -158,17 +158,17 @@ insert_data(mun_code, "van", vans_energy_modes_ref)
 # insert trucks into the table
 insert_data(mun_code, "truck", trucks_energy_modes_ref)
 
-# insert walking and biking into the table
-insert_walking_biking(mun_code)
+# insert busses into the table
+insert_data(mun_code, "bus", busses_energy_modes_ref)
 
 # insert rail into the table
-insert_rail(mun_code)
+insert_data(mun_code, "rail")
 
-# insert busses into the table
-insert_busses(mun_code, busses_energy_modes_ref)
+# insert walking and biking into the table
+insert_data(mun_code, "walking/biking")
 
 # insert other modes of transport into the table
-insert_others(mun_code)
+insert_data(mun_code, "other")
 
 # Tell user that no errors were encountered
 print()
