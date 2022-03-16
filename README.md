@@ -5,7 +5,7 @@
 Ilmakalu is a tool for calculating greenhouse gas emission models. It is based on a variety of different source datasets, including:
 - vehicle pool and shares between different fuel usages in it
 - Buildings, their size and heating technology
-- tba
+- *tba*
 
 ## Vehicles
 
