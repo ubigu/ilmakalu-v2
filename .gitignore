@@ -1,5 +1,6 @@
-python/config/config.yaml
-python/__pycache__/
-python/config/__pycache__/
+data/config/config.yaml
+data/__pycache__/
+data/config/__pycache__/
 .vscode/
 env/
+services/.env

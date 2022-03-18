@@ -17,3 +17,10 @@ User can give needed municipality code according to which energy mode distributi
 Create a config.yaml file as adviced in the template to point to wanted database. 
 
 ## Buildings
+
+
+
+## System prerequisites
+
+- docker engine 19.03.0+
+- docker-compose 3.8+

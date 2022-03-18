@@ -1,0 +1,27 @@
+version: "3.8"
+
+# TODO:
+# map volumes to physical locations on disk
+volumes:
+  ilmakalu-data:
+    external: false
+    
+services:
+  database:
+    image: kartoza/postgis:13.0
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis,"uuid-ossp"
+      DEFAULT_CTYPE: 'fi_FI.UTF8'
+      DEFAULT_COLLATION: 'fi_FI.UTF8'
+      TZ: Europe/Helsinki
+    #volumes:
+    #  - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is now OS specific...
+    ports:
+      - "5435:5432"
+    restart: on-failure
+    healthcheck:
+     test: "exit 0"
+    shm_size: 1g
