@@ -6,7 +6,7 @@ from database_handler import create_table, insert_data
 # Ask municipality code from user
 mun_code = int(input("Give municipality code: "))
 
-# Ask region code from user
+# Ask region code from user. In an ideal case this would be deduced from the given municipality code.
 reg_code = int(input("Give region code: "))
 
 # Access and read preloaded JSON queries retrieved from https://trafi2.stat.fi/
