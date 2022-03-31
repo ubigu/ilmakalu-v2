@@ -18,7 +18,11 @@ Create a config.yaml file as adviced in the template to point to wanted database
 
 ## Buildings
 
-
+For buildings there are in theory three options: 
+1. Use municipality's own building registry. This is assumably the most accurate datasource, but it would require acquiring them separately each time.
+   1. Most buildings registries in municipalities are based on Trimble or Facta. That might allow us some scheming. 
+2. Use RHR registry. It is the best option regarding scale which is national. On the other hand it is not as accurate as the former. 
+3. Use YKR grid. This is the least favorable option due to problems arising from bureoucracy and generalisation and grid. 
 
 ## System prerequisites
 

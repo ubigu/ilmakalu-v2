@@ -18,7 +18,7 @@ services:
       DEFAULT_COLLATION: 'fi_FI.UTF8'
       TZ: Europe/Helsinki
     #volumes:
-    #  - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is now OS specific...
+    #  - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is for Linux env and now dev is done on windows. 
     ports:
       - "5435:5432"
     restart: on-failure
