@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" last-position="0,0" last-zoom="1" max-obj-count="4"
+	 default-schema="public" default-owner="postgres">
+<database name="new_database" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="traffic" layer="0" rect-visible="true" fill-color="#c1e122">
+	<role name="postgres"/>
+	<comment><![CDATA[This schema contains all traffic related data. ]]></comment>
+</schema>
+
+<table name="fuel_dist_vehicles" layer="0" collapse-mode="2" max-obj-count="16" z-value="0">
+	<schema name="traffic"/>
+	<role name="postgres"/>
+	<comment><![CDATA[This table contains different vehicle types and how different fuel types distribute in them. Data is aggregated according to a municipality. ]]></comment>
+	<position x="740" y="380"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+		<comment><![CDATA[identifier]]></comment>
+	</column>
+	<column name="mun" not-null="true">
+		<type name="smallint" length="0"/>
+		<comment><![CDATA[Municipality indicated as a number code]]></comment>
+	</column>
+	<column name="scenario" not-null="true">
+		<type name="varchar" length="10"/>
+		<comment><![CDATA['wem' or...]]></comment>
+	</column>
+	<column name="year" not-null="true">
+		<type name="smallint" length="4"/>
+		<comment><![CDATA[Year that the data values represent]]></comment>
+	</column>
+	<column name="vehicle_type" not-null="true">
+		<type name="text" length="0"/>
+		<comment><![CDATA[Type of a vehicle]]></comment>
+	</column>
+	<column name="gasoline" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using gasoline in this type of a vehicle]]></comment>
+	</column>
+	<column name="diesel" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using diesel in this type of a vehicle]]></comment>
+	</column>
+	<column name="ethanol" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using ethanol in this type of a vehicle]]></comment>
+	</column>
+	<column name="gas" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using gas in this type of a vehicle]]></comment>
+	</column>
+	<column name="gasoline_hybrid" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using gasoline and electricity (hybrid) in this type of a vehicle]]></comment>
+	</column>
+	<column name="diesel_hybrid" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using diesel and electricity (hybrid) in this type of a vehicle]]></comment>
+	</column>
+	<column name="electricity" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using electricity in this type of a vehicle]]></comment>
+	</column>
+	<column name="hydrogen" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using hydrogen in this type of a vehicle]]></comment>
+	</column>
+	<column name="other" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Proportion of vehicles using other energy than before mentioned ones in this type of a vehicle]]></comment>
+	</column>
+	<constraint name="id_pk" type="pk-constr" table="traffic.fuel_dist_vehicles">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<schema name="construction" layer="0" rect-visible="true" fill-color="#00b8e1">
+	<role name="postgres"/>
+	<comment><![CDATA[Tables related to construction emissions. ]]></comment>
+</schema>
+
+<table name="gwp_construction_material" layer="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="construction"/>
+	<role name="postgres"/>
+	<comment><![CDATA[This table contains gwp numbers for construcion materials. Data is from co2data.fi. ]]></comment>
+	<position x="1040" y="380"/>
+	<column name="id" not-null="true">
+		<type name="smallint" length="0"/>
+		<comment><![CDATA[identifier]]></comment>
+	</column>
+	<column name="resourceid" not-null="true">
+		<type name="smallint" length="0"/>
+		<comment><![CDATA[ResourceId given to a material by the data service (co2data.fi)]]></comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+		<comment><![CDATA[A name given to a material in question by co2data.fi]]></comment>
+	</column>
+	<column name="gwp_conservative" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Conservative gwp value for a construction material. Conversative value is deduced by applying a factor of 1.2 to the typical gwp value. Against this, it perhaps is not necessary to be stored physically to the table. Values are from co2data.fi.]]></comment>
+	</column>
+	<column name="gwp_typical" not-null="true">
+		<type name="float" length="0"/>
+		<comment><![CDATA[Typical GWP value for a construction material. Values are from co2data.fi.]]></comment>
+	</column>
+</table>
+
+</dbmodel>
