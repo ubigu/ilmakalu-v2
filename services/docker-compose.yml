@@ -13,12 +13,17 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres
+      ILMAKALU_USER: ${ILMAKALU_USER}
+      ILMAKALU_USER_PW: ${ILMAKALU_USER_PW}
+      ILMAKALU_DB: ${ILMAKALU_DB}
       POSTGRES_MULTIPLE_EXTENSIONS: postgis,"uuid-ossp"
       DEFAULT_CTYPE: 'fi_FI.UTF8'
       DEFAULT_COLLATION: 'fi_FI.UTF8'
       TZ: Europe/Helsinki
-    #volumes:
-    #  - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is for Linux env and now dev is done on windows. 
+      PASSWORD_AUTHENTICATION: "md5"
+    volumes:
+      - ./inits/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+      - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is for Linux env and now dev is done on windows. 
     ports:
       - "5435:5432"
     restart: on-failure
