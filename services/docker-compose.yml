@@ -22,7 +22,8 @@ services:
       TZ: Europe/Helsinki
       PASSWORD_AUTHENTICATION: "md5"
     volumes:
-      - ./inits/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+      - ./inits/init-user-db.sh:/docker-entrypoint-initdb.d/00-init-user-db.sh
+      - ./inits/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
       - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is for Linux env and now dev is done on windows. 
     ports:
       - "5435:5432"
