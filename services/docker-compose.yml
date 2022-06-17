@@ -31,3 +31,13 @@ services:
     healthcheck:
      test: "exit 0"
     shm_size: 1g
+  graphhopper-finland:
+    image: graphhopper:finland
+    build:
+      context: graphhopper
+      args:
+        - COUNTRY=finland
+    ports:
+      - "18989:8989"
+    environment:
+      - COUNTRY=finland
