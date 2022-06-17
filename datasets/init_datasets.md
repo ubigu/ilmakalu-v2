@@ -40,3 +40,23 @@ ogr2ogr -nln data.fi_municipality_2022_10k -nlt MULTIPOLYGON \
     -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
     /vsizip//path/to/file/TietoaKuntajaosta_2022_10k.zip Kunta 
 ```
+
+# Centers and shopping centers
+
+Data source: https://wwwd3.ymparisto.fi/d3/gis_data/spesific/keskustatkaupanalueet.zip
+
+Load data:
+```sh
+ogr2ogr -nln data.fi_centers \
+    -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
+    /vsizip//path/to/file/keskustatkaupanalueet.zip KeskustaAlueet
+```
+
+Compute centroid to separate table:
+```sql
+CREATE TABLE data.fi_center_p AS
+SELECT
+    ogc_fid AS fi_center_ref,
+    ST_Centroid(wkb_geometry) AS geom
+FROM data.fi_centers;
+```
