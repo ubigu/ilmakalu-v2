@@ -6,3 +6,6 @@ env/
 services/.env
 venv/
 datasets/grid_1km
+datasets/config/config.yaml
+datasets/output
+__pycache__

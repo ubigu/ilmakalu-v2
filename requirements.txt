@@ -8,3 +8,4 @@ requests==2.27.1
 urllib3==1.26.8
 gdal==3.3.3
 numpy==1.22.4
+pyjq==2.5.2
