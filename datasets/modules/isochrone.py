@@ -66,7 +66,7 @@ class RouteCalc:
             end_point.lat(),
             end_point.lon())
 
-    # service provide specific functionality
+    # service provider specific functionality
     def _graphhopper_dist_km(self, data):
         """Return distance in kilometers"""
         return pyjq.first(".paths[].distance", data) / 1000.0
@@ -120,7 +120,7 @@ class IsochroneCalc:
         """Place point and distance to URL template."""
         return self._url.format(point.lat(), point.lon(), distance)
 
-    # service provide specific functionality
+    # service provider specific functionality
     def _graphhopper_postprocess(self):
         """Return GeoJSON result from (possibly) proprietary format."""
         result = pyjq.first(".polygons[]", self._result)

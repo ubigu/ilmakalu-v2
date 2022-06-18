@@ -1,0 +1,16 @@
+routing:
+  graphhopper:
+    port: <port>
+    base_url: "http://localhost:{}/route?point={},{}&point={},{}&vehicle=car&locale=fi&calc_points=false"
+isochrones:
+  graphhopper:
+    port: <port>
+    base_url: "http://localhost:{}/isochrone?point={},{}&reverse_flow=true&vehicle=car&distance_limit={}"
+
+database:
+  local_dev:
+    host: <host>
+    port: <port>
+    user: <user>
+    pass: <password>
+    database: <database>
