@@ -4,13 +4,21 @@ import json
 from pathlib import Path
 
 
-from modules.isochrone import Point, IsochroneCalc, IsochroneConfig, RouteConfig, RouteCalc
-from modules.centers import UrbanCenters, IsochroneResult
+from modules.isochrone import DistanceSolver, Point, IsochroneCalc, IsochroneConfig, RouteConfig, RouteCalc
+from modules.centers import UrbanCenters, IsochroneResult, GridCells
 from modules.config import Config
 from tqdm import tqdm
 
 if __name__ == "__main__":
-    
+    # read grid cells
+    cfg = Config("local_dev")
+    uc = UrbanCenters(cfg.db_url())
+    gc = GridCells(cfg.db_url(), "635")
+    dsc = DistanceSolver(gc, uc, RouteConfig())
+    nsc_beeline = dsc.nearest_centers_beeline('3648756803125', 5)
+    pass
+
+    # router configuration
     router_cfg = RouteConfig("graphhopper")
     point1 = Point(61.2337397064611, 24.201125316882337)
     point2 = Point(60.906906611698275, 21.483723561909205)
@@ -28,16 +36,14 @@ if __name__ == "__main__":
         json.dump(res, file)
     pass
 
-    cfg = Config("local_dev")
-    uc = UrbanCenters(cfg.db_url())
-
     isochrone_result = IsochroneResult(cfg.db_url())
 
     # Compute isochrones for centers
     isochrone_cfg = IsochroneConfig("graphhopper")
     isochrone = IsochroneCalc(isochrone_cfg)
 
-    distances = range(1000, 20000, 500)
+    #distances = range(1000, 20000, 500)
+    distances = range(20000, 100000, 1000)
     for distance in tqdm(distances):
         for _, cnt in tqdm(uc.df().iterrows(), total=uc.df().shape[0], leave=False):
             id = cnt.get("fi_center_ref")

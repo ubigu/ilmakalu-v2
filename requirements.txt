@@ -9,6 +9,7 @@ GDAL==3.3.3
 GeoAlchemy2==0.12.1
 geopandas==0.10.2
 greenlet==1.1.2
+haversine==2.5.1
 idna==3.3
 munch==2.5.0
 numpy==1.22.4

@@ -21,6 +21,23 @@ class UrbanCenters:
     def df(self) -> geopandas.GeoDataFrame:
         return self._centers
 
+class GridCells:
+    """Obtain grid cells from one municipality"""
+    def __init__(self, db_uri : str = None, natcode : str = None):
+        try:
+            self._conn = create_engine(db_uri)
+        except:
+            raise Exception("Couldn't connect to database")
+        sql = (
+            "SELECT xyind, ST_Centroid(ST_Transform(g.wkb_geometry, 4326)) AS geom "
+            "FROM data.fi_grid_250m AS g "
+            "JOIN data.fi_municipality_2022_10k AS mun "
+            "ON ST_Intersects(mun.geom, g.wkb_geometry) WHERE natcode='{}'".format(natcode))
+        self._gridcells = geopandas.GeoDataFrame.from_postgis(sql, self._conn)
+        pass
+
+    def df(self):
+        return self._gridcells
 class IsochroneResult:
     def __init__(self, db_uri : str):
         try:
