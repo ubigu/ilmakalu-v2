@@ -20,9 +20,9 @@ class Point:
     def lon(self):
         return self._lon
 
-    def coords (self):
+    def coords(self):
         """Obtain coordinate tuple"""
-        return (self.lon(), self.lat())
+        return (self.lat(), self.lon())
 
     def __repr__(self):
         return "Point({})".format(self.coords())
@@ -39,6 +39,9 @@ class Route:
         # distance computed
         self._dist_road = None
 
+    def set_dist_road(self, dist_road) -> None:
+        self._dist_road = dist_road
+
     def with_source_id(self, id):
         self._from_id = id
         return self
@@ -52,6 +55,22 @@ class Route:
 
     def dist_road(self) -> float:
         return self._dist_road
+
+    def start_point(self):
+        return self._from_point
+
+    def end_point(self):
+        return self._to_point
+
+    def is_road_dist_smaller_than_beeline(self, other : Route) -> bool:
+        if self.dist_road() <= other.dist_beeline():
+            return True
+        return False
+
+    def has_shorter_road_distance_than(self, other : Route) -> bool:
+        if self.dist_road() <= other.dist_road():
+            return True
+        return False
 
     def __repr__(self):
         if self.dist_road() is None:
@@ -80,13 +99,10 @@ class DistanceSolver:
         self._centers = centers
         self._rt_config = routerconfig
         self._router = RouteCalc(self._rt_config)
-        g_head = grid.df().head()
-        u_head = centers.df().head()
-        pairs = itertools.product(g_head['geom'], u_head['geom'])
-        pass
+        self._shortest_routes = []
 
-    def nearest_centers_beeline(self, xyind : str = None, num_routes : int = 10) -> pd.DataFrame:
-        df =self.grid().df()
+    def nearest_centers_beeline(self, xyind : str = None, num_routes : int = 10) -> list[Route]:
+        df = self.grid().df()
         # find one specific grid cell
         g = df[df['xyind'] == xyind]
 
@@ -106,12 +122,41 @@ class DistanceSolver:
 
         return router_points[:num_routes]
 
+    def save_route(self, rte : Route):
+        self._shortest_routes.append(rte)
+
+    def grid_ids(self) -> list[str]:
+        grid_ids = self.grid().df()['xyind']
+
+        return list(grid_ids)
+
+
+    def calc_route(self, rte : Route = None):
+        return self.router().dist_km(self._router.calc(route=rte))
+
     def grid(self):
         return self._grid
 
     def centers(self):
         return self._centers
 
+    def router(self):
+        return self._router
+
+    def compute_min_distance(self, shortest_route : Route, candidates : list[Route]) -> Route:
+        """Compute minimum distance recursively.
+        
+        candidates - list of Route objects in increasing order of beeline distance."""
+        if not candidates:
+            return shortest_route
+        current_candidate = candidates.pop(0)
+        if shortest_route.is_road_dist_smaller_than_beeline(current_candidate):
+            candidates = []
+        else:
+            current_candidate.set_dist_road(self.calc_route(rte=current_candidate))
+            if current_candidate.has_shorter_road_distance_than(shortest_route):
+                shortest_route = current_candidate
+        return self.compute_min_distance(shortest_route, candidates)
 class RouteConfig:
     """Handle router specific configurations."""
     def __init__(self, worker : str = "graphhopper"):
@@ -141,8 +186,16 @@ class RouteCalc:
             self._postprocess = self._graphhopper_postprocess
             self.dist_km = self._graphhopper_dist_km
 
-    def calc(self, start_point : Point, end_point : Point):
-        """Main workhorse for route calculation."""
+    def calc(self, start_point : Point = None, end_point : Point = None, route : Route = None):
+        """Main workhorse for route calculation.
+        
+        Give either:
+        - start_point [Point] and end_point [Point]
+        - route [Route]"""
+        if route is not None and end_point is None and start_point is None:
+            start_point = route.start_point()
+            end_point = route.end_point()
+
         router_addr = self._fill_url(start_point, end_point)
         return self._execute_routing(router_addr)._postprocess()
 

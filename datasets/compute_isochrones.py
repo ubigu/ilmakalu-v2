@@ -15,7 +15,21 @@ if __name__ == "__main__":
     uc = UrbanCenters(cfg.db_url())
     gc = GridCells(cfg.db_url(), "635")
     dsc = DistanceSolver(gc, uc, RouteConfig())
+
+    grid_ids = dsc.grid_ids()
+
+    for g_id in tqdm(grid_ids):
+        nsc = dsc.nearest_centers_beeline(g_id, 10)
+        candidate = nsc.pop(0)
+        candidate.set_dist_road(dsc.calc_route(candidate))
+        result = dsc.compute_min_distance(candidate, nsc)
+        dsc.save_route(result)
+
+    pass
     nsc_beeline = dsc.nearest_centers_beeline('3648756803125', 5)
+    candidate = nsc_beeline.pop(0)
+    candidate.set_dist_road(dsc.calc_route(candidate))
+    result = dsc.compute_min_distance(candidate, nsc_beeline)
     pass
 
     # router configuration
