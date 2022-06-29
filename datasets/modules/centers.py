@@ -38,6 +38,16 @@ class GridCells:
 
     def df(self):
         return self._gridcells
+class RoutingResult:
+    def __init__(self, db_uri : str):
+        try:
+            self._conn = create_engine(db_uri)
+        except:
+            raise Exception("Couldn't connect to database")
+
+    def persist(self, result : pd.DataFrame, schema : str, table_name : str):
+        result.to_sql(table_name, self._conn, schema, if_exists="replace")
+
 class IsochroneResult:
     def __init__(self, db_uri : str):
         try:

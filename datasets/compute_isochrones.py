@@ -1,31 +1,45 @@
 """Prototype script to run router and isochrone computations"""
 
 import json
+import sys
 from pathlib import Path
 
 
 from modules.isochrone import DistanceSolver, Point, IsochroneCalc, IsochroneConfig, RouteConfig, RouteCalc
-from modules.centers import UrbanCenters, IsochroneResult, GridCells
+from modules.centers import RoutingResult, UrbanCenters, IsochroneResult, GridCells
 from modules.config import Config
 from tqdm import tqdm
+import logging
+
+logging.basicConfig(filename="isochrone_computation.log", level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     # read grid cells
     cfg = Config("local_dev")
     uc = UrbanCenters(cfg.db_url())
-    gc = GridCells(cfg.db_url(), "635")
+    municipality = "049"
+    gc = GridCells(cfg.db_url(), municipality)
     dsc = DistanceSolver(gc, uc, RouteConfig())
 
     grid_ids = dsc.grid_ids()
-
+    # debug Pirkkala case
+    #grid_ids = ['3466256798375']
+    # index is 289
+    #grid_ids=grid_ids[280:300]
     for g_id in tqdm(grid_ids):
+        logger.debug("Processing grid: {}".format(g_id))
         nsc = dsc.nearest_centers_beeline(g_id, 10)
         candidate = nsc.pop(0)
         candidate.set_dist_road(dsc.calc_route(candidate))
         result = dsc.compute_min_distance(candidate, nsc)
         dsc.save_route(result)
 
+    df = dsc.routing_results()
+    routing_result = RoutingResult(cfg.db_url())
+    routing_result.persist(df, "data", "routing_results_{}".format(municipality))
     pass
+    sys.exit()
     nsc_beeline = dsc.nearest_centers_beeline('3648756803125', 5)
     candidate = nsc_beeline.pop(0)
     candidate.set_dist_road(dsc.calc_route(candidate))

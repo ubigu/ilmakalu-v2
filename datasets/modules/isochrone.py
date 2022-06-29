@@ -1,13 +1,16 @@
-"""Module to handle isochrone calculation"""
+"""Module to handle isochrone and routing calculations"""
 
 from __future__ import annotations
+from urllib.error import HTTPError
 from modules.centers import GridCells, UrbanCenters
 from modules.config import Config
 from haversine import haversine
 import pandas as pd
 import requests
 import pyjq
-import itertools
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Point:
     def __init__(self, lat, lon):
@@ -50,6 +53,12 @@ class Route:
         self._dest_id = id
         return self
 
+    def source_id(self):
+        return self._from_id
+
+    def dest_id(self):
+        return self._dest_id
+
     def dist_beeline(self) -> float:
         return self._dist_beeline
 
@@ -71,6 +80,18 @@ class Route:
         if self.dist_road() <= other.dist_road():
             return True
         return False
+
+    def export_details(self, schema : bool = False) -> list:
+        """Extract details for route object"""
+        if schema:
+            return [ "xyind", "fi_center_id", "beeline_dist", "road_dist" ]
+        else:
+            return [
+                self.source_id(),
+                self.dest_id(),
+                self.dist_beeline(),
+                self.dist_road()
+            ]
 
     def __repr__(self):
         if self.dist_road() is None:
@@ -130,6 +151,17 @@ class DistanceSolver:
 
         return list(grid_ids)
 
+    def shortest_routes(self) -> list[Route]:
+        return self._shortest_routes
+
+    def routing_results(self) -> pd.DataFrame:
+        """Gather routing results"""
+        res = []
+        for r in self.shortest_routes():
+            res.append(r.export_details())
+        schema = r.export_details(schema=True)
+        retval = pd.DataFrame(data=res, columns=schema)
+        return retval
 
     def calc_route(self, rte : Route = None):
         return self.router().dist_km(self._router.calc(route=rte))
@@ -197,6 +229,7 @@ class RouteCalc:
             end_point = route.end_point()
 
         router_addr = self._fill_url(start_point, end_point)
+        logger.debug("Routing URL: {}".format(router_addr))
         return self._execute_routing(router_addr)._postprocess()
 
     def _execute_routing(self, router_addr : str) -> RouteCalc:
@@ -204,6 +237,8 @@ class RouteCalc:
         req = requests.get(router_addr)
         if req.status_code == 200:
             self._result = req.json()
+        else:
+            raise HTTPError("Routing not succesful, see logs.")
         return self
 
     def _fill_url(self, start_point, end_point) -> str:
