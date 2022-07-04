@@ -60,3 +60,25 @@ SELECT
     ST_Centroid(wkb_geometry) AS geom
 FROM data.fi_centers;
 ```
+
+# Urban zones
+
+Data source: https://wwwd3.ymparisto.fi/d3/gis_data/spesific/YKRVyohykkeet2021.zip
+
+Load data:
+```sh
+ogr2ogr -nln data.fi_urban_zones \
+    -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
+    /vsizip//path/to/file/YKRVyohykkeet2021.zip YKRVyohykkeet2021
+```
+
+# Urban-Rural classification
+
+Data source: https://wwwd3.ymparisto.fi/d3/gis_data/spesific/YKRKaupunkiMaaseutuLuokitus2018.zip
+
+Load data:
+```sh
+ogr2ogr -lco precision=NO -nln data.fi_urban_rural \
+    -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
+    /vsizip//path/to/file/YKRKaupunkiMaaseutuLuokitus2018.zip YKRKaupunkiMaaseutuLuokitus2018
+```

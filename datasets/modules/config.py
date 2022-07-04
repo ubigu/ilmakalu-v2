@@ -5,6 +5,7 @@ class Config:
     def __init__(self, db_config : str = "local_dev"):
         self.read_config()
         self._db_url = self._db_connection_url(db_config)
+        self._db_connstring = self._db_connection_string(db_config)
 
     def read_config(self):
         filename = Path(__file__).parent.parent / "config" / 'config.yaml'
@@ -27,6 +28,9 @@ class Config:
     def db_url(self):
         return self._db_url
 
+    def db_conn_string(self):
+        return self._db_connstring
+
     def _db_connection_url(self, db_config) -> str:
         db_details = self._cfg.get("database").get(db_config)
         return "postgresql://{}:{}@{}:{}/{}".format(
@@ -35,4 +39,14 @@ class Config:
             db_details.get("host"),
             db_details.get("port"),
             db_details.get("database")
+            )
+
+    def _db_connection_string(self, db_config):
+        db_details = self._cfg.get("database").get(db_config)
+        return "host='{host}' port='{port}' dbname='{dbname}' user='{user}' password='{password}'".format(
+            host=db_details.get("host"),
+            port=db_details.get("port"),
+            dbname=db_details.get("database"),
+            user=db_details.get("user"),
+            password=db_details.get("password")
             )
