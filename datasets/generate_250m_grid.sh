@@ -8,15 +8,20 @@ ymin=6605000
 ymax=7777000
 
 # Generate 250m grid
+output_dir="grid_1km"
 grid1km_wfs_addr="https://geo.stat.fi/geoserver/tilastointialueet/wfs"
 grid1km_wfs_layer="tilastointialueet:hila1km"
-grid1km_shape="grid_1km/grid_1km.shp"
-grid1km_tiff="grid_1km/grid_1km.tiff"
-grid250m_tiff="grid_1km/grid_250m.tiff"
-grid250m_shape_temp="grid_1km/grid_250m_temp.shp"
-grid250m_shape="grid_1km/grid_250m.shp"
+grid1km_shape="${output_dir}/grid_1km.shp"
+grid1km_tiff="${output_dir}/grid_1km.tiff"
+grid250m_tiff="${output_dir}/grid_250m.tiff"
+grid250m_shape_temp="${output_dir}/grid_250m_temp.shp"
+grid250m_shape="${output_dir}/grid_250m.shp"
 
 python="../venv/bin/python"
+
+if ! [ -d "$output_dir" ]; then
+    mkdir "$output_dir"
+fi
 
 # obtain vector layer
 echo "Obtaining 1km grid (WFS), output: $grid1km_shape"
@@ -36,7 +41,7 @@ $python raster_attribute_tweak.py
 
 # polygonize (features are not important at this stage)
 echo "Polygonize, result: $grid250m_shape_temp"
-gdal_polygonize.py grid_1km/grid_250m_consecutive.tiff $grid250m_shape_temp
+gdal_polygonize.py ${output_dir}/grid_250m_consecutive.tiff $grid250m_shape_temp
 
 # label cells with "xyind" -attribute
 echo "Add required attributes. Output: $grid250m_shape"
