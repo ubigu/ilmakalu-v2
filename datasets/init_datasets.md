@@ -82,3 +82,14 @@ ogr2ogr -lco precision=NO -nln data.fi_urban_rural \
     -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
     /vsizip//path/to/file/YKRKaupunkiMaaseutuLuokitus2018.zip YKRKaupunkiMaaseutuLuokitus2018
 ```
+
+# CORINE land use
+
+Data source: https://land.copernicus.eu/pan-european/corine-land-cover/clc2018?tab=download
+
+Load data:
+```sh
+ogr2ogr -nln data.corine_land_cover_2018_eu \
+  -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
+  U2018_CLC2018_V2020_20u1.gpkg U2018_CLC2018_V2020_20u1
+```
