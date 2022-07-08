@@ -108,7 +108,10 @@ class DistanceSolverConfig:
         pass
 
 class DistanceSolver:
-    """DistanceSolver handles distance calculation between grid cells and center points."""
+    """DistanceSolver handles distance calculation between grid cells and urban center points.
+    
+    Succesful distance computation requires slightly tuned Graphhopper.
+    Snape to nearest road search radius must be increased from factory default."""
     def __init__(
         self,
         grid : GridCells = None,
@@ -123,6 +126,9 @@ class DistanceSolver:
         self._shortest_routes = []
 
     def nearest_centers_beeline(self, xyind : str = None, num_routes : int = 10) -> list[Route]:
+        """Find nearest centers (beeline distance) to current grid cell.
+        
+        Return <num_routes> amount of Route -objects as a list."""
         df = self.grid().df()
         # find one specific grid cell
         g = df[df['xyind'] == xyind]
@@ -143,7 +149,7 @@ class DistanceSolver:
 
         return router_points[:num_routes]
 
-    def save_route(self, rte : Route):
+    def save_route(self, rte : Route) -> None:
         self._shortest_routes.append(rte)
 
     def grid_ids(self) -> list[str]:
@@ -163,16 +169,16 @@ class DistanceSolver:
         retval = pd.DataFrame(data=res, columns=schema)
         return retval
 
-    def calc_route(self, rte : Route = None):
+    def calc_route(self, rte : Route = None) -> float:
         return self.router().dist_km(self._router.calc(route=rte))
 
-    def grid(self):
+    def grid(self) -> GridCells:
         return self._grid
 
-    def centers(self):
+    def centers(self) -> UrbanCenters:
         return self._centers
 
-    def router(self):
+    def router(self) -> RouteCalc:
         return self._router
 
     def compute_min_distance(self, shortest_route : Route, candidates : list[Route]) -> Route:

@@ -39,6 +39,7 @@ class GridCells:
     def df(self):
         return self._gridcells
 class RoutingResult:
+    """Class to handle computed routing results."""
     def __init__(self, db_uri : str):
         try:
             self._conn = create_engine(db_uri)
