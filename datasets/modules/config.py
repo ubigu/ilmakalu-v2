@@ -50,3 +50,9 @@ class Config:
             user=db_details.get("user"),
             password=db_details.get("password")
             )
+
+    def target_municipality(self) -> str:
+        return self._cfg.get("target").get("municipality")
+
+    def num_nearest_centers(self) -> int:
+        return self._cfg.get("target").get("num_nearst_centers")

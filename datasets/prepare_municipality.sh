@@ -9,24 +9,11 @@ if [ "$sourced" -eq "1" ];then
     return 0
 fi
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <municipality_id>"
-    exit 1
-fi
-
-if [ $(echo "$1" | grep -E '^[0-9]{3}$') ]; then
-    echo "Processing municipality: '$1'"
-else
-    echo "Municipality three digit string not recognized"
-    exit 2
-fi
-
+# initialize python
 python="$(dirname -- $0)/../venv/bin/python"
-echo "Running data generation for municipality: $1"
-echo "$python"
-$python --version
 
 # run grid cell travel time calculation
+$python "$(dirname -- $0)/compute_grid.py"
 
 # run XX calculation
 # <your script here>

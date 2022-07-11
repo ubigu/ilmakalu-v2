@@ -14,3 +14,7 @@ database:
     user: <user>
     pass: <password>
     database: <database>
+
+target:
+  municipality: <three digit national code as string>
+  num_nearest_centers: <number of nearest centers to search for minimum distance>
