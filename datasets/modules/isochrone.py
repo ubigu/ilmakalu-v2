@@ -33,6 +33,7 @@ class Point:
     def __str__(self):
         self.__repr__()
 class Route:
+    """Route saves information of a route between two points."""
     def __init__(self, from_point : Point, to_point : Point, beeline_dist : float = None):
         self._from_point = from_point
         self._to_point = to_point
@@ -45,11 +46,11 @@ class Route:
     def set_dist_road(self, dist_road) -> None:
         self._dist_road = dist_road
 
-    def with_source_id(self, id):
+    def with_source_id(self, id) -> Route:
         self._from_id = id
         return self
 
-    def with_dest_id(self, id):
+    def with_dest_id(self, id) -> Route:
         self._dest_id = id
         return self
 
@@ -65,10 +66,10 @@ class Route:
     def dist_road(self) -> float:
         return self._dist_road
 
-    def start_point(self):
+    def start_point(self) -> Point:
         return self._from_point
 
-    def end_point(self):
+    def end_point(self) -> Point:
         return self._to_point
 
     def is_road_dist_smaller_than_beeline(self, other : Route) -> bool:
@@ -77,6 +78,7 @@ class Route:
         return False
 
     def has_shorter_road_distance_than(self, other : Route) -> bool:
+        """Compare road distances"""
         if self.dist_road() <= other.dist_road():
             return True
         return False
@@ -103,7 +105,7 @@ class Route:
         self.__repr__()
 
 class DistanceSolverConfig:
-    """DistanceSolver configuration module"""
+    """DistanceSolver configuration module placeholder"""
     def __init__(self):
         pass
 

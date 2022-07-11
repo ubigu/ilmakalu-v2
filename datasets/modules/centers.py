@@ -34,7 +34,6 @@ class GridCells:
             "JOIN data.fi_municipality_2022_10k AS mun "
             "ON ST_Intersects(mun.geom, g.wkb_geometry) WHERE natcode='{}'".format(natcode))
         self._gridcells = geopandas.GeoDataFrame.from_postgis(sql, self._conn)
-        pass
 
     def df(self):
         return self._gridcells
@@ -50,6 +49,7 @@ class RoutingResult:
         result.to_sql(table_name, self._conn, schema, if_exists="replace")
 
 class IsochroneResult:
+    """Class to handle isochrone computation results."""
     def __init__(self, db_uri : str):
         try:
             self._conn = create_engine(db_uri)
