@@ -51,6 +51,9 @@ ogr2ogr -nln data.fi_grid_250m \
 
 Source: https://tiedostopalvelu.maanmittauslaitos.fi/tp/kartta
 
+Processing instructions assume Geopackage format. Other format selection might
+require changing source layer name in import.
+
 Load data:
 ```sh
 ogr2ogr -nln data.fi_municipality_2022_10k -nlt MULTIPOLYGON \
@@ -58,6 +61,23 @@ ogr2ogr -nln data.fi_municipality_2022_10k -nlt MULTIPOLYGON \
     /vsizip//path/to/file/TietoaKuntajaosta_2022_10k.zip Kunta 
 ```
 
+## Source data schema:
+* Projection: EPSG:3067
+* Geometry: Multipolygon
+* Feature Count: 309
+
+```
+FID Column = id
+Geometry Column = geom
+gml_id: Integer64 (0.0)
+natcode: String (20.0)
+namefin: String (60.0)
+nameswe: String (60.0)
+landarea: Real(Float32) (0.0)
+freshwarea: Real(Float32) (0.0)
+seawarea: Real(Float32) (0.0)
+totalarea: Real(Float32) (0.0)
+```
 # Urban centers and commercial centers
 
 Data source: https://wwwd3.ymparisto.fi/d3/gis_data/spesific/keskustatkaupanalueet.zip
@@ -78,6 +98,19 @@ SELECT
 FROM data.fi_centers;
 ```
 
+## Source data schema
+* Projection: EPSG:3067
+* Geometry: Polygon
+* Feature Count: 304
+
+```
+Keskustyyp: String (50.0)
+Kaupunkise: String (50.0)
+KeskusNimi: String (60.0)
+SHAPE_Leng: Real (19.11)
+SHAPE_Area: Real (19.11)
+```
+
 # Urban zones
 
 Data source: https://wwwd3.ymparisto.fi/d3/gis_data/spesific/YKRVyohykkeet2021.zip
@@ -87,6 +120,20 @@ Load data:
 ogr2ogr -nln data.fi_urban_zones \
     -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
     /vsizip//path/to/file/YKRVyohykkeet2021.zip YKRVyohykkeet2021
+```
+
+## Source data schema
+* Projection: 3067
+* Geometry: Polygon
+* Feature Count: 5201
+
+```
+vyoh: Integer (5.0)
+Ydinalue: Integer (5.0)
+vyohselite: String (80.0)
+MuutosPvm: Date (10.0)
+Shape_Leng: Real (19.11)
+Shape_Area: Real (19.11)
 ```
 
 # Urban-Rural classification
@@ -100,6 +147,18 @@ ogr2ogr -lco precision=NO -nln data.fi_urban_rural \
     /vsizip//path/to/file/YKRKaupunkiMaaseutuLuokitus2018.zip YKRKaupunkiMaaseutuLuokitus2018
 ```
 
+## Source data schema
+
+* Projection: 3067
+* Geometry: Polygon
+* Feature Count: 318
+
+```
+Luokka: String (3.0)
+Nimi: String (40.0)
+Shape_Leng: Real (19.11)
+Shape_Area: Real (19.11)
+```
 # CORINE land cover
 
 Data source: https://land.copernicus.eu/pan-european/corine-land-cover/clc2018?tab=download
@@ -109,6 +168,21 @@ Load data:
 ogr2ogr -nln data.corine_land_cover_2018_eu \
   -f "PostgreSQL" PG:"dbname='databasename' host='addr' port='5432' user='x' password='y'" \
   U2018_CLC2018_V2020_20u1.gpkg U2018_CLC2018_V2020_20u1
+```
+
+## Source data schema
+
+* Projection: 3035
+* Geometry: Multi Polygon
+* Feature Count: 2375406
+
+```
+FID Column = OBJECTID
+Geometry Column = Shape
+Code_18: String (3.0)
+Remark: String (20.0)
+Area_Ha: Real (0.0)
+ID: String (18.0)
 ```
 
 # Country specific data enrichment
