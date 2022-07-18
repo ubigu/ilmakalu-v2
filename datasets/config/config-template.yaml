@@ -15,6 +15,12 @@ database:
     pass: <password>
     database: <database>
 
+wfs:
+  url: <WFS Service URL>
+  version: <WFS version>
+  layer: <namespace that defines layer (workspace:layer)>
+  properties: <list of properties (layer attributes)>
+
 target:
   municipality: <three digit national code as string>
   num_nearest_centers: <number of nearest centers to search for minimum distance>

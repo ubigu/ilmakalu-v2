@@ -13,6 +13,8 @@ class Config:
             configuration = yaml.load(file, Loader=yaml.FullLoader)
         self._cfg = configuration
 
+
+    # Graphopper methods
     def graphhopper_isochrone_url(self):
         gh = self._cfg.get("isochrones").get("graphhopper")
         port = gh.get("port")
@@ -25,6 +27,8 @@ class Config:
         # unfortunate hack to preserve placeholders for later "format"
         return gh.get("base_url").format(port, "{}", "{}", "{}", "{}")
 
+
+    # Postgres methods
     def db_url(self):
         return self._db_url
 
@@ -51,6 +55,27 @@ class Config:
             password=db_details.get("password")
             )
 
+
+    # WFS methods
+    def wfs_url(self):
+        return self._cfg.get("wfs").get("url")
+
+    def wfs_version(self):
+        return self._cfg.get("wfs").get("version")
+
+    def wfs_layer(self):
+        return self._cfg.get("wfs").get("layer")
+
+    def wfs_properties(self):
+        return self._cfg.get("wfs").get("properties")
+
+    def wfs_params(self):
+        return dict(service='WFS', version=self.wfs_version(), 
+            request='GetFeature', typeName=self.wfs_layer(),
+            propertyName=self.wfs_properties())
+
+
+    # Methods specifying dataset targets
     def target_municipality(self) -> str:
         return self._cfg.get("target").get("municipality")
 
