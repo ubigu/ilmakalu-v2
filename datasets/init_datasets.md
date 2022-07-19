@@ -9,6 +9,7 @@ TODO: _schema decisions might need redesign_
 ## data
 
 Layers computed during initialization.
+
 ## prepared_data
 
 Intermediate results, obtained when generating actual data layers.

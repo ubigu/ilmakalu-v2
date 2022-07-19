@@ -9,7 +9,7 @@ from modules.config import Config
 # https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-postgis-table
 
 # Create config object for database
-cfg = Config("local_dev")
+cfg = Config()
 
 # Setup WFS service
 url = cfg.wfs_url()
@@ -23,6 +23,9 @@ q = Request('GET', url, params=params).prepare().url
 
 # Read data from URL into a geodataframe
 data = gpd.read_file(q, driver='GML')
+
+# For some reason WFS output in geodataframe has no CRS information
+print(data.geometry.crs)
 
 # Create database engine and push geodataframe to Postgres as a PostGIS table
 engine = create_engine(cfg._db_connection_url("local_dev"))

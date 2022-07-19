@@ -72,7 +72,8 @@ class Config:
     def wfs_params(self):
         return dict(service='WFS', version=self.wfs_version(), 
             request='GetFeature', typeName=self.wfs_layer(),
-            propertyName=self.wfs_properties())
+            propertyName=self.wfs_properties(),
+            srsName=3067)
 
 
     # Methods specifying dataset targets
