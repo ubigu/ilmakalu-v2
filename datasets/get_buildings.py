@@ -81,6 +81,9 @@ data_limited.to_postgis(
     if_exists='replace',
 )
 
+with engine.connect() as con:
+    con.execute('ALTER TABLE data.rakennukset ADD COLUMN id SERIAL PRIMARY KEY;')
+
 '''
 # Display geodataframe contents to a plot
 plt.rcParams['figure.figsize'] = [12, 6]
