@@ -19,7 +19,10 @@ wfs:
   url: <WFS Service URL>
   version: <WFS version>
   layer: <namespace that defines layer (workspace:layer)>
-  properties: <list of properties (layer attributes)>
+  floor_area_attribute: <attribute that represents building floor area>
+  fuel_attribute: <attribute that represents fuel used by a building>
+  building_type_attribute: <attribute that represents a purpose of a building>
+
 
 target:
   municipality: <three digit national code as string>

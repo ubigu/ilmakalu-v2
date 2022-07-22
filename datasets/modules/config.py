@@ -66,15 +66,23 @@ class Config:
     def wfs_layer(self):
         return self._cfg.get("wfs").get("layer")
 
+    def floor_area_attribute(self):
+        return self._cfg.get("wfs").get("floor_area_attribute")
+
+    def fuel_attribute(self):
+        return self._cfg.get("wfs").get("fuel_attribute")
+
+    def building_type_attribute(self):
+        return self._cfg.get("wfs").get("building_type_attribute")
+
     def wfs_properties(self):
-        return self._cfg.get("wfs").get("properties")
+        return f"{self._cfg.get('wfs').get('floor_area_attribute')}, {self._cfg.get('wfs').get('fuel_attribute')}, {self._cfg.get('wfs').get('building_type_attribute')}"
 
     def wfs_params(self):
         return dict(service='WFS', version=self.wfs_version(), 
             request='GetFeature', typeName=self.wfs_layer(),
             propertyName=self.wfs_properties(),
             srsName=3067)
-
 
     # Methods specifying dataset targets
     def target_municipality(self) -> str:
