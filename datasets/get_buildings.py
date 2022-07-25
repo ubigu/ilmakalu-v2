@@ -28,7 +28,11 @@ q = Request('GET', url, params=params).prepare().url
 data = gpd.read_file(q, driver='GML')
 
 # Take a copy of the geodataframe with only wanted columns
-data_limited = data[[cfg.floor_area_attribute(), cfg.fuel_attribute(), cfg.building_type_attribute(), "geometry"]]
+data_limited = data[[cfg.floor_area_attribute(), cfg.fuel_attribute(), cfg.building_type_attribute(), cfg.year_attribute(), "geometry"]]
+
+# In the case of Espoo, construction year is announced in DD.MM.YYYY format --> transform to Int64
+year = cfg.year_attribute()
+data_limited[year] = data_limited[year].str[-4:].astype('Int64')
 
 # Go through the geodataframe and check how what geometry types are present and how many of them exist
 geom_counts = {'Polygon':0, 'MultiPolygon':0, 'LineString':0, 'MultiLineString':0, 'Point': 0, 'MultiPoint':0, 'Empty': 0, 'Missing':0}
@@ -81,8 +85,8 @@ data_limited.to_postgis(
     if_exists='replace',
 )
 
-with engine.connect() as con:
-    con.execute('ALTER TABLE data.rakennukset ADD COLUMN id SERIAL PRIMARY KEY;')
+with engine.connect() as con_pk:
+    con_pk.execute('ALTER TABLE data.rakennukset ADD COLUMN id SERIAL PRIMARY KEY;')
 
 '''
 # Display geodataframe contents to a plot

@@ -22,6 +22,7 @@ wfs:
   floor_area_attribute: <attribute that represents building floor area>
   fuel_attribute: <attribute that represents fuel used by a building>
   building_type_attribute: <attribute that represents a purpose of a building>
+  year_attribute: <attribute that represents a year when a building was constructed>>
 
 
 target:

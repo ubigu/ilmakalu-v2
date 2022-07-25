@@ -75,8 +75,11 @@ class Config:
     def building_type_attribute(self):
         return self._cfg.get("wfs").get("building_type_attribute")
 
+    def year_attribute(self):
+        return self._cfg.get("wfs").get("year_attribute")
+
     def wfs_properties(self):
-        return f"{self._cfg.get('wfs').get('floor_area_attribute')}, {self._cfg.get('wfs').get('fuel_attribute')}, {self._cfg.get('wfs').get('building_type_attribute')}"
+        return f"{self._cfg.get('wfs').get('floor_area_attribute')}, {self._cfg.get('wfs').get('fuel_attribute')}, {self._cfg.get('wfs').get('building_type_attribute')}, {self._cfg.get('wfs').get('year_attribute')}"
 
     def wfs_params(self):
         return dict(service='WFS', version=self.wfs_version(), 
