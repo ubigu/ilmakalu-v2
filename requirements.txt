@@ -30,3 +30,4 @@ SQLAlchemy==1.4.37
 tqdm==4.64.0
 urllib3==1.26.8
 OWSLib==0.26.0
+Rtree==1.0.0
