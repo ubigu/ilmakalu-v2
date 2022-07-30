@@ -31,11 +31,12 @@ def building_type_level1_1994(building:str):
         if building in values:
             return key
     
-    # if value was not found in the classification return value error. 
-    raise ValueError("Code not found in 1994 classification, please check data.")
+    # if value was not found in the classification return "Other buildings" 
+    return "N: Muut rakennukset"
 
 if __name__ == "__main__":
     print(building_type_level1_1994('699'))
     print(building_type_level1_1994('011'))
     print(building_type_level1_1994('11'))
-    #print(building_type_1994('1111')) <-- raises value error
+    print(building_type_level1_1994('B'))
+    print(building_type_level1_1994('1111'))
