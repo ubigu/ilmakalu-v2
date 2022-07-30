@@ -1,137 +1,107 @@
 {
-    "A1": [
+    "A1": 
         {
-        "Name": "Erilliset pientalot",
         "Materials_kg": {
             "7000000995": 10,
             "7000000360": 5
         }
-        }
-        ],
-    "A2": [
+        },
+    "A2": 
         {
-        "Name": "Rivi- ja ketjutalot",
+        "Materials_kg": {
+            "7000000995": 50,
+            "7000000360": 5
+            }
+        },
+    "A3":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "B":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 530
+            }
+        },
+    "C":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "D":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "E":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "F":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "G":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "H": 
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "J":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "K":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "L":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "M":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000360": 5
+            }
+        },
+    "N":
+        {
         "Materials_kg": {
             "7000000995": 10,
             "7000000360": 5
             }
         }
-    ],
-    "A3": [
-        {
-        "Name": "Asuinkerrostalot",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "B": [
-        {
-        "Name": "Vapaa-ajan asuinrakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "C": [
-        {
-        "Name": "Liikerakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "D": [
-        {
-        "Name": "Toimistorakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "E": [
-        {
-        "Name": "Liikenteen rakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "F": [
-        {
-        "Name": "Hoitoalan rakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "G": [
-        {
-        "Name": "Kokoontumisrakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "H": [
-        {
-        "Name": "Opetusrakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "J": [
-        {
-        "Name": "Teollisuusrakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "K": [
-        {
-        "Name": "Varastorakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "L": [
-        {
-        "Name": "Palo- ja pelastustoimen rakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "M": [
-        {
-        "Name": "Maatalousrakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ],
-    "N": [
-        {
-        "Name": "Muut rakennukset",
-        "Materials_kg": {
-            "7000000995": 10,
-            "7000000360": 5
-            }
-        }
-    ]
 }
