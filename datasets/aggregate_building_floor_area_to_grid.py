@@ -14,6 +14,10 @@ grid xyind attribute to them via spatial join and
 then finally sums building floor area grouping it 
 by grid cell, building type and fuel and construction year.
 The result is then pushed back to postgres (without geometry).
+
+The final output of this script returns only those grid cells
+which had buildings in their area. Other grid cells inside 
+municipality borders are omitted. 
 '''
 
 # track time for completing the script
@@ -96,12 +100,24 @@ for i in type_list:
     df_bu_grouped.loc[df_bu_grouped.building_type==i, 'co2_emission'] = calc_material_co2(i) * df_bu_grouped['floor_area_sum']
 
 # group by xyind
+df_total_co2 = df_bu_grouped.groupby(['xyind'])['co2_emission'].aggregate('sum').reset_index(name="co2_total")
+
+# add 1 to index so that it won't start from 0
+df_total_co2.index += 1
 
 # get geometry back on or go back and keep it along
+gdf_final = df_grid.merge(df_total_co2, on='xyind', how='left').fillna({'co2_total':0}, downcast='infer')
 
-# push result back to postgis
+# push results back to postgis
 engine = create_engine(cfg._db_connection_url("local_dev"))
 df_bu_grouped.to_sql("grid_with_agg_floor_area",engine, schema="data",if_exists="replace", index_label="id")
+
+gdf_final.to_postgis(
+    con=engine,
+    name="grid_building_co2",
+    schema="data",
+    if_exists='replace',
+)
 
 # set id field as identity in postgres
 with engine.connect() as con_pk:
