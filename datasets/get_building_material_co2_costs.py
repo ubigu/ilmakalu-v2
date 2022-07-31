@@ -82,9 +82,9 @@ for i in range(len(response_json["Resources"])):
 # initialize postgres connection
 engine = create_engine(cfg._db_connection_url("local_dev"))
 
-# create table in postgres for materials
+# create table in postgres for materials gwp
 create_materials_table =''' 
-            CREATE TABLE data.co2data_building_materials(
+            CREATE TABLE data.building_materials_gwp(
             resourceid BIGINT PRIMARY KEY,
             name TEXT,
             gwp_conservative DECIMAL(10,2),
@@ -100,18 +100,18 @@ create_materials_table ='''
 
 try:
     with engine.connect() as con:
-        con.execute('''DROP TABLE IF EXISTS data.co2data_building_materials''')
+        con.execute('''DROP TABLE IF EXISTS data.building_materials_gwp''')
 except:
-        raise RuntimeError("Couldn't execute DROP TABLE for materials")
+        raise RuntimeError("Couldn't execute DROP TABLE for building materials gwp")
 
 try:
     with engine.connect() as con:
         con.execute(create_materials_table)
 except:
-        raise RuntimeError("Couldn't create the table for materials")
+        raise RuntimeError("Couldn't create the table for building materials gwp")
 
 # push materials from dictionary to the table
-insert_into_materials = ("""INSERT INTO data.co2data_building_materials(resourceid, name, gwp_conservative, gwp_typical,waste_factor,service_life,conversion_value,eols_reuse,eols_recycled,eols_energy,eols_final) 
+insert_into_materials = ("""INSERT INTO data.building_materials_gwp(resourceid, name, gwp_conservative, gwp_typical,waste_factor,service_life,conversion_value,eols_reuse,eols_recycled,eols_energy,eols_final) 
     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""")
 
 for key, values in materials.items():
