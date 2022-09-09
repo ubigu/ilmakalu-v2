@@ -26,8 +26,10 @@ response = session.post(url)
 response_json = json.loads(response.content.decode('utf-8-sig'))
 
 # dump json to file for inspection if needed
-#with open('data.json', 'w', encoding='utf-8') as f:
-#    json.dump(response_json, f, ensure_ascii=False, indent=4)
+'''
+with open('data.json', 'w', encoding='utf-8') as f:
+    json.dump(response_json, f, ensure_ascii=False, indent=4)
+'''
 
 # Loop json and catch materials
 materials = {}
@@ -80,7 +82,7 @@ for i in range(len(response_json["Resources"])):
             materials[key].append(eols_final)
 
 # initialize postgres connection
-engine = create_engine(cfg._db_connection_url("local_dev"))
+pg_connection = create_engine(cfg._db_connection_url())
 
 # create table in postgres for materials gwp
 create_materials_table =''' 
@@ -99,13 +101,13 @@ create_materials_table ='''
             )'''
 
 try:
-    with engine.connect() as con:
+    with pg_connection.connect() as con:
         con.execute('''DROP TABLE IF EXISTS data.building_materials_gwp''')
 except:
         raise RuntimeError("Couldn't execute DROP TABLE for building materials gwp")
 
 try:
-    with engine.connect() as con:
+    with pg_connection.connect() as con:
         con.execute(create_materials_table)
 except:
         raise RuntimeError("Couldn't create the table for building materials gwp")
@@ -115,5 +117,5 @@ insert_into_materials = ("""INSERT INTO data.building_materials_gwp(resourceid, 
     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""")
 
 for key, values in materials.items():
-    with engine.connect() as con:
+    with pg_connection.connect() as con:
         con.execute(insert_into_materials, (key,values[0],values[1],values[2],values[3],values[4],values[5],values[6],values[7],values[8],values[9]))
