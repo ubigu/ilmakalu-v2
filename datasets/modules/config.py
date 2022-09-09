@@ -2,10 +2,10 @@ from pathlib import Path
 import yaml
 
 class Config:
-    def __init__(self, db_config : str = "local_dev"):
+    def __init__(self):
         self.read_config()
-        self._db_url = self._db_connection_url(db_config)
-        self._db_connstring = self._db_connection_string(db_config)
+        self._db_url = self._db_connection_url()
+        self._db_connstring = self._db_connection_string()
 
     def read_config(self):
         filename = Path(__file__).parent.parent / "config" / 'config.yaml'
@@ -29,14 +29,17 @@ class Config:
 
 
     # Postgres methods
+    def chosen_database(self):
+        return self._cfg.get("chosen_database")
+
     def db_url(self):
         return self._db_url
 
     def db_conn_string(self):
         return self._db_connstring
 
-    def _db_connection_url(self, db_config) -> str:
-        db_details = self._cfg.get("database").get(db_config)
+    def _db_connection_url(self) -> str:
+        db_details = self._cfg.get("database").get(self.chosen_database())
         return "postgresql://{}:{}@{}:{}/{}".format(
             db_details.get("user"),
             db_details.get("pass"),
@@ -45,8 +48,8 @@ class Config:
             db_details.get("database")
             )
 
-    def _db_connection_string(self, db_config):
-        db_details = self._cfg.get("database").get(db_config)
+    def _db_connection_string(self):
+        db_details = self._cfg.get("database").get(self.chosen_database())
         return "host='{host}' port='{port}' dbname='{dbname}' user='{user}' password='{password}'".format(
             host=db_details.get("host"),
             port=db_details.get("port"),
@@ -99,3 +102,7 @@ class Config:
 
     def num_nearest_centers(self) -> int:
         return self._cfg.get("target").get("num_nearst_centers")
+
+if __name__ == "__main__":
+    cfg = Config()
+    print(cfg.chosen_database())

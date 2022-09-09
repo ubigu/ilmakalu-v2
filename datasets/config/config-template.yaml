@@ -15,6 +15,8 @@ database:
     pass: <password>
     database: <database>
 
+chosen_database: <one can write several database connections to the above section, so state the one you want to use in scripts here> 
+
 wfs:
   url: <WFS Service URL>
   version: <WFS version>
