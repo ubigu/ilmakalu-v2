@@ -6,6 +6,7 @@ from modules.config import Config
 import matplotlib.pyplot as plt
 from shapely.geometry.polygon import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
+from collections import Counter
 
 '''
 This script gets buildings from WFS interface, does some quality checks
@@ -18,8 +19,9 @@ https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-pos
 
 '''
 
-# Create config object for database
+# create config object for database and a connection
 cfg = Config()
+pg_connection = create_engine(cfg._db_connection_url())
 
 # Setup WFS service
 url = cfg.wfs_url()
@@ -32,76 +34,55 @@ params = cfg.wfs_params()
 q = Request('GET', url, params=params).prepare().url
 
 # read data from URL into a geodataframe
-data = gpd.read_file(q, driver='GML')
+original_data = gpd.read_file(q, driver='GML')
 
 # take a copy of the geodataframe with only wanted columns
-data_limited = data[[cfg.floor_area_attribute(), cfg.fuel_attribute(), cfg.building_code_attribute(), cfg.year_attribute(), "geometry"]]
+data = original_data[[cfg.floor_area_attribute(), cfg.fuel_attribute(), cfg.building_code_attribute(), cfg.year_attribute(), "geometry"]]
 
 # rename columns
-data_limited = data_limited.rename(columns={cfg.year_attribute():"year",cfg.building_code_attribute():"building_type",cfg.fuel_attribute():"fuel",cfg.floor_area_attribute():"floor_area"})
+data = data.rename(columns={cfg.year_attribute():"year",cfg.building_code_attribute():"building_type",cfg.fuel_attribute():"fuel",cfg.floor_area_attribute():"floor_area"})
 
 # In the case of Espoo, construction year is announced in DD.MM.YYYY format --> transform to Int64
-#year = cfg.year_attribute()
-#data_limited[year] = data_limited[year].str[-4:].astype('Int64')
-data_limited['year'] = data_limited['year'].str[-4:].astype('Int64')
+data['year'] = data['year'].str[-4:].astype('Int64')
 
 # In the case of Espoo, building type code is integer --> transform to text
-#typecode = cfg.building_code_attribute()
-#data_limited[typecode] = data_limited[typecode].apply(str)
-#print(data_limited.dtypes)
-data_limited['building_type'] = data_limited['building_type'].apply(str)
+data['building_type'] = data['building_type'].apply(str)
 
 # Go through the geodataframe and check how what geometry types are present and how many of them exist
-geom_counts = {'Polygon':0, 'MultiPolygon':0, 'LineString':0, 'MultiLineString':0, 'Point': 0, 'MultiPoint':0, 'Empty': 0, 'Missing':0}
-
-for index, row in data_limited.iterrows( ):
-    if row.geometry.geom_type == 'Polygon':
-        geom_counts['Polygon'] += 1
-    elif row.geometry.geom_type == 'MultiPolygon':
-        geom_counts['MultiPolygon'] += 1
-    elif row.geometry.geom_type == 'LineString':
-        geom_counts['LineString'] += 1
-    elif row.geometry.geom_type == 'MultiLineString':
-        geom_counts['MultiLineString'] += 1
-    elif row.geometry.geom_type == 'Point':
-        geom_counts['Point'] += 1
-    elif row.geometry.geom_type == 'MultiPoint':
-        geom_counts['MultiPoint'] += 1
-    elif row.geometry.isna():
-        geom_counts['Missing'] += 1
-    elif row.geometry.isempty:
-        geom_counts['Empty'] += 1
-    else:
-        raise ValueError("Geodataframe contains a row which geometry type can't be handled.")
-
+geom_counts = Counter()
+for index, row in data.iterrows():
+    geom_counts[row.geometry.geom_type] += 1
 print(f"Data contains the following geometry types: {geom_counts}")
 
-# In case data contained other geometry types than polygon and multipolygon, do some clean up
-if geom_counts['Point'] > 0:
-    data_limited = data_limited[data_limited.geom_type != 'Point']
-if geom_counts['MultiPoint'] > 0:
-    data_limited = data_limited[data_limited.geom_type != 'MultiPoint']
-if geom_counts['LineString'] > 0:
-    data_limited = data_limited[data_limited.geom_type != 'LineString']
-if geom_counts['MultiLineString'] > 0:
-    data_limited = data_limited[data_limited.geom_type != 'MultiLineString']
+# Check if data is missing geometry field for some rows and warn user if this is the case
+missing_geom_field_count = data["geometry"].isna().sum()
+if missing_geom_field_count > 0:
+    print(f"WARNING: Data included {str(missing_geom_field_count)} rows without geometry column.")
+
+# Go through the geodataframe and check if any rows miss geometry values (but have the column)
+missing_geom_value_count = data["geometry"].is_empty.sum()
+if missing_geom_value_count > 0:
+    print(f"WARNING: Data included {str(missing_geom_value_count)} rows without geometry value.")
 
 # In case data contains polygons, force them to multitype
 if geom_counts['Polygon'] > 0:
-    data_limited["geometry"] = [MultiPolygon([feature]) if isinstance(feature, Polygon) else feature for feature in data_limited["geometry"]]
+    data["geometry"] = [MultiPolygon([feature]) if isinstance(feature, Polygon) else feature for feature in data["geometry"]]
+
+# Make sure that data doesn't contain any points or lines
+data = data[data.geom_type == 'MultiPolygon']
 
 # Create database engine and push geodataframe to Postgres as a PostGIS table
-engine = create_engine(cfg._db_connection_url("local_dev"))
 
-data_limited.to_postgis(
-    con=engine,
+
+data.to_postgis(
+    con=pg_connection,
     name="buildings",
     schema="data",
     if_exists='replace',
 )
 
 # add identity field to the table
-with engine.connect() as con_pk:
+with pg_connection.connect() as con_pk:
     con_pk.execute('ALTER TABLE data.buildings ADD COLUMN id int GENERATED BY DEFAULT AS IDENTITY')
 
 '''
