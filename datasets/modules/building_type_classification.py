@@ -1,20 +1,21 @@
 rakennusluokitus_1994 = {
-                        "A1":['011', '012','013'],
-                        "A2": ['021','022'],
-                        "A3": ['032', '039'],
-                        "B":['041'],
-                        "C":['111','112','119','121','123','124','129', '131','139','141'],
-                        "D":['151'],
-                        "E":['161','162','163','164','169'],
-                        "F":['211','213','214','215','219','221','222','223','229','231','239','241'],
-                        "G":['311','312', '322','323','324', '331', '341','342','349', '351','352','353','354','359', '369'],
-                        "H":['511', '521', '531','532', '541','549'],
-                        "J":['611','613','691','692','699'],
-                        "K":['711','712','719'],
-                        "L":['721','722','729'],
-                        "M":['811','819','891','892','893','899'],
-                        "N":['931','941','999']
+                        "011":"A1","012":"A2","013":"A3",
+                        "021":"A2","022":"A2",
+                        "032":"A3","039":"A3",
+                        "041":"B",
+                        "111":"C","112":"C","119":"C","121":"C","123":"C","124":"C","129":"C","131":"C", "139":"C","139":"C","141":"C",
+                        "151":"D",
+                        "161":"E","162":"E","163":"E","164":"E","169":"E",
+                        "211":"F","213":"F","214":"F","215":"F","219":"F","221":"F","222":"F","223":"F","229":"F","231":"F","239":"F","241":"F",
+                        "311":"G","312":"G","322":"G","323":"G","324":"G","331":"G","341":"G","342":"G","349":"G","351":"G","352":"G","353":"G","354":"G","359":"G","369":"G",
+                        "511":"H","521":"H","531":"H","532":"H","541":"H","549":"H",
+                        "611":"J","613":"J","691":"J","692":"J","699":"J",
+                        "711":"K","712":"K","719":"K",
+                        "721":"L","722":"L","729":"L",
+                        "811":"M","819":"M","891":"M","892":"M","893":"M","899":"M",
+                        "931":"N","941":"N","999":"N"
                          }
+
                     
 def building_type_level1_1994(building:str):
 
@@ -22,17 +23,13 @@ def building_type_level1_1994(building:str):
     if type(building) != str:
         raise ValueError("Parameter given is not a string, please check data.")
 
-    # make given parameter's length to three if a leading zero has been omitted before
+    # add a leading zero if it it's omitted
     if len(building) == 2:
         building = '0'+building
 
-    # loop through 1994 classification data structure
-    for key, values in rakennusluokitus_1994.items():
-        if building in values:
-            return key
+    # return matching value from the dictionary above. If no matching key is found, return "N" (other building)
+    return rakennusluokitus_1994.get(building,"N")
     
-    # if value was not found in the classification return "Other buildings" 
-    return "N"
 
 if __name__ == "__main__":
     print(building_type_level1_1994('699'))
