@@ -16,24 +16,50 @@ rakennusluokitus_1994 = {
                         "931":"N","941":"N","999":"N"
                          }
 
+rakennusluokitus_2018 = {
+                        "0110":"011","0111":"011","0112":"011",
+                        "0120":"012","0121":"012",
+                        "0130":"013",
+                        "0140":"014",
+                        "0210":"02", "0211":"02",
+                        "0310":"03","0311":"03","0320":"03","0322":"03","0329":"03","0330":"03",
+                        "0400":"04",
+                        "0510":"05","0511":"05","0512":"05","0513":"05","0514":"05","0520":"05","0521":"05","0590":"05",
+                        "0610":"06","0611":"06","0612":"06","0613":"06","0614":"06","0619":"06","0620":"06","0621":"06","0630":"06",
+                        "0710":"07","0711":"07","0712":"07","0713":"07","0714":"07","0720":"07","0730":"07","0731":"07","0739":"07","0740":"07","0741":"07","0742":"07","0743":"07","0744":"07","0749":"07","0790":"07",
+                        "0810":"08","0820":"08","0830":"08","0840":"08","0841":"08","0890":"08","0891":"08",
+                        "0910":"09","0911":"09","0912":"09","0919":"09","0920":"09","0930":"09","0939":"09",
+                        "1010":"10","1011":"10","1090":"10","1091":"10",
+                        "1110":"11","1120":"11","1130":"11",
+                        "1210":"12","1211":"12","1212":"12","1213":"12","1214":"12","1215":"12",
+                        "1310":"13","1311":"13","1319":"13",
+                        "1410":"14","1411":"14","1412":"14","1413":"14","1414":"14","1415":"14","1416":"14","1419":"14","1490":"14","1491":"14","1492":"14","1493":"14","1499":"14",
+                        "1910":"19","1911":"19","1912":"19","1919":"19"
+                         }
                     
-def building_type_level1_1994(building:str):
-
-    # check if given parameter is a string. If not return a value error. 
-    if type(building) != str:
-        raise ValueError("Parameter given is not a string, please check data.")
-
-    # add a leading zero if it it's omitted
-    if len(building) == 2:
-        building = '0'+building
+def building_type_level1_1994(building_code:int):
 
     # return matching value from the dictionary above. If no matching key is found, return "N" (other building)
-    return rakennusluokitus_1994.get(building,"N")
-    
+    # use zfill to add leading zeros if necessary 
+    return rakennusluokitus_1994.get(str(building_code).zfill(3),"N")
+
+def building_type_level1_2018(building_code:int):
+
+    # return matching value from the dictionary above. If no matching key is found, return "19" (other building)
+    # use zfill to add leading zeros if necessary
+    return rakennusluokitus_2018.get(str(building_code).zfill(4),"19")
 
 if __name__ == "__main__":
-    print(building_type_level1_1994('699'))
-    print(building_type_level1_1994('011'))
-    print(building_type_level1_1994('11'))
-    print(building_type_level1_1994('B'))
-    print(building_type_level1_1994('1111'))
+    print("Testing 1994 classifier:")
+    print(f"699 --> {building_type_level1_1994(699)}")
+    print(f"011 --> {building_type_level1_1994(11)}")
+    print(f"1 --> {building_type_level1_1994(1)}")
+    print(f"'1' --> {building_type_level1_1994('1')}")
+    print(f"1111 --> {building_type_level1_1994(1111)}")
+    print(f"None --> {building_type_level1_1994(None)}")
+    print()
+    print("Testing 2018 classifier:")
+    print(f"0711 --> {building_type_level1_2018(711)}")
+    print(f"4 --> {building_type_level1_2018(4)}")
+    print(f"'9' --> {building_type_level1_1994('9')}")
+    print(f"None --> {building_type_level1_2018(None)}")

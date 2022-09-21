@@ -1,9 +1,9 @@
 import geopandas as gpd
-from pandas import read_sql
+import pandas as pd
 import json
 from sqlalchemy import create_engine
 from modules.config import Config
-from modules.building_type_classification import building_type_level1_1994
+from modules.building_type_classification import building_type_level1_2018
 import time
 
 '''
@@ -26,12 +26,12 @@ start_time = time.time()
 cfg = Config()
 pg_connection = create_engine(cfg._db_connection_url())
 
-# get co2data from posgres (note: no geometry field)
+# get co2data from postgres (note: no geometry field)
 sql_co2data = "SELECT * FROM data.building_materials_gwp"
-df_co2data = read_sql(sql_co2data, pg_connection)
+df_co2data = pd.read_sql(sql_co2data, pg_connection)
 
 # load material map per building type (json)
-with open('datasets/building_type_material_mapping.json') as f:
+with open('datasets/building_type_material_mapping_2018.json') as f:
    data = json.load(f)
 
 # get buildings from postgres
@@ -65,7 +65,7 @@ gdf_buildings_xyind = gdf_buildings_xyind[['floor_area', 'fuel', 'building_type'
 gdf_buildings_xyind['decade'] = (gdf_buildings_xyind['year'] // 10) * 10
 
 # aggregate building types to predefined categories
-gdf_buildings_xyind['building_type'] = [building_type_level1_1994(x) for x in gdf_buildings_xyind['building_type']]
+gdf_buildings_xyind['building_type'] = [building_type_level1_2018(x) for x in gdf_buildings_xyind['building_type']]
 
 # create a new dataframe in which floor area is grouped by grid cell, decade, building type and fuel type
 df_grouped_area_xyind = gdf_buildings_xyind.groupby(['xyind', 'decade', 'building_type', 'fuel'])['floor_area'].aggregate('sum').reset_index(name="floor_area_sum")

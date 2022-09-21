@@ -1,4 +1,5 @@
 import geopandas as gpd
+import pandas as pd
 from requests import Request
 from owslib.wfs import WebFeatureService
 from sqlalchemy import create_engine
@@ -7,6 +8,7 @@ import matplotlib.pyplot as plt
 from shapely.geometry.polygon import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from collections import Counter
+from datetime import datetime
 
 '''
 This script gets buildings from WFS interface, does some quality checks
@@ -16,7 +18,6 @@ parameters to config.yaml under wfs section before running.
 Articles referenced here:
 https://gis.stackexchange.com/questions/299567/reading-data-to-geopandas-using-wfs
 https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-postgis-table
-
 '''
 
 # create config object for database and a connection
@@ -42,11 +43,12 @@ data = original_data[[cfg.floor_area_attribute(), cfg.fuel_attribute(), cfg.buil
 # rename columns
 data = data.rename(columns={cfg.year_attribute():"year",cfg.building_code_attribute():"building_type",cfg.fuel_attribute():"fuel",cfg.floor_area_attribute():"floor_area"})
 
-# In the case of Espoo, construction year is announced in DD.MM.YYYY format --> transform to Int64
-data['year'] = data['year'].str[-4:].astype('Int64')
+# in Espoo construction year is announced in DD.MM.YYYY format
+# pandas native datetime datatype has nanosecond resolution so we use python's datetime in conversion. Null values are left as is.
+data["year"] = data["year"].apply(lambda x : datetime.strptime(x, "%d.%m.%Y").year if pd.notnull(x) else x).astype('Int64')
 
-# In the case of Espoo, building type code is integer --> transform to text
-data['building_type'] = data['building_type'].apply(str)
+# Due to possible null values pandas might have converted building type column to float64. Convert it back to Int64.
+data['building_type'] = data['building_type'].astype("Int64")
 
 # Go through the geodataframe and check how what geometry types are present and how many of them exist
 geom_counts = Counter()
@@ -72,8 +74,6 @@ if geom_counts['Polygon'] > 0:
 data = data[data.geom_type == 'MultiPolygon']
 
 # Create database engine and push geodataframe to Postgres as a PostGIS table
-
-
 data.to_postgis(
     con=pg_connection,
     name="buildings",
