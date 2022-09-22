@@ -887,8 +887,8 @@ UNNEST(CASE
 WHEN muu_lammitys IS NULL AND kevyt_oljy IS NULL AND kaasu IS NULL THEN
 	ARRAY['kaukolampo', 'sahko', 'puu', 'maalampo'] 
 WHEN muu_lammitys IS NULL THEN
-	ARRAY['kaukolampo', 'kevyt_oljy', kaasu', 'sahko', 'puu', 'maalampo'] 
-ELSE ARRAY['kaukolampo', 'kevyt_oljy', kaasu', 'sahko', 'puu', 'maalampo', 'muu_lammitys'] END)::varchar AS energiam,
+	ARRAY['kaukolampo', 'kevyt_oljy', 'kaasu', 'sahko', 'puu', 'maalampo'] 
+ELSE ARRAY['kaukolampo', 'kevyt_oljy', 'kaasu', 'sahko', 'puu', 'maalampo', 'muu_lammitys'] END)::varchar AS energiam,
 NULL::int AS rakyht_ala, NULL::int AS asuin_ala, NULL::int AS erpien_ala, NULL::int AS rivita_ala, NULL::int AS askert_ala,
 NULL::int AS liike_ala, NULL::int AS myymal_ala, NULL::int AS majoit_ala, NULL::int AS asla_ala, NULL::int AS ravint_ala, 
 NULL::int AS tsto_ala, NULL::int AS liiken_ala, NULL::int AS hoito_ala, NULL::int AS kokoon_ala, NULL::int AS opetus_ala,
