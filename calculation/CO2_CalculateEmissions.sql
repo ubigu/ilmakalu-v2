@@ -435,7 +435,7 @@ BEGIN
         SUM((SELECT CO2_ElectricityHousehold(g2.mun, calculationYears, calculationScenario, erpien_ala, 'erpien')) +
             (SELECT CO2_ElectricityHousehold(g2.mun, calculationYears, calculationScenario, rivita_ala, 'rivita')) +
             (SELECT CO2_ElectricityHousehold(g2.mun, calculationYears, calculationScenario, askert_ala, 'askert')))
-        AS sahko_kotitaloudet_co2,s
+        AS sahko_kotitaloudet_co2,
         /* Korjausrakentaminen ja saneeraus | Renovations and large-scale overhauls of buildings */
         SUM((SELECT CO2_BuildRenovate(erpien_ala, calculationYears, 'erpien', g2.rakv, calculationScenario)) +
             (SELECT CO2_BuildRenovate(rivita_ala, calculationYears, 'rivita', g2.rakv, calculationScenario)) +
