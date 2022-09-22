@@ -5,8 +5,8 @@
 
 file=co2_functions.txt
 
-DBUSER=ilmakalu
-DBPASS=ilmakalu
+DBUSER=docker
+DBPASS=docker
 DBPORT=5435
 DB=ilmakalu
 
