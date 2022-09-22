@@ -36,6 +36,7 @@ DECLARE
     demolitionsExist boolean;
     startYearExists boolean;
     endYearExists boolean;
+    completionYearExists boolean;
     pubtrans_zones int[] default ARRAY[3,12,41, 99911, 99921, 99931, 99941, 99951, 99961, 99901, 99912, 99922, 99932, 99942, 99952, 99962, 99902, 99913, 99923, 99933, 99943, 99953, 99963, 99903];
 BEGIN
 
