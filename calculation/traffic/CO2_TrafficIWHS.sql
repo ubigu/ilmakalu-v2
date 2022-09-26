@@ -61,7 +61,7 @@ BEGIN
         SELECT kmuoto,
             array[kvoima_bensiini, kvoima_etanoli, kvoima_diesel, kvoima_kaasu, kvoima_phev_b, kvoima_phev_d, kvoima_ev, kvoima_vety, kvoima_muut] as kwhkm
             FROM traffic.power_kwhkm
-                WHERE year = %1$L AND scenario = %2$L AND mun = %3$L AND kmuoto = ANY(%4$L)
+                WHERE year = %1$L AND scenario = %2$L AND kmuoto = ANY(%4$L)
         ),
         fossils as (
             -- Käyttövoimien fossiiliset osuudet [ei yksikköä].
@@ -113,7 +113,6 @@ BEGIN
             ON d.kmuoto = f.kmuoto
             AND d.year = f.year
             AND d.scenario = f.scenario
-            AND d.mun::int = f.mun::int
             WHERE f.kmuoto = ANY(%4$L)
             AND f.year = %1$L
             AND f.scenario = %2$L)
