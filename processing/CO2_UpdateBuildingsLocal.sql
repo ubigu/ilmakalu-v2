@@ -897,7 +897,7 @@ from rak r
 LEFT JOIN 
 (WITH
 	kaukolampo AS (SELECT rak.xyind, rak.rakv FROM rak WHERE rak.energiam = 'kaukolampo'),
-	kevyt_oljy AS (SELECT rak.xyind, rak.rakv FROM rak WHERE rak.energiam = IN ('kevyt_oljy', 'raskas_oljy', 'turve', 'hiili'),
+	kevyt_oljy AS (SELECT rak.xyind, rak.rakv FROM rak WHERE rak.energiam IN ('kevyt_oljy', 'raskas_oljy', 'turve', 'hiili')),
 	kaasu AS (SELECT rak.xyind, rak.rakv FROM rak WHERE rak.energiam = 'kaasu'),
 	sahko AS (SELECT rak.xyind, rak.rakv FROM rak WHERE rak.energiam = 'sahko'),
 	puu AS (SELECT rak.xyind, rak.rakv FROM rak WHERE rak.energiam = 'puu'),
