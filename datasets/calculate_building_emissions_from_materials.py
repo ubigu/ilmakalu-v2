@@ -30,6 +30,10 @@ pg_connection = create_engine(cfg._db_connection_url())
 sql_co2data = "SELECT * FROM data.building_materials_gwp"
 co2data = pd.read_sql(sql_co2data, pg_connection)
 
+# load material map per building type
+with open('datasets/building_type_material_mapping_2018.json') as f:
+    building_type_material_map = json.load(f)
+
 # get buildings from postgres
 sql_buildings = "SELECT * FROM data.buildings"
 building_geom_col = 'geometry'
@@ -73,15 +77,10 @@ floor_area_per_grid_cell = buildings_with_grid_cell_id.groupby(['xyind', 'decade
 floor_area_per_grid_cell = floor_area_per_grid_cell.drop(floor_area_per_grid_cell[floor_area_per_grid_cell.floor_area_sum == 0].index)
 
 # function calculating total co2 emission for one square meter in specific building type
-def calc_material_co2(type:str):
-    
-    # load material map per building type
-    with open('datasets/building_type_material_mapping_2018.json') as f:
-        building_type_material_map = json.load(f)
-
+def calc_material_co2(type:str, mapping:dict):
     co2_per_m2 = 0.0
     # loop through json
-    for key, value in building_type_material_map[type]["Materials_kg"].items():
+    for key, value in mapping[type]["Materials_kg"].items():
         gwp_typicalValue = 0.0
         # check if gwp_typical exists. Note that here it is assumed that key is integer in dataframe and string in json file. 
         if co2data.loc[(co2data['resourceid']==int(key)),'gwp_typical'].values.size > 0 :
@@ -94,7 +93,7 @@ unique_building_types_in_data = floor_area_per_grid_cell.building_type.unique()
 
 # loop through existing building types and for each one calculate total co2 emission per square meter
 for i in unique_building_types_in_data:
-    floor_area_per_grid_cell.loc[floor_area_per_grid_cell.building_type==i, 'co2_emission'] = calc_material_co2(i) * floor_area_per_grid_cell['floor_area_sum']
+    floor_area_per_grid_cell.loc[floor_area_per_grid_cell.building_type==i, 'co2_emission'] = calc_material_co2(i,building_type_material_map) * floor_area_per_grid_cell['floor_area_sum']
 
 # group by xyind
 total_co2_for_xyind = floor_area_per_grid_cell.groupby(['xyind'])['co2_emission'].aggregate('sum').reset_index(name="co2_total")
