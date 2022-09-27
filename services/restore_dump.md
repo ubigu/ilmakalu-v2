@@ -14,6 +14,7 @@ PGPASSWORD="<password>" pg_dump -U <user> -h <host> <database> > emissiontest.sq
 Strip unnecessary garbage from dump (cloudsql* users). Run if necessary.
 
 ```
+# Following commands are relative to 'services' -directory
 sh strip_dump.sh
 ```
 
@@ -58,13 +59,7 @@ sh co2_functions_init.sh | sh
 
 # cleanup
 
-In order to clean up, remove database
-
-```sql
-DROP DATABASE ilmakalu;
-```
-
-Remove external volume, in order to force database init on next service start.
+In order to clean up, remove external volume, in order to force database init on next service start.
 Volume removal will not succeed on the first try, but it will point to
 container, which has to be removed first.
 
@@ -79,3 +74,10 @@ docker rm <container id>
 ```
 
 After succesful container removal, volume can be removed.
+
+It is also possible to remove database only, but this is not encouraged, since
+docker-compose will not automatically create database again with correct setup.
+
+```sql
+DROP DATABASE ilmakalu;
+```
