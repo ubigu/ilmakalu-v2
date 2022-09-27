@@ -52,7 +52,7 @@ BEGIN
             -- Kiinteistöjen sähkönkulutuksen muutos rakennusten rakennusvuosikymmenittäin
             -- Change of property electricity consumption according to year of building
         
-            SELECT CASE WHEN %4$L::int > 2010 THEN 1 ELSE %4$I END as change
+            SELECT %4$I as change
                 FROM built.electricity_property_change
                 WHERE scenario = %2$L AND year = %1$L
                 LIMIT 1
@@ -73,7 +73,7 @@ BEGIN
     , calculationYear,
     calculationScenario,
     buildingType,
-    buildingYear,
+    CASE WHEN buildingYear > 2010 THEN 2010 ELSE buildingYear end,
     floorSpace
     ) INTO result_gco2;
     

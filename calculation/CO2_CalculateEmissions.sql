@@ -637,7 +637,7 @@ BEGIN
                 (SELECT CO2_TrafficPersonal(g.mun, g.employ, calculationYears, 'hlauto', centdist, g.zone, calculationScenario, 'employ', includeLongDistance, includeBusinessTravel)) +
                 (SELECT CO2_TrafficPersonal(g.mun, g.employ, calculationYears, 'muu', centdist, g.zone, calculationScenario, 'employ', includeLongDistance, includeBusinessTravel)))
             AS liikenne_tp_co2,
-            SUM((SELECT CO2_ElectricityHousehold(calculationYears, calculationScenario, g.pop, NULL)))
+            SUM((SELECT CO2_ElectricityHousehold(g.mun, calculationYears, calculationScenario, g.pop, NULL)))
             AS sahko_kotitaloudet_co2_as
             FROM grid g
                 WHERE (g.pop IS NOT NULL AND g.pop > 0)

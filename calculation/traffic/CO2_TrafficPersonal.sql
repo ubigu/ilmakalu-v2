@@ -166,7 +166,6 @@ END IF;
             FROM traffic.power_kwhkm
                 WHERE year = %1$L
                     AND scenario = %2$L::varchar
-                    AND mun::int = %3$L::int
                     AND kmuoto = %4$L::varchar
         LIMIT 1
     ), 

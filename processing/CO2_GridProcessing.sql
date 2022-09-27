@@ -70,17 +70,19 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             AND grid.mun :: int = employ.kunta :: int
         LEFT JOIN grid_globals.clc clc 
             ON grid.xyind :: varchar = clc.xyind :: varchar
-        WHERE 
-            grid.mun = ANY(%1$L) AND
-        CASE WHEN %1$I IS NOT NULL THEN ST_Intersects(
-            st_centroid(grid.geom),
-            (SELECT st_union(bounds.geom) FROM %2$I bounds)
-        ) ELSE TRUE END;'
-    , municipalities, aoi);
+        WHERE grid.mun = ANY(%1$L);'
+    , municipalities);
     CREATE INDEX ON grid USING GIST (geom);
     CREATE INDEX ON grid (xyind);
     CREATE INDEX ON grid (zone);
     CREATE INDEX ON grid (mun);
+
+    IF aoi IS NOT NULL THEN
+        EXECUTE format(
+            'DELETE FROM grid
+                WHERE NOT ST_Intersects(st_centroid(grid.geom),
+                (SELECT st_union(bounds.geom) FROM %1$I bounds', aoi);
+    END IF;
 
 END IF;
 
@@ -89,7 +91,7 @@ IF targetYear IS NOT NULL AND plan_areas IS NOT NULL THEN
     EXECUTE format('CREATE TEMP TABLE IF NOT EXISTS kt AS SELECT * FROM %s', plan_areas);
         ALTER TABLE kt
             ALTER COLUMN geom TYPE geometry(MultiPolygon, 3067)
-                USING ST_force2d(ST_Transform(geom, 3067));
+                USING ST_Multi(ST_force2d(ST_Transform(geom, 3067)));
         /* Calculate plan surface areas */
         ALTER TABLE kt
             ADD COLUMN IF NOT EXISTS area_ha real default 0;
@@ -161,7 +163,7 @@ IF targetYear IS NOT NULL AND plan_areas IS NOT NULL THEN
                 /* DUMMY for default demolition rate */
                 UPDATE grid SET k_poistuma = 999999;
             END IF;
-    ELSE IF completionYearExists
+    ELSIF completionYearExists THEN
       UPDATE grid
         SET k_ap_ala = (
             SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
@@ -203,18 +205,20 @@ IF targetYear IS NOT NULL AND plan_areas IS NOT NULL THEN
                 WHERE ST_Intersects(grid.geom, kt.geom)
                 AND baseYear <= calculationYear
         );
-            IF demolitionsExist THEN
-                UPDATE grid SET k_poistuma = (
-                    SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
-                        (kt.area_ha * 10000) *
-                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
-                    FROM kt
-                        WHERE ST_Intersects(grid.geom, kt.geom)
-                        AND baseYear <= calculationYear
-                );
-            ELSE
-                UPDATE grid SET k_poistuma = 999999;
-            END IF;
+
+        IF demolitionsExist THEN
+            UPDATE grid SET k_poistuma = (
+                SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
+                    (kt.area_ha * 10000) *
+                    (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
+                FROM kt
+                    WHERE ST_Intersects(grid.geom, kt.geom)
+                    AND baseYear <= calculationYear
+            );
+        ELSE
+            UPDATE grid SET k_poistuma = 999999;
+        END IF;
+        
     ELSE 
         UPDATE grid
         SET k_ap_ala = (
