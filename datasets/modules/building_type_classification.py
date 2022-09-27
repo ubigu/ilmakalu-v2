@@ -38,15 +38,9 @@ rakennusluokitus_2018 = {
                          }
                     
 def building_type_level1_1994(building_code:int):
-
-    # return matching value from the dictionary above. If no matching key is found, return "N" (other building)
-    # use zfill to add leading zeros if necessary 
     return rakennusluokitus_1994.get(str(building_code).zfill(3),"N")
 
 def building_type_level1_2018(building_code:int):
-
-    # return matching value from the dictionary above. If no matching key is found, return "19" (other building)
-    # use zfill to add leading zeros if necessary
     return rakennusluokitus_2018.get(str(building_code).zfill(4),"19")
 
 if __name__ == "__main__":
@@ -61,5 +55,6 @@ if __name__ == "__main__":
     print("Testing 2018 classifier:")
     print(f"0711 --> {building_type_level1_2018(711)}")
     print(f"4 --> {building_type_level1_2018(4)}")
-    print(f"'9' --> {building_type_level1_1994('9')}")
+    print(f"'9' --> {building_type_level1_2018('9')}")
     print(f"None --> {building_type_level1_2018(None)}")
+    print(f"110 --> {building_type_level1_2018(110)}")
