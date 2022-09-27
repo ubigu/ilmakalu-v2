@@ -30,10 +30,6 @@ pg_connection = create_engine(cfg._db_connection_url())
 sql_co2data = "SELECT * FROM data.building_materials_gwp"
 co2data = pd.read_sql(sql_co2data, pg_connection)
 
-# load material map per building type (json)
-with open('datasets/building_type_material_mapping_2018.json') as f:
-   building_type_material_map = json.load(f)
-
 # get buildings from postgres
 sql_buildings = "SELECT * FROM data.buildings"
 building_geom_col = 'geometry'
@@ -78,6 +74,11 @@ floor_area_per_grid_cell = floor_area_per_grid_cell.drop(floor_area_per_grid_cel
 
 # function calculating total co2 emission for one square meter in specific building type
 def calc_material_co2(type:str):
+    
+    # load material map per building type
+    with open('datasets/building_type_material_mapping_2018.json') as f:
+        building_type_material_map = json.load(f)
+
     co2_per_m2 = 0.0
     # loop through json
     for key, value in building_type_material_map[type]["Materials_kg"].items():
