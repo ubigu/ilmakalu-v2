@@ -3,7 +3,7 @@ import pandas as pd
 import json
 from sqlalchemy import create_engine
 from modules.config import Config
-from modules.building_type_classification import building_type_level1_2018
+from modules.building_type_classification import building_type_level1_2018, building_type_level1_1994
 import time
 
 '''
@@ -28,87 +28,86 @@ pg_connection = create_engine(cfg._db_connection_url())
 
 # get co2data from postgres (note: no geometry field)
 sql_co2data = "SELECT * FROM data.building_materials_gwp"
-df_co2data = pd.read_sql(sql_co2data, pg_connection)
+co2data = pd.read_sql(sql_co2data, pg_connection)
 
 # load material map per building type (json)
 with open('datasets/building_type_material_mapping_2018.json') as f:
-   data = json.load(f)
+   building_type_material_map = json.load(f)
 
 # get buildings from postgres
 sql_buildings = "SELECT * FROM data.buildings"
 building_geom_col = 'geometry'
-gdf_buildings = gpd.read_postgis(sql_buildings, pg_connection, geom_col=building_geom_col)  
+buildings = gpd.read_postgis(sql_buildings, pg_connection, geom_col=building_geom_col)
+
+# building type gets converted to float64, convert it back to nullable integer
+buildings['building_type'] = buildings['building_type'].astype("Int64")
 
 # transform building geometries to centroid
-gdf_buildings["geometry"] = gdf_buildings["geometry"].centroid
+buildings["geometry"] = buildings["geometry"].centroid
 
 # get grid from postgres
 sql_grid = "SELECT * FROM data.fi_grid_250m"
 grid_geom_column = 'wkb_geometry'
-gdf_grid = gpd.read_postgis(sql_grid, pg_connection, geom_col=grid_geom_column)
+grid = gpd.read_postgis(sql_grid, pg_connection, geom_col=grid_geom_column)
 
 # limit grid to buildings extent using coordinate based index (reference: https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.cx.html)
-bbox = gdf_buildings.total_bounds
-gdf_grid = gdf_grid.cx[bbox[0]:bbox[2], bbox[1]:bbox[3]]
+bbox = buildings.total_bounds
+grid = grid.cx[bbox[0]:bbox[2], bbox[1]:bbox[3]]
 
 # before spatial join check that geodataframes are both in 3067
-if not gdf_buildings.crs == "EPSG:3067" and gdf_grid.crs == "EPSG:3067":
-    raise TypeError(f"One or both of buildings and grid was not in EPSG:3067. Buildings are in {gdf_buildings.crs} and grid in {gdf_grid.crs}.")
+if not buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067":
+    raise TypeError(f"One or both of buildings and grid was not in EPSG:3067. Buildings are in {buildings.crs} and grid in {grid.crs}.")
 
 # spatial join xyind from grid to building centroids
-gdf_buildings_xyind = gdf_buildings.sjoin(gdf_grid, how="left", predicate="within")
+buildings_with_grid_cell_id= buildings.sjoin(grid, how="left", predicate="within")
 
 # drop columns which are not needed
-gdf_buildings_xyind = gdf_buildings_xyind[['floor_area', 'fuel', 'building_type', 'year', 'geometry', 'xyind']]
+buildings_with_grid_cell_id= buildings_with_grid_cell_id[['floor_area', 'fuel', 'building_type', 'year', 'geometry', 'xyind']]
 
 # aggregate years to decades
-gdf_buildings_xyind['decade'] = (gdf_buildings_xyind['year'] // 10) * 10
+buildings_with_grid_cell_id['decade'] = (buildings_with_grid_cell_id['year'] // 10) * 10
 
 # aggregate building types to predefined categories
-gdf_buildings_xyind['building_type'] = [building_type_level1_2018(x) for x in gdf_buildings_xyind['building_type']]
+buildings_with_grid_cell_id['building_type'] = [building_type_level1_2018(x) for x in buildings_with_grid_cell_id['building_type']]
 
 # create a new dataframe in which floor area is grouped by grid cell, decade, building type and fuel type
-df_grouped_area_xyind = gdf_buildings_xyind.groupby(['xyind', 'decade', 'building_type', 'fuel'])['floor_area'].aggregate('sum').reset_index(name="floor_area_sum")
+floor_area_per_grid_cell = buildings_with_grid_cell_id.groupby(['xyind', 'decade', 'building_type', 'fuel'])['floor_area'].aggregate('sum').reset_index(name="floor_area_sum")
 
-# In some cases the original data might have had 0 values for floor area so we delete them here
-df_grouped_area_xyind = df_grouped_area_xyind.drop(df_grouped_area_xyind[df_grouped_area_xyind.floor_area_sum == 0].index)
+# Delete rows that have 0 in floor area column
+floor_area_per_grid_cell = floor_area_per_grid_cell.drop(floor_area_per_grid_cell[floor_area_per_grid_cell.floor_area_sum == 0].index)
 
 # function calculating total co2 emission for one square meter in specific building type
 def calc_material_co2(type:str):
-    co2_emission_m2 = 0.0
+    co2_per_m2 = 0.0
     # loop through json
-    for key, value in data[type]["Materials_kg"].items():
-        gwp_typicalValue =0.0
-        # check if gwp_typical exists. Note that here is assumed that key is integer in dataframe and string in json file. 
-        if df_co2data.loc[(df_co2data['resourceid']==int(key)),'gwp_typical'].values.size > 0 :
-            gwp_typicalValue=df_co2data.loc[(df_co2data['resourceid']==int(key)),'gwp_typical'].values[0]
-        co2_emission_m2 += value * gwp_typicalValue
-    return co2_emission_m2 
+    for key, value in building_type_material_map[type]["Materials_kg"].items():
+        gwp_typicalValue = 0.0
+        # check if gwp_typical exists. Note that here it is assumed that key is integer in dataframe and string in json file. 
+        if co2data.loc[(co2data['resourceid']==int(key)),'gwp_typical'].values.size > 0 :
+            gwp_typicalValue=co2data.loc[(co2data['resourceid']==int(key)),'gwp_typical'].values[0]
+        co2_per_m2 += value * gwp_typicalValue
+    return co2_per_m2 
 
-# get unique building types
-type_list = df_grouped_area_xyind.building_type.unique()
+# get unique building types from the data
+unique_building_types_in_data = floor_area_per_grid_cell.building_type.unique()
 
-# loop through the type list and for all rows in each type calculate co2 emissions
-for i in type_list:
-    df_grouped_area_xyind.loc[df_grouped_area_xyind.building_type==i, 'co2_emission'] = calc_material_co2(i) * df_grouped_area_xyind['floor_area_sum']
+# loop through existing building types and for each one calculate total co2 emission per square meter
+for i in unique_building_types_in_data:
+    floor_area_per_grid_cell.loc[floor_area_per_grid_cell.building_type==i, 'co2_emission'] = calc_material_co2(i) * floor_area_per_grid_cell['floor_area_sum']
 
 # group by xyind
-df_total_co2 = df_grouped_area_xyind.groupby(['xyind'])['co2_emission'].aggregate('sum').reset_index(name="co2_total")
+total_co2_for_xyind = floor_area_per_grid_cell.groupby(['xyind'])['co2_emission'].aggregate('sum').reset_index(name="co2_total")
 
 # join summed emissions back to grid, set non-paired cells to 0 value
-gdf_final = gdf_grid.merge(df_total_co2, on='xyind', how='left').fillna({'co2_total':0}, downcast='infer')
+final = grid.merge(total_co2_for_xyind, on='xyind', how='left').fillna({'co2_total':0}, downcast='infer')
 
 # uncomment below if you want to send dataframe with aggregated building data by xyind to posgres for inspection
-'''
-engine = create_engine(cfg._db_connection_url("local_dev"))
-df_grouped_area_xyind.to_sql("grid_with_aggregated_building_data",engine, schema="data",if_exists="replace", index_label="id")
-
-with engine.connect() as con:
+floor_area_per_grid_cell.to_sql("grid_with_aggregated_building_data",pg_connection, schema="data",if_exists="replace", index_label="id")
+with pg_connection.connect() as con:
     con.execute('ALTER TABLE data.grid_with_aggregated_building_data ALTER "id" SET NOT NULL, ALTER "id" ADD GENERATED ALWAYS AS IDENTITY')
-'''
 
 # send final result to postgres
-gdf_final.to_postgis(
+final.to_postgis(
     con=pg_connection,
     name="grid_with_building_materials_emission",
     schema="data",
