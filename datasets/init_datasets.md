@@ -9,6 +9,7 @@ TODO: _schema decisions might need redesign_
 ## data
 
 Layers computed during initialization.
+
 ## prepared_data
 
 Intermediate results, obtained when generating actual data layers.
@@ -247,3 +248,55 @@ Configuration is done in Dockerfile.
 If value is too small, then for grid cells too far from road network are
 not assigned a routing result. This will ruin the computation of shortest
 distance to nearest urban center.
+
+# Emission database for building materials and services (CO2-data.fi)
+
+CO2data.fi database, API and webite are a responsibility of Finnish Environment Institute or in short SYKE. The service can be accessed at https://co2data.fi. 
+The website is available in Finnish, Swedish and English, but the data itself is available only in English. The goal of the database is to standardize 
+building lifecycle emission calculations.
+
+The whole database is offered without a charge as a JSON file which can be accessed here: https://co2data.fi/api/co2data_construction.json. 
+
+It is important to note that the database contains four kinds of emission categories. They are stated below. 
+- Emissions from material usage presented as kg of CO2 equivalent per square meter (e.g. floor panel)
+- Emissions from material usage presented as kg of CO2 equivalent per piece (e.g a kitchen sink)
+- Emissions from a processes (e.g. demolition of a building or earthwork) 
+- Scenarios (e.g. biofuels as energy resource vs. fossil fuels as energy resource)
+
+Ilmakalu does not utilize scenarios, but all the other three are used and have identical emphasis. Please note that the data structure can slightly differ between different categories. Below are some important attributes to note:
+
+- **ResourceID**: States a unique identifier for a resource.
+- **ResourceType**: States to what category a resource belongs to (see above)
+- **WasteFactor**: States what proportion of *a material* is gone to waste during utilization. For example a waste factor of 1.05 tells that 5 % of a material goes to waste e.g. during installation so in reality 1.05 of said material is needed.
+- **RefServiceLifeNormal**: States expected service life of *a material*.
+
+**End of Life scenario** section tells what happens to *a material* after its lifecycle has ended. It is stated as follows:
+
+```
+"End of life scenario": {
+    "Reuse": 0,
+    "Recycled": 92,
+    "Energy": 0,
+    "Final": 8,
+    "Hazardous": 0
+}
+```
+
+Where `Reuse` states how much of material is used again as it were, `Recycled` expresses how much of it was recycled, `Energy` states how much of it was used for energy production `Final` states how much of it became waste and `Hazardous` expresses what amount of it become hazardous waste. The value of these five amounts to 100. 
+
+**Conversions** section contains information about amount of *a material* in a different metric than mass (kg) if needed. This can be e.g. volume (m3) or length (m). Conversions are not used by the tool at the moment.
+
+```
+"Conversions": [
+            {
+                "Field": "Volume",
+                "Unit": "m3",
+                "Value": 338
+            }
+        ]
+```
+
+Please note that any estimations of how much any specific material or service is approximately used per a certain building type have not been conducted by SYKE, but rather is a responsibility of a user of this tool. User can specify this in `building_type_material_mapping.json`. Take a look at separate instructions on how to use it from `instructions_for_building_material_mapping.md`.
+
+In case of any unexpected interruptions in service availibility the JSON database, as it were in 09/09/2022, has been saved to the code repository so that it's
+structure at the time could be inspected. 

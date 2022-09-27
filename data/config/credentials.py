@@ -78,5 +78,3 @@ if __name__ == "__main__":
     for cr in c.list_credentials():
         print(cr)
 
-    c.user_credentials('omaisuudenhallinta_local_dev')
-    print(c.postgresql_string())
