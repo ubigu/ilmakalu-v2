@@ -1,9 +1,9 @@
 # intro
 
-
 ## generate dump
 
-See database credentials from a shared secret:
+See database credentials from a shared 1Password secret.
+Create directory if it does not exist.
 
 ```sh
 cd datasets/dump_data
@@ -11,9 +11,11 @@ PGPASSWORD="<password>" pg_dump -U <user> -h <host> <database> > emissiontest.sq
 ```
 ## strip dump
 
-Strip unnecessary garbage from dump (cloudsql* users). Run if necessary.
+Strip unnecessary garbage from dump (cloudsql* users). These are
+present in the dump due to cloud hosting and are unnecessary for
+local deployment. Run strip each time when new dump is taken.
 
-```
+```sh
 # Following commands are relative to 'services' -directory
 sh strip_dump.sh
 ```
@@ -25,23 +27,29 @@ docker-compose up database
 
 ## users
 
-Create necessary users or roles, giving all users same password.
+Create necessary users or roles, giving all users the same password.
+Currently we create all users that are present (and not stripped) in the dump.
+We do not care how many, and what particular users there are.
 
-```
-sh create_users_from_dump.sh abcdef | psql -U docker -h localhost -p 5435 postgres
+For deployment in actual target environment, user initialization has to
+be handled differently. Docker database init functionality is a good alternative.
+
+```sh
+sh create_users_from_dump.sh <password> | psql -U <superuser> -h localhost -p <port> postgres
 ```
 
 ## tables
 
 Create all necessary tables from stripped dump.
 
-```
-psql -U docker -h localhost -p 5435 ilmakalu -f ../datasets/dump_data/emissiontest_stripped.sql
+```sh
+psql -U <superuser> -h localhost -p <port> <ilmakalu_db> -f ../datasets/dump_data/emissiontest_stripped.sql
 ```
 
 ## separate dumps
 
-Verify manually which data has to be imported. It may already be included in the dump.
+Verify manually from database which data has to be imported.
+Data may already be included in the dump.
 
 These are good candidates:
 
@@ -53,7 +61,7 @@ These are good candidates:
 
 Create functions.
 
-```
+```sh
 sh co2_functions_init.sh | sh
 ```
 
