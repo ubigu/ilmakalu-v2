@@ -1,0 +1,17 @@
+../calculation/CO2_CalculateEmissions.sql
+../calculation/CO2_CalculateEmissionsLoop.sql
+../calculation/building/CO2_BuildConstruct.sql
+../calculation/building/CO2_BuildDemolish.sql
+../calculation/building/CO2_BuildRenovate.sql
+../calculation/electricity/CO2_ElectricityHousehold.sql
+../calculation/electricity/CO2_ElectricityIWHS.sql
+../calculation/electricity/CO2_ElectricityProperty.sql
+../calculation/properties/CO2_PropertyCooling.sql
+../calculation/properties/CO2_PropertyHeat.sql
+../calculation/properties/CO2_PropertyWater.sql
+../calculation/traffic/CO2_TrafficIWHS.sql
+../calculation/traffic/CO2_TrafficPersonal.sql
+../processing/CO2_GridProcessing.sql
+../processing/CO2_UpdateBuildings.sql
+../processing/CO2_UpdateBuildingsLocal.sql
+../processing/CO2_UpdateBuildingsRefined.sql
