@@ -1,0 +1,100 @@
+{
+    "0110": 
+        {
+        "Materials_kg": {
+        }
+        },
+    "0111": 
+        {
+        "Materials_kg": {
+            }
+        },
+    "0112":
+        {
+        "Materials_kg": {
+            }
+        },
+    "0120":
+        {
+        "Materials_kg": {
+            }
+        },
+    "0121":
+        {
+        "Materials_kg": {
+            }
+        },
+    "0130":
+        {
+        "Materials_kg": {
+            }
+        },
+    "02":
+        {
+        "Materials_kg": {
+            }
+        },
+    "031":
+        {
+        "Materials_kg": {
+            }
+        },
+    "032":
+        {
+        "Materials_kg": {
+            }
+        },
+    "033": 
+        {
+        "Materials_kg": {
+            }
+        },
+    "04":
+        {
+        "Materials_kg": {
+            }
+        },            
+    "05":
+        {
+        "Materials_kg": {
+            }
+        },
+    "06":
+        {
+        "Materials_kg": {
+            }
+        },
+    "07":
+        {
+        "Materials_kg": {
+            }
+        },
+    "08":
+        {
+        "Materials_kg": {
+            }
+        },
+    "09":
+        {
+        "Materials_kg": {
+            }
+        },
+    "10":
+        {
+        "Materials_kg": {
+            }
+        },
+    "12":
+        {
+        "Materials_kg": {
+            }
+        },
+    "19":
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000252": 5,
+            "7000000270": 2
+            }
+        }         
+}
