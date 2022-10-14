@@ -13,7 +13,9 @@ from datetime import datetime
 '''
 This script gets buildings from WFS interface, does some quality checks
 and corrections to them and finally pushes them to postgres. Add needed
-parameters to config.yaml under wfs section before running. 
+parameters to config.yaml under wfs section before running. Note that 
+this script fetches buildings from a service "as they are" and further
+preprocessing might be reasonable depending on the data. 
 
 Articles referenced here:
 https://gis.stackexchange.com/questions/299567/reading-data-to-geopandas-using-wfs
