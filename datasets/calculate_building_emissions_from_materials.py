@@ -3,8 +3,9 @@ import pandas as pd
 import json
 from sqlalchemy import create_engine
 from modules.config import Config
-from modules.building_type_classification import building_type_level1_2018, building_type_level1_1994
-import time
+from modules.building_type_mapper import grid_global_building_type_mapper_2018
+from modules.building_year_mapper import year_mapper
+from modules.building_fuel_mapper import fuel_mapper
 
 '''
 This script reads buildings and grid from postgis,
@@ -19,9 +20,6 @@ which had buildings in their area. Other grid cells inside
 municipality borders are omitted. 
 '''
 
-# track time for completing the script
-start_time = time.time()
-
 # create config object for database and a connection
 cfg = Config()
 pg_connection = create_engine(cfg._db_connection_url())
@@ -31,7 +29,7 @@ sql_co2data = "SELECT * FROM data.building_materials_gwp"
 co2data = pd.read_sql(sql_co2data, pg_connection)
 
 # load material map per building type
-with open('datasets/building_type_material_mapping_2018.json') as f:
+with open('datasets/building_type_material_mapping_grid_global.json') as f:
     building_type_material_map = json.load(f)
 
 # get buildings from postgres
@@ -50,7 +48,7 @@ sql_grid = "SELECT * FROM data.fi_grid_250m"
 grid_geom_column = 'wkb_geometry'
 grid = gpd.read_postgis(sql_grid, pg_connection, geom_col=grid_geom_column)
 
-# limit grid to buildings extent using coordinate based index (reference: https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.cx.html)
+# limit grid to buildings extent using coordinate based index
 bbox = buildings.total_bounds
 grid = grid.cx[bbox[0]:bbox[2], bbox[1]:bbox[3]]
 
@@ -59,41 +57,44 @@ if not buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067":
     raise TypeError(f"One or both of buildings and grid was not in EPSG:3067. Buildings are in {buildings.crs} and grid in {grid.crs}.")
 
 # spatial join xyind from grid to building centroids
-buildings_with_grid_cell_id= buildings.sjoin(grid, how="left", predicate="within")
+buildings_with_xyind = buildings.sjoin(grid, how="left", predicate="within")
 
 # drop columns which are not needed
-buildings_with_grid_cell_id= buildings_with_grid_cell_id[['floor_area', 'fuel', 'building_type', 'year', 'geometry', 'xyind']]
+buildings_with_xyind = buildings_with_xyind[['floor_area', 'fuel', 'building_type', 'year', 'geometry', 'xyind']]
+
+# Delete buildings that have 0 or null as value in floor area column
+buildings_with_xyind = buildings_with_xyind.drop(buildings_with_xyind[(buildings_with_xyind.floor_area <= 0) | (buildings_with_xyind.floor_area.isna())].index)
 
 # aggregate years to decades
-buildings_with_grid_cell_id['decade'] = (buildings_with_grid_cell_id['year'] // 10) * 10
+buildings_with_xyind['decade'] = [year_mapper(x) for x in buildings_with_xyind['year']]
 
 # aggregate building types to predefined categories
-buildings_with_grid_cell_id['building_type'] = [building_type_level1_2018(x) for x in buildings_with_grid_cell_id['building_type']]
+buildings_with_xyind['building_type_generalized'] = [grid_global_building_type_mapper_2018(x) for x in buildings_with_xyind['building_type']]
+
+# Pass building fuels through fuel mapper module function
+buildings_with_xyind_and_fuel = fuel_mapper(buildings_with_xyind, 'building_type', 'building_type_generalized', 'fuel')
 
 # create a new dataframe in which floor area is grouped by grid cell, decade, building type and fuel type
-floor_area_per_grid_cell = buildings_with_grid_cell_id.groupby(['xyind', 'decade', 'building_type', 'fuel'])['floor_area'].aggregate('sum').reset_index(name="floor_area_sum")
-
-# Delete rows that have 0 in floor area column
-floor_area_per_grid_cell = floor_area_per_grid_cell.drop(floor_area_per_grid_cell[floor_area_per_grid_cell.floor_area_sum == 0].index)
+floor_area_per_grid_cell = buildings_with_xyind_and_fuel.groupby(['xyind', 'decade', 'building_type_generalized', 'fuel'],dropna=False)['floor_area'].aggregate('sum').reset_index(name="floor_area_sum")
 
 # function calculating total co2 emission for one square meter in specific building type
 def calc_material_co2(type:str, mapping:dict):
     co2_per_m2 = 0.0
     # loop through json
     for key, value in mapping[type]["Materials_kg"].items():
-        gwp_typicalValue = 0.0
+        gwp_typical = 0.0
         # check if gwp_typical exists. Note that here it is assumed that key is integer in dataframe and string in json file. 
         if co2data.loc[(co2data['resourceid']==int(key)),'gwp_typical'].values.size > 0 :
-            gwp_typicalValue=co2data.loc[(co2data['resourceid']==int(key)),'gwp_typical'].values[0]
-        co2_per_m2 += value * gwp_typicalValue
+            gwp_typical=co2data.loc[(co2data['resourceid']==int(key)),'gwp_typical'].values[0]
+        co2_per_m2 += value * gwp_typical
     return co2_per_m2 
 
 # get unique building types from the data
-unique_building_types_in_data = floor_area_per_grid_cell.building_type.unique()
+unique_building_types_in_data = floor_area_per_grid_cell.building_type_generalized.unique()
 
 # loop through existing building types and for each one calculate total co2 emission per square meter
 for i in unique_building_types_in_data:
-    floor_area_per_grid_cell.loc[floor_area_per_grid_cell.building_type==i, 'co2_emission'] = calc_material_co2(i,building_type_material_map) * floor_area_per_grid_cell['floor_area_sum']
+    floor_area_per_grid_cell.loc[floor_area_per_grid_cell.building_type_generalized==i, 'co2_emission'] = calc_material_co2(i,building_type_material_map) * floor_area_per_grid_cell['floor_area_sum']
 
 # group by xyind
 total_co2_for_xyind = floor_area_per_grid_cell.groupby(['xyind'])['co2_emission'].aggregate('sum').reset_index(name="co2_total")
@@ -117,6 +118,3 @@ final.to_postgis(
 # add identity field to the table
 with pg_connection.connect() as con_pk:
     con_pk.execute('ALTER TABLE data.grid_with_building_materials_emission ADD COLUMN id int GENERATED BY DEFAULT AS IDENTITY')
-
-# tell how long the script took to process
-print(f"The script took {int((time.time()-start_time)//60)} minutes+ to run. Check result table in postgres.")
