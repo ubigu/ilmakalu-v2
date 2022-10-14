@@ -11,19 +11,12 @@ Steps:
 # the function takes dataframe and field specifications as parameters
 def fuel_mapper(df, building_type_field:str,building_type_generalized_field:str,fuel_field:str) -> pd.DataFrame:
     
-
     # figure out most common fuel for each existing building type (generalized)
     # this still lacks a way of handling tie situations in mode() which generate two or more values
-    # doublecheck whether lvl2 hierarchy codes work accordingly
     most_common_fuel = {}
     for i in df[building_type_generalized_field].unique():
         most_common_fuel[i] = df[df[building_type_generalized_field]==i][fuel_field].mode()[0]
         
-    '''
-    for key, value in most_common_fuel.items():
-        print(f"{key} --> {value}")
-    '''
-
     # For rows which lack fuel info delete the ones which building type is null or in the list below
     '''
     lämmittämättömät varastot (1210), varastokatokset (1215), hevostallit (1414), muut eläinsuojat (1419),
