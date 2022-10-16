@@ -1,4 +1,5 @@
 import pandas as pd
+import string as str
 
 '''
 Steps:
@@ -12,10 +13,10 @@ Steps:
 def fuel_mapper(df, building_type_field:str,building_type_generalized_field:str,fuel_field:str) -> pd.DataFrame:
     
     # figure out most common fuel for each existing building type (generalized)
-    # this still lacks a way of handling tie situations in mode() which generate two or more values
+    # note that in case of ties mode() returns several rows. In this case, we just take the first row. 
     most_common_fuel = {}
     for i in df[building_type_generalized_field].unique():
-        most_common_fuel[i] = df[df[building_type_generalized_field]==i][fuel_field].mode()[0]
+        most_common_fuel[i] = df[df[building_type_generalized_field]==i][fuel_field].mode().iloc[0]
         
     # For rows which lack fuel info delete the ones which building type is null or in the list below
     '''
@@ -26,7 +27,7 @@ def fuel_mapper(df, building_type_field:str,building_type_generalized_field:str,
     osavuotiseen käyttöön soveltuvat vapaa-ajan asuinrakennukset (211), 
     kulkuneuvojen katokset (514)
     '''
-    removal = df[(df[fuel_field] == 'Ei') & (df[building_type_field].isin([1210,1215,1414,1419,1490,1492,1499,1910,1911,1919,210,211,514]))].index
+    removal = df[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field].isin([1210,1215,1414,1419,1490,1492,1499,1910,1911,1919,210,211,514]))].index
     df.drop(removal, inplace=True)
 
     
@@ -39,62 +40,62 @@ def fuel_mapper(df, building_type_field:str,building_type_generalized_field:str,
     yleissivistävien oppilaitosten rakennukset (820), ammatillisten oppilaitosten rakennukset (830),
     korkeakoulurakennukset (840)
     '''
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field].isin([621,713,720,730,739,743,749,790,810,820,830,840])), fuel_field] =  most_common_fuel["07"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field].isin([621,713,720,730,739,743,749,790,810,820,830,840])), fuel_field] =  most_common_fuel["07"]
     
 
     # For rows which lack fuel info and are in the list below, give the most common fuel in warehouses
     '''
     yleiskäyttöiset teollisuushallit (910), lämpimät varastot (1211)
     '''
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field].isin([910,1211])), fuel_field] =  most_common_fuel["12"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field].isin([910,1211])), fuel_field] =  most_common_fuel["12"]
 
 
     # For rows which lack fuel info and are in the list below, give the most common fuel in wholesale and retail trade buildings (level 2 hierarchy)
     '''
     kauppakeskukset ja liike- ja tavaratalot (311), muut myymälärakennukset (319)
     '''
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field].isin([311,319])), fuel_field] =  most_common_fuel["031"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field].isin([311,319])), fuel_field] =  most_common_fuel["031"]
 
-    # For rows which lack fuel info and are 'Teollisuus- ja pienteollisuustalot' give the most common fuel in industrial buildings
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 920), fuel_field] =  most_common_fuel["09"]
+    # For rows which lack fuel info and are 'Teollisuus- ja pienteollisuustalot' (920) give the most common fuel in industrial buildings
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 920), fuel_field] =  most_common_fuel["09"]
 
-    # For rows which lack fuel info and are office buildings give the most common fuel in that respective building type
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 400), fuel_field] =  most_common_fuel["04"]
+    # For rows which lack fuel info and are office buildings (400) give the most common fuel in that respective building type
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 400), fuel_field] =  most_common_fuel["04"]
 
-    # For rows which lack fuel info and are 'muut majoitusliikerakennukset' give the most common fuel in hotel buildings
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 329), fuel_field] =  most_common_fuel["032"]
+    # For rows which lack fuel info and are 'muut majoitusliikerakennukset' (329) give the most common fuel in hotel buildings
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 329), fuel_field] =  most_common_fuel["032"]
 
-    # For rows which lack fuel info and are 'ravintolarakennukset ja vastaavat liikerakennukset' give the most common fuel in restaurants
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 330), fuel_field] =  most_common_fuel["033"]
+    # For rows which lack fuel info and are 'ravintolarakennukset ja vastaavat liikerakennukset' (330) give the most common fuel in restaurants
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 330), fuel_field] =  most_common_fuel["033"]
 
 
     # For rows which lack fuel info and are in the list below, give the most common fuel in residential buildings for communities
     '''
     asuntolarakennukset (130), loma- lepo- ja virkistyskodit (322), laitospalvelujen rakennukset (620)
     '''
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field].isin([130,322,620])), fuel_field] =  most_common_fuel["0130"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field].isin([130,322,620])), fuel_field] =  most_common_fuel["0130"]
 
     # For rows which lack fuel info and are one-dwelling houses give the most common fuel in that respective building type
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 110), fuel_field] =  most_common_fuel["0110"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 110), fuel_field] =  most_common_fuel["0110"]
 
     # For rows which lack fuel info and are two-dwelling houses give the most common fuel in that respective building type
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 111), fuel_field] =  most_common_fuel["0111"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 111), fuel_field] =  most_common_fuel["0111"]
     
     # For rows which lack fuel info and are terraced houses give the most common fuel in that respective building type 
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 112), fuel_field] =  most_common_fuel["0112"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 112), fuel_field] =  most_common_fuel["0112"]
 
     # For rows which lack fuel info and are low-rise blocks of flats give the most common fuel in that respective building type
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 120), fuel_field] =  most_common_fuel["0120"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 120), fuel_field] =  most_common_fuel["0120"]
 
     # For rows which lack fuel info and are residential blocks of flats give the most common fuel in that respective building type 
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field] == 121), fuel_field] =  most_common_fuel["0121"]
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field] == 121), fuel_field] =  most_common_fuel["0121"]
 
     
     # For the following rows which lack fuel info give a value of 'other' for fuel
     '''
     pysäköintitalot ja -hallit (513), muut liikenteen rakennukset (590), jäähallit (740)
     '''
-    df.loc[(df[fuel_field] == 'Ei') & (df[building_type_field].isin([513,590,740])), fuel_field] =  'muu_lammitys'
+    df.loc[(df[fuel_field].str.lower() == 'ei') & (df[building_type_field].isin([513,590,740])), fuel_field] =  'muu_lammitys'
 
     
     # Generalize some fuel types based on the mapping below in assistant function and standardize spelling
