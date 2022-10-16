@@ -26,22 +26,21 @@ def building_counter_for_grid_cells(df,grid_cell_field:str,fuel_field:str,decade
     dfs.append(df[df[generalized_building_type_field]=="09"].groupby(index,dropna=False)[grid_cell_field].count().reset_index(name="teoll_lkm"))
 
     # Add total floor area for residential buildings per index element to the list
-    # Note that this takes dwellings for special groups (014) into account for now
-    dfs.append(df[df[generalized_building_type_field].isin(["011","012","014"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="asuin_ala"))
+    dfs.append(df[df[generalized_building_type_field].isin(["0110","0111","0112","0120","0121","0130"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="asuin_ala"))
 
     # Add total floor area for one-dwelling and two-dwelling houses
     # Existing module for building type aggregation doesn't take 3rd hierarchy level into account so right now we have detached and semidetached under same value
-    dfs.append(df[df[generalized_building_type_field].isin(["011"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="erpien_ala"))
+    dfs.append(df[df[generalized_building_type_field].isin(["0110","0111"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="erpien_ala"))
 
     # Add total floor area for terraced houses per index element to the list
     # Existing module for building type aggregation doesn't take 3rd hierarchy level into account so right now we have detached and semidetached with same value
-    dfs.append(df[df[generalized_building_type_field].isin(["011"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="rivita_ala"))
+    dfs.append(df[df[generalized_building_type_field].isin(["0112"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="rivita_ala"))
 
-    # Add total floor area for blocks of flats per index element to the list
-    dfs.append(df[df[generalized_building_type_field].isin(["012"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="askert_ala"))
+    # Add total floor area for blocks of flats (residential and low-rise) per index element to the list
+    dfs.append(df[df[generalized_building_type_field].isin(["0120","0121"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="askert_ala"))
 
     # Add total floor area for residential buildings for communities per index element to the list
-    dfs.append(df[df[generalized_building_type_field].isin(["013"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="asla_ala"))
+    dfs.append(df[df[generalized_building_type_field].isin(["0130"])].groupby(index,dropna=False)[floor_area_field].sum().reset_index(name="asla_ala"))
 
     # Add total floor area for commercial buildings per index element to the list
     # Commercial buildings is a sum of wholesale buildings, hotels and restaurants
