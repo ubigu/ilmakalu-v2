@@ -45,7 +45,7 @@ grid_global_buildings_map_2018 = {
                         "0121":"0121", # residential blocks of flats
                         "0130":"0130", # residential buildings for communities
                         #"0140":"014", # dwellings for special groups (unclear if this should be included and if yes, where and how)
-                        "0210":"02", "0211":"02",
+                        "0210":"02", "0211":"02", # Free-time residential buildings
                         "0310":"031","0311":"031","0319":"031", # wholesale
                         "0320":"032","0322":"032","0329":"032", # hotels
                         "0330":"033", # restaurants

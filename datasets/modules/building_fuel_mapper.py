@@ -17,6 +17,7 @@ def fuel_mapper(df, building_type_field:str,building_type_generalized_field:str,
     most_common_fuel = {}
     for i in df[building_type_generalized_field].unique():
         most_common_fuel[i] = df[df[building_type_generalized_field]==i][fuel_field].mode().iloc[0]
+    #print(most_common_fuel)
         
     # For rows which lack fuel info delete the ones which building type is null or in the list below
     '''
@@ -126,6 +127,14 @@ def fuel_mapper(df, building_type_field:str,building_type_generalized_field:str,
         else:
             raise ValueError(f"Found a value that couldn't be processed: {fuel}")
 
+   
+
     df[fuel_field] = [generalize_fuels(x) for x in df[fuel_field]]
+
+    #print(df[(df[building_type_field] == 110) & (df["floor_area"] == 164)].to_string()) #& (df[fuel_field]=="Ei")
+
+    #print(df[df[building_type_field]==110])
+    #df[df[building_type_field]==110) & (df["floor_area"] == 164)]
+    
 
     return df
