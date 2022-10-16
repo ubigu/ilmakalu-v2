@@ -61,13 +61,13 @@ buildings_with_xyind['building_type_generalized'] = [grid_global_building_type_m
 buildings_with_xyind['decade'] = [year_mapper(x) for x in buildings_with_xyind['year']]
 
 # Pass building fuels through fuel mapper module function
-buildings_fuel = fuel_mapper(buildings_with_xyind, 'building_type', 'building_type_generalized', 'fuel')
+buildings_with_xyind_and_fuel = fuel_mapper(buildings_with_xyind, 'building_type', 'building_type_generalized', 'fuel').copy()
 
 # Calculate building counts and floor area sums per grid cell
-buildings_fuel_and_counts = building_counter_for_grid_cells(buildings_fuel,"xyind","fuel","decade","floor_area","building_type_generalized")
+buildings_with_xyind_and_fuel_and_counts = building_counter_for_grid_cells(buildings_with_xyind_and_fuel,"xyind","fuel","decade","floor_area","building_type_generalized").copy()
 
 # rename columns to match data schema that later processing requires
-final_no_geom = buildings_fuel_and_counts.rename(columns={"decade":"rakv","fuel":"energiam","geometry":"geom"})
+final_no_geom = buildings_with_xyind_and_fuel_and_counts.rename(columns={"decade":"rakv","fuel":"energiam","geometry":"geom"})
 
 # create final geodataframe and hand it centroid geometry from grid
 grid["wkb_geometry"] = grid["wkb_geometry"].centroid
