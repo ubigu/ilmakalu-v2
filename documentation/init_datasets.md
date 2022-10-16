@@ -289,13 +289,15 @@ CO2data.fi database, API and webite are a responsibility of Finnish Environment 
 The website is available in Finnish, Swedish and English, but the data itself is available only in English. The goal of the database is to standardize 
 building lifecycle emission calculations.
 
-The whole database is offered without a charge as a JSON file which can be accessed here: https://co2data.fi/api/co2data_construction.json. 
+The whole database is offered without a charge as a JSON file which can be accessed here: https://co2data.fi/api/co2data_construction.json. The URL is already stated in `config.yaml` from where the script looks for it.
 
 It is important to note that the database contains four kinds of emission categories. They are stated below. 
 - Emissions from material usage presented as kg of CO2 equivalent per square meter (e.g. floor panel)
 - Emissions from material usage presented as kg of CO2 equivalent per piece (e.g a kitchen sink)
 - Emissions from a processes (e.g. demolition of a building or earthwork) 
 - Scenarios (e.g. biofuels as energy resource vs. fossil fuels as energy resource)
+
+In order to fetch needed building type material costs, run `get_building_material_co2_costs.py`. Note that the script requires database access info from `config.yaml`.
 
 Ilmakalu does not utilize scenarios, but all the other three are used and have identical emphasis. Please note that the data structure can slightly differ between different categories. Below are some important attributes to note:
 
@@ -334,3 +336,215 @@ Please note that any estimations of how much any specific material or service is
 
 In case of any unexpected interruptions in service availibility the JSON database, as it were in 09/09/2022, has been saved to the code repository so that it's
 structure at the time could be inspected. 
+
+# Vehicle usage mode data
+
+For vehicle usage mode data Traficom statistics service is used. We utilize traficom pxAPI and the following statistical resources. These URLs are already present in the script. 
+- [Passenger cars in traffic on 31 June 2021 by area](https://trafi2.stat.fi/PXWeb/pxweb/en/TraFi/TraFi__Liikennekaytossa_olevat_ajoneuvot/010_kanta_tau_101.px/)
+- [Vehicles in traffic by quarter in 2008 to 2021](https://trafi2.stat.fi/PXWeb/pxweb/en/TraFi/TraFi__Liikennekaytossa_olevat_ajoneuvot/040_kanta_tau_104.px/)
+
+Run `get_traffic_usage_power_divisions.py`. The script will ask you to provide a municipality code and then a region code. The reason for this is that passenger car
+statistics exist by a municipality but all the other vehicle types only by a region. When providing codes make sure they match (e.g. Helsinki and Uusimaa). 
+
+Note that the script requires database access info from `config.yaml`.
+
+## Coding schemas
+
+### Energy modes for passenger cars
+
+Naming in Finnish.
+
+| Energy mode | Code |
+| ----------- | ----------- |
+| Bensiini | 01 |
+| Diesel | 02 |
+| Polttoöljy | 03 |
+| Sähkö | 04 |
+| Vety | 05 |
+| Kaasu | 06 |
+| Nestekaasu (LPG) | 11 |
+| Maakaasu (CNG) | 13 |
+| Bensiini/Puu | 33 |
+| Bensiini + moottoripetroli | 34 |
+| Etanoli | 37 |
+| Bensiini/CNG | 38 |
+| Bensiini/Sähkö (ladattava hybridi) | 39 |
+| Bensiini/Etanoli | 40 |
+| Bensiini/Metanoli | 41 |
+| Bensiini/LPG | 42 |
+| Diesel/CNG | 43 |
+| Diesel/Sähkö (ladattava hybridi) | 44 |
+| Muu | Y |
+| Yhteensä | YH |
+
+### Energy modes for vans/trucks/busses
+
+Naming in Finnish.
+
+| Energy mode | Code |
+| ----------- | ----------- |
+| Bensiini | 01 |
+| Diesel | 02 |
+| Polttoöljy | 03 |
+| Sähkö | 04 |
+| Vety | 05 |
+| Kaasu | 06 |
+| Biodiesel | 10 |
+| Nestekaasu (LPG) | 11 |
+| Maakaasu (CNG) | 13 |
+| Moottoripetroli | 31 |
+| Bensiini/Puu | 33 |
+| Bensiini + moottoripetroli | 34 |
+| Etanoli | 37 |
+| Bensiini/CNG | 38 |
+| Bensiini/Sähkö (ladattava hybridi) | 39 |
+| Bensiini/Etanoli | 40 |
+| Bensiini/LPG | 42 |
+| Diesel/CNG | 43 |
+| Diesel/Sähkö (ladattava hybridi) | 44 |
+| H-ryhmän maakaasu | 56 |
+| LNG | 65 |
+| Diesel/LNG | 67 |
+| Muu | Y |
+| Yhteensä | YH |
+
+### Mode of transport codes for vans/trucks/busses
+
+Naming in Finnish. 
+
+| Mode of transport | Code |
+| ----------- | ----------- |
+| Henkilöautot | 01 |
+| Pakettiautot | 02 |
+| Kuorma-autot | 03 |
+| Linja-autot | 04 |
+| Erikoisautot | 05 |
+| Moottoripyörät | 06 |
+| Mopot | 07 |
+| Moottorikelkat | 08 |
+| Traktorit | 09 |
+| Moottorityökoneet | 10 |
+| Kolmi- tai nelipyörät L5/L5e  | 11 |
+| Kevyet nelipyörät L6/L6e | 12 |
+| Nelipyörät L7/L7e | 13 |
+| Matkailuperävaunut | 15 |
+| Puoliperävaunut | 16 |
+| Muut perävaunut yhteensä | 17 |
+| Kaikki autot | 00 |
+| Yhteensä | YH |
+
+# Get buildings from WFS (for now only Espoo)
+
+In order to fetch buildings from WFS service, you need to provide necessary wfs parameters. These include service URL, version, layer and attributes of interest. 
+Note that for now the script that gets buildings is more or less tailored for the specific building data layer from the service of the city of Espoo. Providing any other service
+and specs will probably cause an error or unexpected results.
+
+Note that the script requires database access info from `config.yaml`.
+
+Then run `buildings_for_grid_global.py`. This script provides a layer for postgis that represents data schema as it were in original ilmakalu tool. 
+
+
+# Calculate co2 emissions from building material costs for each grid cell
+
+By running `calculate_building_emissions_from_materials.py` you can create a layer in postgis that states total building material co2 costs for each grid cell. 
+
+Before running the script take a look at the following files located in datasets folder.
+
+- `building_type_material_mapping_1994.json` 
+- `building_type_material_mapping_2018.json` 
+- `building_type_material_mapping_grid_global.json` (2018)
+  
+Add wanted materials under building types as key value pairs. Keys represent resource IDs in CO2data.fi database and values kilograms of said material per m2. 
+
+Example stating 10 kg of aerated concrete (7000000995), 5 kilograms of water vapour barrier (7000000252) and 2 kilograms of bitumen waterproofing membrane per each m2 in attached houses ("A2" for 1994 and "012" for 2018). An empty list is interpreted as no material usage per said building type. 
+
+```
+    "A2": 
+        {
+        "Materials_kg": {
+            "7000000995": 10,
+            "7000000252": 5,
+            "7000000270": 2
+            }
+        }
+```
+
+For additional information on material codes check https://co2data.fi or https://co2data.fi/api/co2data_construction.json. Note that they utilize different building type mapping and should match the function used in scripts. The mapping in `building_type_material_mapping_grid_global.json` is based on hand picked types by Ubigu.
+
+If you don't assign any costs at all in json file, the sript will still run, but all co2 costs will be zero. 
+
+The json files are partioned by building types. They all have basis on stat.fi classification, either 1994 or 2018 one, but are all modifications of it. In the classification buildings are mapped to three different hierarchical levels. 
+
+## 1994 classification
+
+The classification is decsribed in Statistics Finland website [here](https://www.stat.fi/en/luokitukset/rakennus/rakennus_1_19940101). 
+
+| Code | Level | Description |
+| ----------- | ----------- | ----------- |
+| A1 | 2 | Detached and semi-detached houses |
+| A2 | 2 | Attached houses |
+| A3 | 2 | Blocks of flats |
+| B | 1 | Free-time residential buildings |
+| C | 1 | Commercial buildings |
+| D | 1 | Office buildings |
+| E | 1 | Transport and communications buildings |
+| F | 1 | Buildings for institutional care |
+| G | 1 | Assembly buildings |
+| H | 1 | Educational buildings |
+| J | 1 | Industrional buildings |
+| K | 1 | Warehouses |
+| L | 1 | Fire fighting and rescue service buildings |
+| M | 1 | Agricultural buildings |
+| N | 1 | Other buildings |
+
+
+## 2018 classification
+
+The classification is decsribed in Statistics Finland website [here](https://www.stat.fi/en/luokitukset/rakennus/). 
+
+| Code | Level | Description |
+| ----------- | ----------- | ----------- |
+| 011 | 2 | Detached and semi-detached houses |
+| 012 | 2 | Blocks of flats |
+| 013 | 2 | Residential buildings for communities |
+| 014 | 2 | Dwellings for special groups |
+| 02 | 1 | Free-time residential buildings |
+| 03 | 1 | Commercial buildings |
+| 04 | 1 | Office buildings |
+| 05 | 1 | Transport and communications buildings |
+| 06 | 1 | Buildings for institutional care |
+| 07 | 1 | Assembly buildings |
+| 08 | 1 | Educational buildings |
+| 09 | 1 | Industrional buildings |
+| 10 | 1 | Warehouses |
+| 11 | 1 | Fire fighting and rescue service buildings |
+| 12 | 1 | Agricultural buildings |
+| 13 | 1 | Other buildings |
+| 14 | 1 | Other buildings |
+| 19 | 1 | Other buildings |
+
+## Hand picked classification by Ubigu based on 2018 mapping (grid globals)
+
+This classification is another modification of the 2018 classification. See it fully [here](https://www.stat.fi/en/luokitukset/rakennus/). 
+
+| Code | Level | Description |
+| ----------- | ----------- | ----------- |
+| 0110 | 3 | One-dwelling houses |
+| 0111 | 3 | Two-dwelling houses |
+| 0112 | 3 | Terraced houses |
+| 0120 | 3 | Low-rise blocks of flats |
+| 0121 | 3 | Residential blocks of flats |
+| 0130 | 3 | Residential buildings for communities |
+| 02 | 1 | Free-time residential buildings |
+| 031 | 2 | Wholesale and retail trade buildings |
+| 032 | 2 | Hotel buildings |
+| 033 | 2 | Restaurants and other similar buildings |
+| 04 | 1 | Office buildings |
+| 05 | 1 | Transport and communications buildings |
+| 06 | 1 | Buildings for institutional care |
+| 07 | 1 | Assembly buildings |
+| 08 | 1 | Educational buildings |
+| 09 | 1 | Industrial and mining and quarrying buildings |
+| 10 | 1 | Energy supply buildings |
+| 12 | 1 | Warehouses |
+| 19 | 1 | Other buildings |
