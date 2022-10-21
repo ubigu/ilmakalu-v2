@@ -49,7 +49,7 @@ if not (buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067"):
     raise TypeError(f"One or both of buildings and grid was not in EPSG:3067. Buildings are in {buildings.crs} and grid in {grid.crs}.")
 
 # Spatial join xyind from grid to building centroids
-buildings_with_xyind = buildings.sjoin(grid, how="left", predicate="intersects")
+buildings_with_xyind = buildings.sjoin(grid, how="left", predicate="within")
 
 # Drop columns which are not needed
 buildings_with_xyind = buildings_with_xyind[['floor_area', 'fuel', 'building_type', 'year', 'geometry', 'xyind']]
