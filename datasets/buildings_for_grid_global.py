@@ -37,7 +37,7 @@ buildings["geometry"] = buildings["geometry"].centroid
 
 # Get grid from postgres
 sql_grid = "SELECT * FROM data.fi_grid_250m"
-grid_geom_column = 'wkb_geometry'
+grid_geom_column = "wkb_geometry"
 grid = gpd.read_postgis(sql_grid, pg_connection, geom_col=grid_geom_column)
 
 # Limit grid to buildings extent using coordinate based index
@@ -45,11 +45,11 @@ bbox = buildings.total_bounds
 grid = grid.cx[bbox[0]:bbox[2], bbox[1]:bbox[3]]
 
 # Before spatial join check that geodataframes are both in 3067
-if not buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067":
+if not (buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067"):
     raise TypeError(f"One or both of buildings and grid was not in EPSG:3067. Buildings are in {buildings.crs} and grid in {grid.crs}.")
 
 # Spatial join xyind from grid to building centroids
-buildings_with_xyind = buildings.sjoin(grid, how="left", predicate="within")
+buildings_with_xyind = buildings.sjoin(grid, how="left", predicate="intersects")
 
 # Drop columns which are not needed
 buildings_with_xyind = buildings_with_xyind[['floor_area', 'fuel', 'building_type', 'year', 'geometry', 'xyind']]
@@ -70,9 +70,9 @@ buildings_with_xyind_and_fuel_and_counts = building_counter_for_grid_cells(build
 final_no_geom = buildings_with_xyind_and_fuel_and_counts.rename(columns={"decade":"rakv","fuel":"energiam","geometry":"geom"})
 
 # create final geodataframe and hand it centroid geometry from grid
-grid["wkb_geometry"] = grid["wkb_geometry"].centroid
-final = gpd.GeoDataFrame(pd.merge(final_no_geom,grid[["xyind","wkb_geometry"]], on="xyind", how="left"), crs="EPSG:3067", geometry="wkb_geometry")
-final = final.rename(columns={"wkb_geometry":"geometry"})
+grid[grid_geom_column] = grid[grid_geom_column].centroid
+final = gpd.GeoDataFrame(pd.merge(final_no_geom,grid[["xyind",grid_geom_column]], on="xyind", how="left"), crs="EPSG:3067", geometry=grid_geom_column)
+final = final.rename(columns={grid_geom_column:"geometry"})
 
 # send the result to postgis
 final.to_postgis(

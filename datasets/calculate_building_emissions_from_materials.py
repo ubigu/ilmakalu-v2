@@ -53,7 +53,7 @@ bbox = buildings.total_bounds
 grid = grid.cx[bbox[0]:bbox[2], bbox[1]:bbox[3]]
 
 # before spatial join check that geodataframes are both in 3067
-if not buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067":
+if not (buildings.crs == "EPSG:3067" and grid.crs == "EPSG:3067"):
     raise TypeError(f"One or both of buildings and grid was not in EPSG:3067. Buildings are in {buildings.crs} and grid in {grid.crs}.")
 
 # spatial join xyind from grid to building centroids
