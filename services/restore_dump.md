@@ -1,5 +1,10 @@
 # intro
 
+Following instructions will provide instructions, how to initially
+restore a cloud hosted database dump.
+
+*Warning: This is still work in progress, and end-to-end this approach is not yet working*
+
 ## generate dump
 
 See database credentials from a shared 1Password secret.
@@ -35,7 +40,7 @@ For deployment in actual target environment, user initialization has to
 be handled differently. Docker database init functionality is a good alternative.
 
 ```sh
-sh create_users_from_dump.sh <password> | psql -U <superuser> -h localhost -p <port> postgres
+sh create_users_from_dump.sh <password> <ilmakalu user> | psql -U <superuser> -h localhost -p <port> postgres
 ```
 
 ## tables
