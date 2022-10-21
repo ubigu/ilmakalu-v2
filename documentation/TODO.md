@@ -94,3 +94,11 @@ Take a look at `building_type_mapper.py` and any `building_type_material_mapping
 - Make changes accordingly to `buildings_for_grid_global.py`
 - Make changes accordingly to `calculate_building_emissions_from_materials.py`
 - Add a new parameter to `config.yaml` and instruct user to use that for applying correct function from `building_type_mapper.py`
+
+# Refactor fuel mapper module for buildings
+
+Module `building_fuel_mapper.py` has a lot of boiler plate code currently and thus it's readability and maintainability are not the best. 
+
+# Refactor building counter for grid cells module for buildings
+
+Module `building_counter_for_grid_cells.py` has a lot of boiler plate code currently and thus it's readability and maintainability are not the best. 
