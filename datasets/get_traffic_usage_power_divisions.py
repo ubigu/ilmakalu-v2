@@ -140,6 +140,6 @@ df_all = df_all.round(decimals=3)
 print(df_all)
 
 # accuracy of decimal fields is high, do we need to downscale it?
-df_all.to_sql("mode_power_distribution",pg_connection, schema="data",if_exists="replace", index_label="id")
+df_all.to_sql("mode_power_distribution",pg_connection, schema="traffic",if_exists="replace", index_label="id")
 with pg_connection.connect() as con:
-    con.execute('ALTER TABLE data.mode_power_distribution ALTER "id" SET NOT NULL, ALTER "id" ADD GENERATED ALWAYS AS IDENTITY')
+    con.execute('ALTER TABLE traffic.mode_power_distribution ALTER "id" SET NOT NULL, ALTER "id" ADD GENERATED ALWAYS AS IDENTITY')
