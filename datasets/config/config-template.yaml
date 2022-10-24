@@ -37,7 +37,7 @@ traficom:
     passenger_cars_year_of_first_registration: "YH" # "YH" meaning "yhteensä." Don't change the value without specific reason. 
     passenger_cars_make: "YH" # "YH" meaning "yhteensä." Don't change the value without specific reason. 
     heavy_cars_table_url: "https://trafi2.stat.fi:443/PXWeb/api/v1/fi/TraFi/Liikennekaytossa_olevat_ajoneuvot/040_kanta_tau_104.px"
-    heavy_car_types: 
+    heavy_car_types: # Check init_datasets.md for coding schema
       - "02" # Vans
       - "03" # Trucks
       - "04" # Busses
