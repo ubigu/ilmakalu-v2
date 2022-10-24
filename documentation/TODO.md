@@ -47,7 +47,7 @@ apply better in calculating emissions if they can be stated as pieces per buildi
 * Add "Materials_pieces" key-value pair similar to "Materials_kg" to `building_type_material_mapping.json`.
 * Add needed functionality to function `calc_material_co2`.
 
-# Create separate scripts for fetching building data from wfs and calculating their material emissions
+# Create a more general script for fetching building data from WFS
 
 Current implementation is tailored for building data from Espoo. The data has many holes in it which are handled by the code. 
 For general usage we don't want to accommodate all shortages in data input, but rather give informative errors if documented
@@ -73,4 +73,32 @@ as other scripts.
 
 - In newer config module everything is ready and only adjustments are needed.
 - The script uses premade json files at the moment but it would be better if it created them by itself.
+- No need to ask user separately for municipality and region code, just add them to `config.yaml` or use an existing attribute there
 - Manually made modules used by the script should either be removed or moved to dataset folder adjusted accordingly. 
+- Add statistics URLs to config.yaml instead of having them hard coded into the `get_traffic_usage_power_divisions.py`
+
+# Make building type mapping less error prone
+
+Currently we utilize all three/four hierarchy levels in stat.fi building type classification.
+For mapping we use number codes in string format (such as 0110). They're easy to mix up while reading and while processing data.
+
+## How to detect
+
+Take a look at `building_type_mapper.py` and any `building_type_material_mapping.json`. 
+
+## Implementation estimate
+
+- Discuss and negociate how we should approach building mapping. Using full string values such as "one-dwelling houses" might be equally problematic since then we have to match strings. 
+- Make changes accordingly to `building_type_mapper.py`
+- Make changes accordingly to json material mapping files
+- Make changes accordingly to `buildings_for_grid_global.py`
+- Make changes accordingly to `calculate_building_emissions_from_materials.py`
+- Add a new parameter to `config.yaml` and instruct user to use that for applying correct function from `building_type_mapper.py`
+
+# Refactor fuel mapper module for buildings
+
+Module `building_fuel_mapper.py` has a lot of boiler plate code currently and thus it's readability and maintainability are not the best. 
+
+# Refactor building counter for grid cells module for buildings
+
+Module `building_counter_for_grid_cells.py` has a lot of boiler plate code currently and thus it's readability and maintainability are not the best. 
