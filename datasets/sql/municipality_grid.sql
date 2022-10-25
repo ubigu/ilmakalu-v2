@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS data.fi_grid_municipalities (
     xyind CHAR(13),
     mun CHAR(3),
     zone BIGINT,
-    centdist FLOAT,
+    centdist INTEGER,
     geom Geometry(Polygon, 3067)
 );
 
