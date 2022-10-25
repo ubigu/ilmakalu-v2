@@ -134,11 +134,6 @@ df_all["mun"] = int(cfg.traficom_municipality_code()[-3:])
 # add one to index so that identity column in postgres doesn't start from zero
 df_all.index += 1
 
-# round decimals
-df_all = df_all.round(decimals=3)
-
-print(df_all)
-
 # accuracy of decimal fields is high, do we need to downscale it?
 df_all.to_sql("mode_power_distribution",pg_connection, schema="traffic",if_exists="replace", index_label="id")
 with pg_connection.connect() as con:

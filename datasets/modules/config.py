@@ -92,10 +92,10 @@ class Config:
 
     # traficom methods
     def traficom_municipality_code(self):
-        return self._cfg.get('traficom').get('municipality_code')
+        return "KU" + self._cfg.get('traficom').get('municipality_code')
 
     def traficom_region_code(self):
-        return self._cfg.get('traficom').get('region_code')
+        return "MK" + self._cfg.get('traficom').get('region_code')
 
     def traficom_heavy_cars_usage_modes_url(self):
         return self._cfg.get('traficom').get('usage_mode_statistics').get('heavy_cars_table_url')
@@ -152,7 +152,3 @@ class Config:
 
     def num_nearest_centers(self) -> int:
         return self._cfg.get("target").get("num_nearst_centers")
-
-if __name__ == "__main__":
-    cfg = Config()
-    print(cfg.chosen_database())
