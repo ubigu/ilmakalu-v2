@@ -207,6 +207,19 @@ This step is performed later
 
 This step is performed later
 
+# YKR data
+
+Population of YKR data is done in script: `ykr_process.py`
+
+Required data is saved to directory `ykr`.
+
+Input files used:
+* T01_vae_e.mdb
+* T03_tpa_e_TOL2008.mdb
+
+Data is read. Population and employment related (required) data is saved to
+table `data.population_employment`
+
 # Country specific data enrichment
 
 Data preprocessing is done for the whole country, if it is seen that results

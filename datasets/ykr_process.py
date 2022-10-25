@@ -9,7 +9,7 @@ cfg = Config("local_dev")
 engine = create_engine(cfg.db_url())
 
 current_path = Path(__file__).parent
-infiles = [current_path / p for p in [ "ykr/T01_vae_e.mdb", "ykr/T03_tpa_e_TOL2008.mdb"]]#, "ykr/T16_vae_pat.mdb" ]]
+infiles = [current_path / p for p in [ "ykr/T01_vae_e.mdb", "ykr/T03_tpa_e_TOL2008.mdb"]]
 
 ykr = {}
 
@@ -34,4 +34,3 @@ t = df_t03.loc[:, ["xyind", "tp_yht"]]
 pop_emp = v.merge(t, how="outer", on="xyind").set_index("xyind")
 
 pop_emp.to_sql("population_employment", engine, schema="data", if_exists="replace")
-pass
