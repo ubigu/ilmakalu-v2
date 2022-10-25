@@ -102,3 +102,16 @@ Module `building_fuel_mapper.py` has a lot of boiler plate code currently and th
 # Refactor building counter for grid cells module for buildings
 
 Module `building_counter_for_grid_cells.py` has a lot of boiler plate code currently and thus it's readability and maintainability are not the best. 
+
+# Change language of traficom usage mode json queries to English from Finnish
+
+Right now the two languages mix uncomfortably. Go to the Traficom site and check if JSONs are available in English. Translate all variables in code. 
+
+This relates to:
+ - `get_traffic_power_mode_distribution.py`
+ - `config.py`
+ - `config_template.yaml`
+
+# Refactor script that gets mode power distribution for traffic
+
+Refactor `get_traffic_power_mode_distribution.py` to get rid of its boilerplate code.

@@ -27,7 +27,21 @@ wfs:
   year_attribute: <attribute that represents a year when a building was constructed>
 
 co2data.fi:
-  url: "https://co2data.fi/api/co2data_construction.json" # If the url no longer matches, you can change it here.
+  url: "https://co2data.fi/api/co2data_construction.json"
+
+traficom:
+  municipality_code:  <Write the code as a string with a length of 3. Add leading zeros if necessary.>
+  region_code: <Write the code as a string with a length of 2. Add leading zeros if necessary.> 
+  usage_mode_statistics:
+    passenger_cars_table_url: "https://trafi2.stat.fi:443/PXWeb/api/v1/fi/TraFi/Liikennekaytossa_olevat_ajoneuvot/010_kanta_tau_101.px"
+    passenger_cars_year_of_first_registration: "YH" # "YH" meaning "yhteensä." Don't change the value without specific reason. 
+    passenger_cars_make: "YH" # "YH" meaning "yhteensä." Don't change the value without specific reason. 
+    heavy_cars_table_url: "https://trafi2.stat.fi:443/PXWeb/api/v1/fi/TraFi/Liikennekaytossa_olevat_ajoneuvot/040_kanta_tau_104.px"
+    heavy_car_types: # Check init_datasets.md for coding schema
+      - "02" # Vans
+      - "03" # Trucks
+      - "04" # Busses
+    heavy_car_year: "2021" # Write as a string. 
 
 target:
   municipality: <three digit national code as string>

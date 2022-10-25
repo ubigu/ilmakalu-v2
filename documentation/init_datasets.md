@@ -303,16 +303,16 @@ Please note that any estimations of how much any specific material or service is
 In case of any unexpected interruptions in service availibility the JSON database, as it were in 09/09/2022, has been saved to the code repository so that it's
 structure at the time could be inspected. 
 
-# Vehicle usage mode data
+# Traffic power mode distribution from Traficom
 
-For vehicle usage mode data Traficom statistics service is used. We utilize traficom pxAPI and the following statistical resources. These URLs are already present in the script. 
+For traffic power mode distribution data Traficom statistics are used. We utilize traficom pxAPI and the following statistical resources. These URLs are already present in the script. 
 - [Passenger cars in traffic on 31 June 2021 by area](https://trafi2.stat.fi/PXWeb/pxweb/en/TraFi/TraFi__Liikennekaytossa_olevat_ajoneuvot/010_kanta_tau_101.px/)
 - [Vehicles in traffic by quarter in 2008 to 2021](https://trafi2.stat.fi/PXWeb/pxweb/en/TraFi/TraFi__Liikennekaytossa_olevat_ajoneuvot/040_kanta_tau_104.px/)
 
-Run `get_traffic_usage_power_divisions.py`. The script will ask you to provide a municipality code and then a region code. The reason for this is that passenger car
-statistics exist by a municipality but all the other vehicle types only by a region. When providing codes make sure they match (e.g. Helsinki and Uusimaa). 
+Run `get_traffic_power_mode_distribution.py`. Provide municipality and region codes in `config.yaml`. The reason for this is that passenger car
+statistics exist at a municipality level, but all other vehicle types only at a region level. When providing codes make sure they match (e.g. Helsinki and Uusimaa or Turku and Varsinais-Suomi). 
 
-Note that the script requires database access info from `config.yaml`.
+Note that the script also requires an existing database, its access info from `config.yaml` and finally existing schemas which are created by following the instructions in `restore_dump.md`. 
 
 ## Coding schemas
 
@@ -399,18 +399,21 @@ Naming in Finnish.
 | Kaikki autot | 00 |
 | Yhteensä | YH |
 
-# Get buildings from WFS (for now only Espoo)
+# Get buildings from WFS
 
-In order to fetch buildings from WFS service, you need to provide necessary wfs parameters. These include service URL, version, layer and attributes of interest. 
+*Note that these scripts are currently tailored for Espoo WFS buildings data.*
+
+In order to fetch buildings from WFS service, provide necessary wfs parameters in `config.yaml`. These include service URL, version, layer and attributes of interest. 
 Note that for now the script that gets buildings is more or less tailored for the specific building data layer from the service of the city of Espoo. Providing any other service
 and specs will probably cause an error or unexpected results.
 
-Note that the script requires database access info from `config.yaml`.
+Note that the script additionally requires database access info from `config.yaml`.
 
-Then run `buildings_for_grid_global.py`. This script provides a layer for postgis that represents data schema as it were in original ilmakalu tool. 
-
+After fetching buildings to database run `buildings_for_grid_global.py`. This script calculates a new database table based on building data which is identical to the original ilmakalu dataschema so that the original SQL functions will run.
 
 # Calculate co2 emissions from building material costs for each grid cell
+
+*Note that this section is future developing and not connected to the rest of the tool yet.*
 
 By running `calculate_building_emissions_from_materials.py` you can create a layer in postgis that states total building material co2 costs for each grid cell. 
 

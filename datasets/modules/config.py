@@ -90,6 +90,56 @@ class Config:
             propertyName=self.wfs_properties(),
             srsName=3067)
 
+    # traficom methods
+    def traficom_municipality_code(self):
+        return "KU" + self._cfg.get('traficom').get('municipality_code')
+
+    def traficom_region_code(self):
+        return "MK" + self._cfg.get('traficom').get('region_code')
+
+    def traficom_heavy_cars_usage_modes_url(self):
+        return self._cfg.get('traficom').get('usage_mode_statistics').get('heavy_cars_table_url')
+
+    def traficom_passenger_cars_usage_modes_url(self):
+        return self._cfg.get('traficom').get('usage_mode_statistics').get('passenger_cars_table_url')
+
+    def traficom_passenger_cars_year_of_first_registration(self):
+        return self._cfg.get('traficom').get('usage_mode_statistics').get('passenger_cars_year_of_first_registration')
+
+    def traficom_passenger_cars_make(self):
+        return self._cfg.get('traficom').get('usage_mode_statistics').get('passenger_cars_make')
+
+    def traficom_heavy_car_types_in_usage_mode(self):
+        return self._cfg.get('traficom').get('usage_mode_statistics').get('heavy_car_types')
+
+    def traficom_heavy_car_year_in_usage_mode(self):
+        # for heavy car usage modes statistics are provided per quarter (Q1, Q2, Q3, Q4) 
+        output = []
+        for i in range(4):
+            output.append(self._cfg.get('traficom').get('usage_mode_statistics').get('heavy_car_year')+"Q"+str(i+1))
+        return output
+
+    def traficom_json_query_for_passenger_car_usage_modes(self):
+        json_query = {
+        "query": [
+        {"code":"Alue", "selection":{"filter":"item","values":[self.traficom_municipality_code()]}},
+        {"code":"Merkki", "selection": {"filter":"item", "values":[self.traficom_passenger_cars_make()]}},
+        {"code": "Käyttöönottovuosi", "selection": {"filter":"item", "values":[self.traficom_passenger_cars_year_of_first_registration()]}}
+        ],
+        "response": {"format":"json"}
+        }
+        return json_query
+
+    def traficom_json_query_for_heavy_car_usage_modes(self):
+        json_query = {
+                    "query": [
+                    {"code":"Maakunta", "selection":{"filter":"item","values":[self.traficom_region_code()]}},
+                    {"code":"Ajoneuvoluokka", "selection": {"filter":"item", "values":self.traficom_heavy_car_types_in_usage_mode()}},
+                    {"code": "Vuosineljännes", "selection": {"filter":"item", "values":self.traficom_heavy_car_year_in_usage_mode()}}
+                    ],
+                    "response": {"format":"json"}
+                    }
+        return json_query
 
     # co2data.fi methods
     def co2dataurl(self):
@@ -102,7 +152,3 @@ class Config:
 
     def num_nearest_centers(self) -> int:
         return self._cfg.get("target").get("num_nearst_centers")
-
-if __name__ == "__main__":
-    cfg = Config()
-    print(cfg.chosen_database())
