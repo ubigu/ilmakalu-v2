@@ -108,10 +108,10 @@ Module `building_counter_for_grid_cells.py` has a lot of boiler plate code curre
 Right now the two languages mix uncomfortably. Go to the Traficom site and check if JSONs are available in English. Translate all variables in code. 
 
 This relates to:
- - `get_traffic_usage_power_divisions.py`
+ - `get_traffic_power_mode_distribution.py`
  - `config.py`
  - `config_template.yaml`
 
 # Refactor script that gets mode power distribution for traffic
 
-Refactor `get_traffic_usage_power_divisions.py` to get rid of its boilerplate code.
+Refactor `get_traffic_power_mode_distribution.py` to get rid of its boilerplate code.
