@@ -17,3 +17,8 @@ echo "GRANT schemacreator TO $2;"
 echo "CREATE GROUP organisationname;"
 echo "GRANT organisationname TO $2;"
 echo "GRANT tablecreator TO $2;"
+
+# Just for the time being: add all privileges to organization group
+for schema in built delineations energy grid_globals traffic user_input user_output ; do
+    echo "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA $schema TO organisationname;"
+done
