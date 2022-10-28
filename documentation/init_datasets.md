@@ -17,7 +17,7 @@ Intermediate results, obtained when generating actual data layers.
 Contents in this schema can be later on utilized in creating municipality targeted
 specific data layers.
 
-# 250m national grid
+# 250m national grid skeleton
 
 ## Computing
 
@@ -185,6 +185,40 @@ Remark: String (20.0)
 Area_Ha: Real (0.0)
 ID: String (18.0)
 ```
+
+# Combined 250m grid
+
+Grid has to be prepared for calculation use. To perform this, following steps
+should be taken.
+
+## Create and populate table
+
+Run `sql/municipality_grid.sql` in order to create and populate grid. Grid cells are
+labeled with national municipality code, if grid and municipality areas intersect.
+
+Grid cell geometry occurs multiple times in target table, if same grid cell
+intersects with multiple municipalities.
+
+## Add zone data
+
+This step is performed later
+
+## Add distance to city centers
+
+This step is performed later
+
+# YKR data
+
+Population of YKR data is done in script: `ykr_process.py`
+
+Required data is saved to directory `ykr`.
+
+Input files used:
+* T01_vae_e.mdb
+* T03_tpa_e_TOL2008.mdb
+
+Data is read. Population and employment related (required) data is saved to
+table `data.population_employment`
 
 # Country specific data enrichment
 
