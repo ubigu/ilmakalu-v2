@@ -8,4 +8,5 @@ venv/
 datasets/grid_1km
 datasets/config/config.yaml
 datasets/output
+datasets/ykr
 __pycache__
