@@ -218,7 +218,7 @@ Input files used:
 * T03_tpa_e_TOL2008.mdb
 
 Data is read. Population and employment related (required) data is saved to
-table `data.population_employment`
+tables `data.employ` and `data.pop`
 
 # Country specific data enrichment
 

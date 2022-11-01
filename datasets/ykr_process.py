@@ -5,6 +5,8 @@ from sqlalchemy import create_engine
 
 from modules.config import Config
 
+SCHEMA = "data"
+
 cfg = Config("local_dev")
 engine = create_engine(cfg.db_url())
 
@@ -24,13 +26,30 @@ for f in infiles:
 df_t01 = pd.DataFrame(ykr["T01_vae_e.mdb"])
 df_t03 = pd.DataFrame(ykr["T03_tpa_e_TOL2008.mdb"])
 
-# only required attributes are mapped to sensible data type
-df_t01 = df_t01.astype(dtype={"v_yht": "Int32"})
-df_t03 = df_t03.astype(dtype={"tp_yht": "Int32"})
+employ = df_t03.copy()
+employ = (
+    employ.loc[:, ["xyind", "tp_yht", "kunta", "vuosi"]]
+    .astype(dtype={"tp_yht": "Int32"})
+    .reset_index(names="id")
+)
 
-v = df_t01.loc[:, ["xyind", "v_yht"]]
-t = df_t03.loc[:, ["xyind", "tp_yht"]]
+pop = df_t01.copy()
+pop = (
+    pop.loc[:, ["xyind", "v_yht", "kunta", "vuosi"]]
+    .astype(dtype={"v_yht": "Int32"})
+    .reset_index(names="id")
+)
 
-pop_emp = v.merge(t, how="outer", on="xyind").set_index("xyind")
+tables = []
 
-pop_emp.to_sql("population_employment", engine, schema="data", if_exists="replace")
+employ.to_sql("employ", engine, schema=SCHEMA, if_exists="replace", index=False)
+tables.append((f"{SCHEMA}.employ", "id"))
+
+pop.to_sql("pop", engine, schema=SCHEMA, if_exists="replace", index=False)
+tables.append((f"{SCHEMA}.pop", "id"))
+
+with engine.connect() as con:
+    for table, column in tables:
+        con.execute("ALTER TABLE {} ADD PRIMARY KEY ({});".format(table, column))
+        con.execute("CREATE INDEX ON {} ({});".format(table, "kunta"))
+        con.execute("CREATE INDEX ON {} ({});".format(table, "xyind"))
