@@ -211,7 +211,7 @@ This step is performed later
 
 Population of YKR data is done in script: `ykr_process.py`
 
-Required data is saved to directory `ykr`.
+Required data is saved to directory `datasets/ykr`.
 
 Input files used:
 * T01_vae_e.mdb
