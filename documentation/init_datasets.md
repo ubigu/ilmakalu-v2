@@ -211,14 +211,14 @@ This step is performed later
 
 Population of YKR data is done in script: `ykr_process.py`
 
-Required data is saved to directory `ykr`.
+Required data is saved to directory `datasets/ykr`.
 
 Input files used:
 * T01_vae_e.mdb
 * T03_tpa_e_TOL2008.mdb
 
 Data is read. Population and employment related (required) data is saved to
-table `data.population_employment`
+tables `data.employ` and `data.pop`
 
 # Country specific data enrichment
 
