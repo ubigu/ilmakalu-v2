@@ -199,6 +199,8 @@ labeled with national municipality code, if grid and municipality areas intersec
 Grid cell geometry occurs multiple times in target table, if same grid cell
 intersects with multiple municipalities.
 
+Resulting table: `data.fi_grid_municipalities`
+
 ## Add zone data
 
 This step is performed later
@@ -222,17 +224,7 @@ tables `data.employ` and `data.pop`
 
 # Country specific data enrichment
 
-Data preprocessing is done for the whole country, if it is seen that results
-will be usable in municipality level also.
-
-One specific counterexample is grid level Corine land cover aggregate data.
-It is not possible to correctly compute land use variables from
-aggregated country level data. Problem is on the municipality border cells,
-where correct land cover aggregate computation requires that land cover data
-is clipped with municipality region.
-
-For municipality level, there is a specific routine to compute land cover
-aggregates.
+Data preprocessing is done for the whole country.
 
 ## Urban/Rural areas to 250m grid
 
@@ -251,11 +243,23 @@ defined, urban zone information overwrites urban/rural.
 * subdivide Corine geometries (to ease grid processing step)
 * compute land cover data in grid cells
 * compute land cover aggregate for Corine main classes (1, 2, ..., 5)
+* compute land and water aggregate ha-areas
 
-# Municipality specific data enrichment (Corine)
+Execute file against the database: `sql/urban_zones_and_land_use.sql`
 
-Municipality specific land cover data aggregate is computed with
-provided SQL.
+Result table: `data.clc`
+
+Compare table: `grid_globals.clc`
+
+Intermediate tables are generated in `data` -schema during SQL process,
+and they are currently preserved.
+
+N.B. All the columns in `grid_globals.clc` can not be generated, due to
+source material difference (Corine).
+
+# Other municipality specific data enrichment
+
+Municipality specific other data processing is described below.
 
 ## Travel time from grid cell to nearest center (via road)
 
