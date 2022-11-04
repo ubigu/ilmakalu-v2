@@ -36,26 +36,26 @@ class TestInterpolation(unittest.TestCase):
         self.assertEqual(intp.interpolate(-100), -199.5)
 
     def test_wrong_initialization_0(self):
-        self.assertRaises(ValueError,Interpolation, k=1)
+        self.assertRaises(ValueError, Interpolation, k=1)
 
     def test_wrong_initialization_1(self):
-        self.assertRaises(ValueError,Interpolation, b=1)
+        self.assertRaises(ValueError, Interpolation, b=1)
 
     def test_wrong_initialization_2(self):
-        self.assertRaises(ValueError,Interpolation, p_0=Point(0,0))
+        self.assertRaises(ValueError, Interpolation, p_0=Point(0,0))
 
     def test_wrong_initialization_3(self):
-        self.assertRaises(ValueError,Interpolation, p_1=Point(0,0))
+        self.assertRaises(ValueError, Interpolation, p_1=Point(0,0))
 
     def test_wrong_initialization_4(self):
-        self.assertRaises(ValueError,Interpolation, p_0=Point(0,0), k=1)
+        self.assertRaises(ValueError, Interpolation, p_0=Point(0,0), k=1)
 
     def test_wrong_initialization_5(self):
-        self.assertRaises(ValueError,Interpolation, p_1=Point(0,0), b=1)
+        self.assertRaises(ValueError, Interpolation, p_1=Point(0,0), b=1)
 
     def test_wrong_initialization_6(self):
-        self.assertRaises(ValueError,Interpolation, p_1=Point(0,0), k=1, b=1)
+        self.assertRaises(ValueError, Interpolation, p_1=Point(0,0), k=1, b=1)
 
     def test_wrong_initialization_7(self):
         p = Point(0, 0)
-        self.assertRaises(ValueError,Interpolation, p, p)
+        self.assertRaises(ValueError, Interpolation, p, p)
