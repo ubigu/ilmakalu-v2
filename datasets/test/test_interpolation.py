@@ -55,3 +55,7 @@ class TestInterpolation(unittest.TestCase):
 
     def test_wrong_initialization_6(self):
         self.assertRaises(ValueError,Interpolation, p_1=Point(0,0), k=1, b=1)
+
+    def test_wrong_initialization_7(self):
+        p = Point(0, 0)
+        self.assertRaises(ValueError,Interpolation, p, p)

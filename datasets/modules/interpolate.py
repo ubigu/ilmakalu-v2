@@ -26,7 +26,11 @@ class Interpolation:
         return k * x + b
 
     def _interpolator(self, p_0: Point, p_1: Point):
+        if p_0.time_as_year == p_1.time_as_year:
+            raise ValueError("Points must have different year values")
+
         k = (p_1.value - p_0.value) / (p_1.time_as_year - p_0.time_as_year)
+
         # y = kx + b
         # b = y - kx
         b = p_1.value - k * p_1.time_as_year
