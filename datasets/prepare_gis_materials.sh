@@ -9,7 +9,7 @@ set -e
 # yq --version
 # yq (https://github.com/mikefarah/yq/) version 4.16.2
 
-python_interpreter="./venv/bin/python"
+python_interpreter="../venv/bin/python"
 
 config_yaml="config/config.yaml"
 
