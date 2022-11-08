@@ -55,7 +55,7 @@ else
 fi
 
 echo "Upload grid to database"
-#ogr2ogr -nln data.fi_grid_250m -f "PostgreSQL" PG:"$db_addr" "$grid_file"
+ogr2ogr -nln data.fi_grid_250m -f "PostgreSQL" PG:"$db_addr" "$grid_file"
 
 # Municipality
 echo "Upload municipality data"
