@@ -1,3 +1,19 @@
+# Quickstart
+
+In order to test approach described here, script `prepare_gis_materials.sh` is
+current development platform.
+
+Developed script will try to run all documented data preparation steps.
+
+Some error handling is implemented.
+
+## Prerequisites
+
+* install `yq`
+* copy (or symlink) files to directory `external` (see script)
+* development database is up and running
+* it might be a good idea to have database dump already imported to database
+
 # Notes for deployment
 
 # Minimize run time and time used to download materials
