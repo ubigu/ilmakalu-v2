@@ -30,3 +30,19 @@ Create and export materials and save to external directory.
 * Corine (clc)
 * 250m grid
 * [list continues]
+
+# Future processing paths
+
+_Here is listed future processing path contents_
+
+## Data processing
+
+Database processing:
+* data.clc
+
+File processing:
+* grid_250m.shp
+
+## Deployment
+
+Data population during or immediately after deployment.
