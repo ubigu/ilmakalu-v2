@@ -1,0 +1,7 @@
+version: "3.8"
+
+services:
+  devenv:
+    image: ilmakalu-devenv
+    build:
+      context: development_environment
