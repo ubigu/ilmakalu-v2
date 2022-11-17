@@ -92,23 +92,7 @@ WHERE ST_Intersects(c.geom, g.wkb_geometry);
 
 CREATE INDEX data_fi_corine_grid_intersection_xyind_index ON data.fi_corine_grid_intersection(xyind);
 
-COMMENT ON TABLE data.fi_corine_grid_intersection IS 'Finnish Corine data mapped (bun unaggregated) to 250m grid cells.';
-
--- Alternative approach: municipality focused corine
--- clip exactly according to municipality borders
--- This cannot be achieved by first creating country-wide representation
--- Generate this kind of table on-the-fly, when needed.
-DROP TABLE IF EXISTS data.fi_corine_grid_intersection_mun;
-CREATE TABLE data.fi_corine_grid_intersection_mun AS
-SELECT
-    ST_Area(ST_Intersection(g.wkb_geometry, ST_Intersection(c.geom, m.geom))) AS area,
-    xyind,
-    code_18
-FROM data.fi_corine_subdivided AS c, data.fi_grid_250m AS g, data.fi_municipality_2022_10k AS m
-WHERE ST_Intersects(m.geom, g.wkb_geometry) AND ST_Intersects(c.geom, m.geom) AND ST_Intersects(c.geom, g.wkb_geometry)
-AND m.namefin='Tampere';
-
-COMMENT ON TABLE data.fi_corine_grid_intersection_mun IS 'Example of limiting Corine with selected municipality border geometry.';
+COMMENT ON TABLE data.fi_corine_grid_intersection IS 'Finnish Corine data mapped (but unaggregated) to 250m grid cells.';
 
 -- Convert landuse data from tall to wide
 DROP TABLE IF EXISTS data.fi_corine_areas;
@@ -146,3 +130,35 @@ CREATE INDEX data_fi_grid_corine_250m_landuse_xyind_idx ON data.fi_grid_250m_lan
 CREATE INDEX data_fi_grid_corine_250m_landuse_geom_idx ON data.fi_grid_250m_landuse USING GIST(geom);
 
 COMMENT ON TABLE data.fi_grid_250m_landuse IS 'Land use variables gathered into one table';
+
+-- create table almost like grid_globals.clc
+
+-- ilmakalu=> \d grid_globals.clc
+--                    Table "grid_globals.clc"
+--  Column  |       Type        | Collation | Nullable | Default 
+-- ---------+-------------------+-----------+----------+---------
+--  id      | integer           |           |          | 
+--  vuosi   | integer           |           |          | 
+--  kunta   | integer           |           |          | 
+--  maa_ha  | double precision  |           |          | 
+--  vesi_ha | double precision  |           |          | 
+
+--  N.B. skip corine details for now
+
+--  xyind   | character varying |           |          | 
+
+DROP TABLE IF EXISTS data.clc;
+CREATE TABLE data.clc AS
+SELECT
+    lu.xyind,
+    2018::int AS vuosi,
+    gm.mun AS kunta,
+    (lu.land_area_1 + lu.land_area_2 + lu.land_area_3) / 10000.0 AS maa_ha,
+    (lu.land_area_4 + lu.land_area_5) / 10000.0 AS vesi_ha
+FROM
+    data.fi_grid_municipalities AS gm
+JOIN data.fi_grid_250m_landuse AS lu ON gm.xyind = lu.xyind;
+
+CREATE INDEX data_clc_xyind_index ON data.clc (xyind);
+
+COMMENT ON TABLE data.clc IS 'Land cover summary table with municipality info.';
