@@ -9,4 +9,6 @@ datasets/grid_1km
 datasets/config/config.yaml
 datasets/output
 datasets/ykr
+datasets/dump_data
+datasets/external
 __pycache__
