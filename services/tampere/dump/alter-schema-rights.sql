@@ -1,0 +1,7 @@
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA built TO organisationname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA delineations TO organisationname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA energy TO organisationname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA grid_globals TO organisationname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA traffic TO organisationname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA user_input TO organisationname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA user_output TO organisationname;

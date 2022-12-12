@@ -9,7 +9,9 @@ volumes:
     external: false
   ilmakalu-user-data2:
     external: false
-    
+  ilmakalu-tampere-user-data:
+    external: false
+
 services:
   database:
     image: kartoza/postgis:13.0
@@ -98,6 +100,57 @@ services:
 #      - ilmakalu-user-data2:/var/lib/postgresql
     ports:
       - "25435:5432"
+    restart: on-failure
+    healthcheck:
+     test: "exit 0"
+    shm_size: 1g
+  tampere_user:
+    image: kartoza/postgis:13.0
+    environment:
+      ILMAKALU_COMPUTE_SERVICE_NAME: ${ILMAKALU_COMPUTE_SERVICE_NAME}
+      POSTGRES_USER: ${POSTGRES2_USER}
+      POSTGRES_PASSWORD: ${POSTGRES2_PASSWORD}
+      POSTGRES_DB: postgres
+      ILMAKALU_REMOTE_USER: ${ILMAKALU_USER}
+      ILMAKALU_REMOTE_USER_PW: ${ILMAKALU_USER_PW}
+      ILMAKALU_REMOTE_DB: ${ILMAKALU_DB}
+      ILMAKALU_USER: ${ILMAKALU2_USER}
+      ILMAKALU_USER_PW: ${ILMAKALU2_USER_PW}
+      ILMAKALU_DB: ${ILMAKALU2_DB}
+      DEFAULT_CTYPE: 'fi_FI.UTF8'
+      DEFAULT_COLLATION: 'fi_FI.UTF8'
+      TZ: Europe/Helsinki
+      PASSWORD_AUTHENTICATION: "md5"
+    volumes:
+      - ./tampere_user/init/00-init-user-db.sh:/docker-entrypoint-initdb.d/00-init-user-db.sh
+      - ./tampere_user/init/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - ./tampere_user/init/02-init.sh:/docker-entrypoint-initdb.d/02-init.sh
+      - ilmakalu-tampere-user-data:/var/lib/postgresql
+    ports:
+      - "45435:5432"
+    restart: on-failure
+    healthcheck:
+     test: "exit 0"
+    shm_size: 1g
+  tampere:
+    container_name: tampere_ilmakalu
+    image: ilmakalu/tampere
+    build:
+      context: tampere
+    environment:
+      ILMAKALU_COMPUTE_SERVICE_NAME: ${ILMAKALU_COMPUTE_SERVICE_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      ILMAKALU_USER: ${ILMAKALU_USER}
+      ILMAKALU_USER_PW: ${ILMAKALU_USER_PW}
+      ILMAKALU_DB: ${ILMAKALU_DB}
+      DEFAULT_CTYPE: 'fi_FI.UTF8'
+      DEFAULT_COLLATION: 'fi_FI.UTF8'
+      TZ: Europe/Helsinki
+      PASSWORD_AUTHENTICATION: "md5"
+    ports:
+      - "35435:5432"
     restart: on-failure
     healthcheck:
      test: "exit 0"
