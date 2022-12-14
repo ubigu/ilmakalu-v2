@@ -2,8 +2,24 @@
 
 - create stripped dump (see `restore_dump.md`)
 - copy stripped dump `../datasets/dump_data/emissiontest_stripped.sql` to `tampere/dump`
-- build database `docker-compose build tampere`
+- build database
+```sh
+     docker-compose build --no-cache \
+          --build-arg EMISSIONTEST_USER_PW='abc123' \
+          --build-arg INTERNAL_USER_PW='cde234' \
+          --build-arg SCHEMACREATOR_USER_PW='efg345' \
+          --build-arg TABLECREATOR_USER_PW='ghi567' \
+          --build-arg CLOUDSQLADMIN_USER_PW='jkl543' \
+          --build-arg CLOUDSQLSUPERUSER_USER_PW='lmn098' \
+          tampere
+```
 - start services `docker-compose up tampere_user tampere`
+
+## Clean up
+
+- `docker-compose stop tampere` (Or CTRL-C)
+- `docker-compose rm tampere`
+- `docker rmi ilmakalu/tampere:latest`
 
 ## How to test
 

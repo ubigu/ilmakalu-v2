@@ -1,9 +1,33 @@
 FROM kartoza/postgis:13.0
 
+ARG EMISSIONTEST_USER_PW
+ENV EMISSIONTEST_USER_PW ${EMISSIONTEST_USER_PW}
+RUN echo ${EMISSIONTEST_USER_PW}
+
+ARG INTERNAL_USER_PW
+ENV INTERNAL_USER_PW ${INTERNAL_USER_PW}
+RUN echo ${INTERNAL_USER_PW}
+
+ARG SCHEMACREATOR_USER_PW
+ENV SCHEMACREATOR_USER_PW ${SCHEMACREATOR_USER_PW}
+RUN echo ${SCHEMACREATOR_USER_PW}
+
+ARG TABLECREATOR_USER_PW
+ENV TABLECREATOR_USER_PW ${TABLECREATOR_USER_PW}
+RUN echo ${TABLECREATOR_USER_PW}
+
+ARG CLOUDSQLADMIN_USER_PW
+ENV CLOUDSQLADMIN_USER_PW ${CLOUDSQLADMIN_USER_PW}
+RUN echo ${CLOUDSQLADMIN_USER_PW}
+
+ARG CLOUDSQLSUPERUSER_USER_PW
+ENV CLOUDSQLSUPERUSER_USER_PW ${CLOUDSQLSUPERUSER_USER_PW}
+RUN echo ${CLOUDSQLSUPERUSER_USER_PW}
+
 COPY ./dump/emissiontest_stripped.sql /dump/emissiontest_stripped.sql
 COPY ./dump/alter-schema-rights.sql /dump/
 
 COPY init/00-init-user-db.sh /docker-entrypoint-initdb.d/
 COPY init/01-init.sh /docker-entrypoint-initdb.d/
-COPY init/02-init-users.sql /docker-entrypoint-initdb.d/
+COPY init/02-init-users.sh /docker-entrypoint-initdb.d/
 COPY init/10-restore-database.sh /docker-entrypoint-initdb.d/
