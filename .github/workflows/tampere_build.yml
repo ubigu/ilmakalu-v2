@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "tampere_plain" ]
+    branches: [ "tampere-plain" ]
 #  pull_request:
 #    branches: [ "main" ]
 
