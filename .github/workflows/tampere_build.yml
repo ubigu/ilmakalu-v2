@@ -32,4 +32,4 @@ jobs:
       with:
         context: services/tampere
         push: true
-        tags: ilmakalu_tampere:$(date +%s)
+        tags: ilmakalu_tampere:latest
