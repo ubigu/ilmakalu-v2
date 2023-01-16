@@ -1,0 +1,22 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "tampere_plain" ]
+#  pull_request:
+#    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download database dump
+      working-directory: services/tampere/dump
+      run: pg_dump "host=${{ ILMAKALU_UBIHUB_HOST }} user=${{ ILMAKALU_UBIHUB_USER }} password=${{ ILMAKALU_UBIHUB_PASSWORD }} dbname=${{ ILMAKALU_UBIHUB_DATABASE }}" > emissiontest_stripped.sql
+    - name: Build the Docker image
+      working-directory: services/tampere
+      run: docker build . --file Dockerfile --tag ilmakalu_tampere:$(date +%s)
