@@ -23,10 +23,10 @@ jobs:
     #   run: docker build . --file Dockerfile --tag ilmakalu_tampere:$(date +%s)
     - name: Login
       uses: docker/login-action@v2
-        with:
-          registry: ${{ secrets.REGISTRY_ADDRESS }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+      with:
+        registry: ${{ secrets.REGISTRY_ADDRESS }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
     - name: Build and push
       uses: docker/build-push-action@v3
       with:
