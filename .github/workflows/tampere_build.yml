@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: 18
-  IMAGE_NAME: ${{ secrets.REGISTRY_ADDRESS }}/ilmakalu
+  IMAGE_NAME: ${{ secrets.REGISTRY_ADDRESS }}/ilmakalu/tampere
 
 jobs:
 
