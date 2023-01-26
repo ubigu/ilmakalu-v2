@@ -7,6 +7,10 @@ on:
 #  pull_request:
 #    branches: [ "main" ]
 
+env:
+  NODE_VERSION: 18
+  IMAGE_NAME: ${{ secrets.REGISTRY_ADDRESS }}/ilmakalu_tampere
+
 jobs:
 
   build:
@@ -29,4 +33,4 @@ jobs:
       with:
         context: services/tampere
         push: true
-        tags: ilmakalu_tampere:latest
+        tags: ${{ env.IMAGE_NAME }}:latest
