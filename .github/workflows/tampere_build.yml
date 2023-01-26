@@ -33,4 +33,4 @@ jobs:
       with:
         context: services/tampere
         push: true
-        tags: ${{ env.IMAGE_NAME }}:latest
+        tags: ${{ env.IMAGE_NAME }}:release
