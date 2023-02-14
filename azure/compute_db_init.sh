@@ -27,6 +27,3 @@ EOSQL
 
 ## restore dump (user : application)
 psql "$conn_string_ilmakalu" -f $COMPUTE_MASTER_DUMP_FILE
-
-## create users (admin : application)
-
