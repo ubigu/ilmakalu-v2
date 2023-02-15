@@ -78,7 +78,7 @@ az postgres flexible-server parameter set \
     --server-name $DBHOST_NAME \
     --subscription $SUBS \
     --name azure.extensions \
-    --value postgis
+    --value postgis,dblink,postgres_fdw
 
 echo "When done, delete resources:"
 echo "az group delete --yes --resource-group $RG"

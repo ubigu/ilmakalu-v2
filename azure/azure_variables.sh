@@ -34,6 +34,9 @@ DATA_DATABASE=$(parse_config "postgres_flexible_server.data_database")
 DATA_USER=$(parse_config "postgres_flexible_server.data_user")
 DATA_PASSWORD=$(parse_config "postgres_flexible_server.data_password")
 
+# dblink service
+ILMAKALU_COMPUTE_SERVICE_NAME=$(parse_config "postgres_compute_service.name")
+
 RG=$(parse_config "resource_group.name")
 MY_IP=$(curl -s ifconfig.me)
 
@@ -69,7 +72,7 @@ conn_string_ilmakalu_data=$(echo $conn_str_skel | \
     sed "s/{login}/$DATA_USER/;s/{password}/$DATA_PASSWORD/;s/{server}/$DBHOST_NAME/;s/postgres?/${DATA_DATABASE}?/")
 
 # compute database, admin user
-conn_string_adm_ilmakalu=$(echo $conn_string | sed 's/postgres?/${COMPUTE_DATABASE_NAME}?/')
+conn_string_adm_ilmakalu=$(echo $conn_string | sed "s/postgres?/${COMPUTE_DATABASE_NAME}?/")
 
 # data database, admin user
-conn_string_adm_ilmakalu_data=$(echo $conn_string | sed 's/postgres?/${DATA_DATABASE}?/')
+conn_string_adm_ilmakalu_data=$(echo $conn_string | sed "s/postgres?/${DATA_DATABASE}?/")
