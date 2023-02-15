@@ -32,7 +32,4 @@ psql "$conn_string_adm_ilmakalu_data" <<-EOSQL
 EOSQL
 
 # create schemas
-psql "$conn_string_ilmakalu_data" <<-EOSQL
-    CREATE SCHEMA user_input;
-    CREATE SCHEMA user_output;
-EOSQL
+psql "$conn_string_ilmakalu_data" -f $USER_DATA_MASTER_DUMP_FILE

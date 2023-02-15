@@ -19,3 +19,9 @@ postgres_compute_master:
   dump_output_file: <dump output file>
 postgres_compute_service:
   name: <compute service name for dblink>
+user_data_source:
+  server_name: <server name>
+  user: <database user>
+  database: <database name>
+  password: <password>
+  dump_output_file: <dump output file>

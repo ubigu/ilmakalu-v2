@@ -37,6 +37,13 @@ DATA_PASSWORD=$(parse_config "postgres_flexible_server.data_password")
 # dblink service
 ILMAKALU_COMPUTE_SERVICE_NAME=$(parse_config "postgres_compute_service.name")
 
+# user data (Ubigu sources)
+USER_DATA_MASTER_HOST=$(parse_config "user_data_source.server_name")
+USER_DATA_MASTER_DB=$(parse_config "user_data_source.database")
+USER_DATA_MASTER_USER=$(parse_config "user_data_source.user")
+USER_DATA_MASTER_PASSWORD=$(parse_config "user_data_source.password")
+USER_DATA_MASTER_DUMP_FILE=$(parse_config "user_data_source.dump_output_file")
+
 RG=$(parse_config "resource_group.name")
 MY_IP=$(curl -s ifconfig.me)
 
