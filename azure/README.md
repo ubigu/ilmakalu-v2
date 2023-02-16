@@ -85,7 +85,21 @@ $ sh compute_db_drop_users.sh
 
 # Debugging
 
-Test connection:
+Initialize variables from provided init file
+
+```sh
+$ . ./azure_variables.sh
+```
+
+After init, you can utilize variables:
+
+```sh
+$ psql $conn_string_ilmakalu
+```
+
+See rest of connection string variable names from variable init file (`azure_variables.sh`).
+
+## Test dblink-connection:
 
 ```sh
 $ . ./azure_variables.sh
@@ -104,19 +118,43 @@ ilmakalu_data=> select * from dblink('ubicompute', 'select xyind, zone from deli
 (4 rows)
 ```
 
-Initialize variables from provided init file
+## Verify function run
 
-```sh
-$ . ./azure_variables.sh
+Following call from user database should process some time (minute or two), and produce sensible result:
+
+```sql
+SELECT * FROM dblink('ubicompute', 'SELECT * FROM CO2_CalculateEmissions(
+    array[837],
+    NULL::regclass);') AS TULOS(
+    geom geometry(MultiPolygon, 3067),
+    xyind varchar(13),
+    mun int,
+    zone bigint,
+    year date,
+    floorspace int,
+    pop smallint,
+    employ smallint,
+    tilat_vesi_tco2 real,
+    tilat_lammitys_tco2 real,
+    tilat_jaahdytys_tco2 real,
+    sahko_kiinteistot_tco2 real,
+    sahko_kotitaloudet_tco2 real,
+    sahko_palv_tco2 real,
+    sahko_tv_tco2 real,
+    liikenne_as_tco2 real,
+    liikenne_tp_tco2 real,
+    liikenne_tv_tco2 real,
+    liikenne_palv_tco2 real,
+    rak_korjaussaneeraus_tco2 real,
+    rak_purku_tco2 real,
+    rak_uudis_tco2 real,
+    sum_yhteensa_tco2 real,
+    sum_lammonsaato_tco2 real,
+    sum_liikenne_tco2 real,
+    sum_sahko_tco2 real,
+    sum_rakentaminen_tco2 real
+);
 ```
-
-After init, you can utilize variables:
-
-```sh
-$ psql $conn_string_ilmakalu
-```
-
-See rest of connection string variable names from variable init file (`azure_variables.sh`).
 
 # Possible pitfalls
 
