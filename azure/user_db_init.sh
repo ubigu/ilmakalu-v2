@@ -6,11 +6,10 @@ set -e
 # obtain variables
 . ./azure_variables.sh
 
-## initialize cloud resources
-## - database server
-## - keyvault
-
-## add credentials to keyvault
+if ! [ -f "$USER_DATA_MASTER_DUMP_FILE" ]; then
+    echo "No dump file '$USER_DATA_MASTER_DUMP_FILE', cannot proceed."
+    exit 1
+fi
 
 ## create database (admin : postgres)
 psql "$conn_string" <<-EOSQL

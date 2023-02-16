@@ -1,7 +1,7 @@
 # Background
 
 Generate Azure database resource (flexible server), and
-populate contents with compute database dump.
+populate contents with compute database and user database dumps.
 
 # Quickstart
 
@@ -43,25 +43,37 @@ $ sh user_db_create_users.sh
 
 ## Fetch dump
 
+From copute database:
+
 ```sh
 $ sh take_compute_database_dump.sh
 ```
 
+From user database:
+
+```sh
+$ sh take_user_database_dump.sh
+```
+
 ## Initialize databases
 
-Create extension(s) and load dump:
+Create extension(s) and (re)-initialize database:
 
 ```sh
 $ sh compute_db_init.sh
 ```
 
-Initialize userdata database
+(Re)-initialize userdata database
+
+BEWARE: existing database is dropped!
 
 ```sh
+# BEWARE: USER data is dropped!
 $ sh user_db_init.sh
+# BEWARE: USER data is dropped!
 ```
 
-## Remove user
+## Remove users from compute database
 
 Remove user(s), if required.
 
@@ -104,4 +116,15 @@ After init, you can utilize variables:
 $ psql $conn_string_ilmakalu
 ```
 
-See rest of connection strings from variable init file.
+See rest of connection string variable names from variable init file (`azure_variables.sh`).
+
+# Possible pitfalls
+
+## Connection strings
+
+Regarding generating connection strings in `azure_variables.sh`:
+
+String replace with `sed` can fail, if passwords contain characters that confuse `sed`.
+
+It is then safe to either make script more robust (possibly start using
+use URL encoding for passwords), or avoid problematic characters.
