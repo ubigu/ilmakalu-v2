@@ -5,9 +5,9 @@
 - build database `docker-compose build tampere`
 - start services `docker-compose up tampere_user tampere`
 
-## How to test
+## How to verify data and computation
 
-See exact details from `.env` -file.
+See variable details from `.env` -file and `docker-compose.yml`.
 
 ### User database
 
