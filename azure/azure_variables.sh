@@ -44,6 +44,8 @@ USER_DATA_MASTER_USER=$(parse_config "user_data_source.user")
 USER_DATA_MASTER_PASSWORD=$(parse_config "user_data_source.password")
 USER_DATA_MASTER_DUMP_FILE=$(parse_config "user_data_source.dump_output_file")
 
+COMPUTE_SCHEMAS=$(parse_config "user_data.schemas[]")
+
 RG=$(parse_config "resource_group.name")
 MY_IP=$(curl -s ifconfig.me)
 

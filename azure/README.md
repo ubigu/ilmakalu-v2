@@ -108,7 +108,7 @@ psql (14.3, server 13.9)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 
-ilmakalu_data=> select * from dblink('ubicompute', 'select xyind, zone from delineations.grid limit 4;') as grid(xyind varchar(80), zone bigint);
+ilmakalu_data=> SELECT xyind, zone FROM delineations.grid LIMIT 4;
      xyind     | zone 
 ---------------+------
  3328756928875 |   87
@@ -123,37 +123,9 @@ ilmakalu_data=> select * from dblink('ubicompute', 'select xyind, zone from deli
 Following call from user database should process some time (minute or two), and produce sensible result:
 
 ```sql
-SELECT * FROM dblink('ubicompute', 'SELECT * FROM CO2_CalculateEmissions(
+SELECT * FROM CO2_CalculateEmissions(
     array[837],
-    NULL::regclass);') AS TULOS(
-    geom geometry(MultiPolygon, 3067),
-    xyind varchar(13),
-    mun int,
-    zone bigint,
-    year date,
-    floorspace int,
-    pop smallint,
-    employ smallint,
-    tilat_vesi_tco2 real,
-    tilat_lammitys_tco2 real,
-    tilat_jaahdytys_tco2 real,
-    sahko_kiinteistot_tco2 real,
-    sahko_kotitaloudet_tco2 real,
-    sahko_palv_tco2 real,
-    sahko_tv_tco2 real,
-    liikenne_as_tco2 real,
-    liikenne_tp_tco2 real,
-    liikenne_tv_tco2 real,
-    liikenne_palv_tco2 real,
-    rak_korjaussaneeraus_tco2 real,
-    rak_purku_tco2 real,
-    rak_uudis_tco2 real,
-    sum_yhteensa_tco2 real,
-    sum_lammonsaato_tco2 real,
-    sum_liikenne_tco2 real,
-    sum_sahko_tco2 real,
-    sum_rakentaminen_tco2 real
-);
+    NULL::regclass);
 ```
 
 # Possible pitfalls

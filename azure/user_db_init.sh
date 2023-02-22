@@ -30,5 +30,13 @@ psql "$conn_string_adm_ilmakalu_data" <<-EOSQL
     GRANT USAGE ON FOREIGN SERVER $ILMAKALU_COMPUTE_SERVICE_NAME TO $DATA_USER;
 EOSQL
 
-# create schemas
+# create data schemas
 psql "$conn_string_ilmakalu_data" -f $USER_DATA_MASTER_DUMP_FILE
+
+# create and (foreign) map schemas (user : data)
+for schema in $COMPUTE_SCHEMAS;
+do
+    echo "DROP SCHEMA IF EXISTS ${schema};" | psql "$conn_string_ilmakalu_data" -
+    echo "CREATE SCHEMA ${schema};" | psql "$conn_string_ilmakalu_data" -
+    echo "IMPORT FOREIGN SCHEMA ${schema} FROM SERVER $ILMAKALU_COMPUTE_SERVICE_NAME INTO ${schema};" | psql "$conn_string_ilmakalu_data" -
+done

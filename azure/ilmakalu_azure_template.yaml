@@ -25,3 +25,10 @@ user_data_source:
   database: <database name>
   password: <password>
   dump_output_file: <dump output file>
+user_data:
+  schemas:
+    - built
+      delineations
+      energy
+      grid_globals
+      traffic
