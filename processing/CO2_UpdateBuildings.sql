@@ -1,4 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS functions;
+
+DROP FUNCTION IF EXISTS functions.CO2_UpdateBuildings;
 CREATE OR REPLACE FUNCTION
 functions.CO2_UpdateBuildings(
     rak_taulu text,

@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS functions;
-DROP FUNCTION IF EXISTS CO2_CalculateEmissionsLoop;
 
+DROP FUNCTION IF EXISTS functions.CO2_CalculateEmissionsLoop;
 CREATE OR REPLACE FUNCTION
 functions.CO2_CalculateEmissionsLoop(
     municipalities integer[],
