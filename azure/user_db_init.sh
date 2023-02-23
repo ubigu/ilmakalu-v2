@@ -40,3 +40,7 @@ do
     echo "CREATE SCHEMA ${schema};" | psql "$conn_string_ilmakalu_data" -
     echo "IMPORT FOREIGN SCHEMA ${schema} FROM SERVER $ILMAKALU_COMPUTE_SERVICE_NAME INTO ${schema};" | psql "$conn_string_ilmakalu_data" -
 done
+
+psql "$conn_string_ilmakalu_data" <<-EOSQL
+    SET SCHEMA PATH functions, public;
+EOSQL
