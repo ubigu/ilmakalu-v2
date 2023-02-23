@@ -5,7 +5,7 @@ set -e
 # Create users for compute database
 
 # obtain variables
-. ./azure_variables.sh
+. ./azure_variables.sh "$1"
 
 # Create user for compute database
 psql "$conn_string" <<-EOSQL
