@@ -24,5 +24,9 @@ psql "$conn_string_adm_ilmakalu" <<-EOSQL
     ALTER DATABASE "$COMPUTE_DATABASE_NAME" OWNER TO $COMPUTE_USER;
 EOSQL
 
+psql "$conn_string_ilmakalu" <<-EOSQL
+    CREATE SCHEMA "functions";
+EOSQL
+
 ## restore dump (user : application)
 psql "$conn_string_ilmakalu" -f $COMPUTE_MASTER_DUMP_FILE
