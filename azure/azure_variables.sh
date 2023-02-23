@@ -1,6 +1,8 @@
-if [ "$1"="local" ]; then
+if [ "$1" = "local" ]; then
+    run_mode="local"
     config_yaml="./ilmakalu_local.yaml"
 else
+    run_mode="azure"
     config_yaml="./ilmakalu_azure.yaml"
 fi
 
@@ -53,8 +55,8 @@ COMPUTE_SCHEMAS=$(parse_config "user_data.schemas[]")
 RG=$(parse_config "resource_group.name")
 MY_IP=$(curl -s ifconfig.me)
 
-if ! [ "$1"="local" ]; then
-
+if [ "$run_mode" = "azure" ]; then
+    echo "Azure"
     if ! $(az account show > /dev/null); then
         az login
     fi
@@ -92,6 +94,7 @@ if ! [ "$1"="local" ]; then
     # data database, admin user
     conn_string_adm_ilmakalu_data=$(echo $conn_string | sed "s/postgres?/${DATA_DATABASE}?/")
 else
+    echo "Local"
     PORT=65432
     conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/postgres?sslmode=require"
     conn_string_adm_ilmakalu_data="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
