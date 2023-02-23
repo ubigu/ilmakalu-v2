@@ -9,9 +9,10 @@ Kotitalouksien muuhun kuin lämmitykseen ja kiinteistösähköön käytetyn säh
     sahko_koti_co2 = sahko_koti_kwh  * sahko_gco2kwh
 */
 
-DROP FUNCTION IF EXISTS public.CO2_ElectricityHousehold;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_ElectricityHousehold;
 CREATE OR REPLACE FUNCTION
-public.CO2_ElectricityHousehold(
+functions.CO2_ElectricityHousehold(
     municipality int,
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario

@@ -12,9 +12,10 @@ Kummassakaan tarkastelussa ei oteta vielä tässä vaiheessa huomioon korjaamise
 
 */
 
-DROP FUNCTION IF EXISTS public.CO2_BuildRenovate;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_BuildRenovate;
 CREATE OR REPLACE FUNCTION
-public.CO2_BuildRenovate(
+functions.CO2_BuildRenovate(
     floorSpace real, -- Rakennustyypin (erpien, rivita, askert, liike, tsto, liiken, hoito, kokoon, opetus, teoll, varast, muut) ikäluokkakohtainen kerrosala YKR-ruudussa laskentavuonna [m2]. Lukuarvo riippuu laskentavuodesta sekä rakennuksen tyypistä ja ikäluokasta.
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar,  -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'

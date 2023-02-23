@@ -1,7 +1,8 @@
-DROP FUNCTION IF EXISTS public.CO2_GridProcessing;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_GridProcessing;
 
 CREATE OR REPLACE FUNCTION
-public.CO2_GridProcessing(
+functions.CO2_GridProcessing(
     municipalities integer[],
     aoi regclass, -- Area of interest
     calculationYear integer,

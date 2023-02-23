@@ -8,9 +8,10 @@ Kiinteistösähkön kasvihuonekaasupäästöt sahko_kiinteisto_co2 [CO2-ekv/a] o
 
 */
 
-DROP FUNCTION IF EXISTS public.CO2_ElectricityProperty;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_ElectricityProperty;
 CREATE OR REPLACE FUNCTION
-public.CO2_ElectricityProperty(
+functions.CO2_ElectricityProperty(
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
     floorSpace real, -- Rakennustyypin ikäluokkakohtainen kerrosala YKR-ruudussa laskentavuonna. Lukuarvo riippuu laskentavuodesta sekä rakennuksen tyypistä ja ikäluokasta [m2]

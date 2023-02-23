@@ -8,9 +8,10 @@ ja sen loppukäsittelyn ja -sijoituksen energiaperäiset kasvihuonekaasupääst�
     rak_purku_energia_co2 = rakennukset_poistuma * rak_purku_energia_gco2m2
 
 */
-DROP FUNCTION IF EXISTS public.CO2_BuildDemolish;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_BuildDemolish;
 CREATE OR REPLACE FUNCTION
-public.CO2_BuildDemolish(
+functions.CO2_BuildDemolish(
 	buildingsRemoval real, -- rakennustyypin (erpien, rivita, askert, liike, tsto, liiken, hoito, kokoon, opetus, teoll, varast, muut) kerrosalan poistuma YKR-ruudussa laskentavuonna [m2].
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar, -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'

@@ -10,9 +10,9 @@ Teollisuus- ja varastorakennuksiin sisältyvät teollisuusrakennukset (teoll) ja
 /*  Test : 
     SELECT co2_traffic_iwhs_co2('837', 2021::int, 'wem', 3000::int, 'myymal_hyper', array[23, 53, 25, 43, 66, 22, 11, 5, 4])
 */
-DROP FUNCTION IF EXISTS public.CO2_TrafficIWHS;
+DROP FUNCTION IF EXISTS functions.CO2_TrafficIWHS;
 CREATE OR REPLACE FUNCTION
-public.CO2_TrafficIWHS(
+functions.CO2_TrafficIWHS(
     municipality integer, -- Municipality, for which the values are calculated
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario

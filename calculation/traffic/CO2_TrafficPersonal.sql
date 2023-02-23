@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS public.CO2_TrafficPersonal;
+DROP FUNCTION IF EXISTS functions.CO2_TrafficPersonal;
 
-CREATE OR REPLACE FUNCTION public.CO2_TrafficPersonal(
+CREATE OR REPLACE FUNCTION functions.CO2_TrafficPersonal(
     municipality integer,
     pop_or_employ integer, -- Population or number of workplaces
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]

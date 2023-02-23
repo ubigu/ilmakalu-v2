@@ -1,7 +1,8 @@
+CREATE SCHEMA IF NOT EXISTS functions;
 DROP FUNCTION IF EXISTS CO2_CalculateEmissionsLoop;
 
 CREATE OR REPLACE FUNCTION
-public.CO2_CalculateEmissionsLoop(
+functions.CO2_CalculateEmissionsLoop(
     municipalities integer[],
     aoi regclass, -- Tutkimusalue | area of interest
     includeLongDistance boolean,
@@ -59,13 +60,13 @@ BEGIN
         IF calculationYear = baseYear THEN
             CREATE TEMP TABLE res AS
             SELECT * FROM
-                public.CO2_CalculateEmissions(
+                functions.CO2_CalculateEmissions(
                     municipalities, aoi, includeLongDistance, includeBusinessTravel, array[calculationYear, 2017, 2050], calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_centers, plan_transit
                 );
         ELSE 
             INSERT INTO res
             SELECT * FROM
-                public.CO2_CalculateEmissions(
+                functions.CO2_CalculateEmissions(
                     municipalities, aoi, includeLongDistance, includeBusinessTravel, array[calculationYear, 2017, 2050], calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_centers, plan_transit
                 );
         END IF;

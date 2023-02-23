@@ -10,9 +10,10 @@ YKR-ruudun laskentavuoden uudisrakentamisen rakennustuotteiden kasvihuonekaasup�
 
 
 */
-DROP FUNCTION IF EXISTS public.CO2_BuildConstruct;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_BuildConstruct;
 CREATE OR REPLACE FUNCTION
-public.CO2_BuildConstruct(
+functions.CO2_BuildConstruct(
 	floorSpace real, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna [m2]. Lukuarvo riippuu laskentavuodesta ja rakennuksen tyypistä.
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar, -- Rakennustyyppi, esim. 'erpien', 'rivita'
