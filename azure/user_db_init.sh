@@ -34,6 +34,7 @@ do
     echo "CREATE SCHEMA IF NOT EXISTS ${schema};" | psql "$conn_string_ilmakalu_data" -
 done
 
-# psql "$conn_string_ilmakalu_data" <<-EOSQL
-#     SET SCHEMA PATH '"$user"', functions, public;
-# EOSQL
+# set search path
+psql "$conn_string_adm_ilmakalu_data" <<-EOSQL
+    ALTER DATABASE $DATA_DATABASE SET search_path="\$user", functions, public;
+EOSQL
