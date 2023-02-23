@@ -6,6 +6,15 @@ set -e
 # obtain variables
 . ./azure_variables.sh "$1"
 
+for schema in $COMPUTE_SCHEMAS;
+do
+    echo "DROP SCHEMA IF EXISTS ${schema} CASCADE;" | psql "$conn_string_ilmakalu_data" -
+done
+
+psql "$conn_string_ilmakalu_data" <<-EOSQL
+    CREATE SCHEMA "functions";
+EOSQL
+
 if ! [ -f "$COMPUTE_MASTER_DUMP_FILE" ]; then
     echo "No dump file '$COMPUTE_MASTER_DUMP_FILE', cannot proceed."
     exit 1
@@ -30,3 +39,4 @@ fi
 
 ## restore dump (user : application)
 psql "$conn_string_ilmakalu_data" -f $COMPUTE_MASTER_DUMP_FILE
+
