@@ -60,13 +60,13 @@ BEGIN
         IF calculationYear = baseYear THEN
             CREATE TEMP TABLE res AS
             SELECT * FROM
-                functions.CO2_CalculateEmissions(
+                CO2_CalculateEmissions(
                     municipalities, aoi, includeLongDistance, includeBusinessTravel, array[calculationYear, 2017, 2050], calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_centers, plan_transit
                 );
         ELSE 
             INSERT INTO res
             SELECT * FROM
-                functions.CO2_CalculateEmissions(
+                CO2_CalculateEmissions(
                     municipalities, aoi, includeLongDistance, includeBusinessTravel, array[calculationYear, 2017, 2050], calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_centers, plan_transit
                 );
         END IF;
