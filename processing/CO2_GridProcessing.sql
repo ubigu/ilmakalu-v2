@@ -82,7 +82,7 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         EXECUTE format(
             'DELETE FROM grid
                 WHERE NOT ST_Intersects(st_centroid(grid.geom),
-                (SELECT st_union(bounds.geom) FROM %1$I bounds', aoi);
+                (SELECT st_union(bounds.geom) FROM %1$I bounds)', aoi);
     END IF;
 
 END IF;
