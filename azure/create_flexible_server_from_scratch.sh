@@ -76,7 +76,6 @@ az postgres flexible-server db list \
 az postgres flexible-server parameter set \
     --resource-group $RG \
     --server-name $DBHOST_NAME \
-    --subscription $SUBS \
     --name azure.extensions \
     --value postgis,dblink,postgres_fdw
 
