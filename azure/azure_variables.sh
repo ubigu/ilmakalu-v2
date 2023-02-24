@@ -60,7 +60,7 @@ if [ "$run_mode" = "azure" ]; then
     if ! $(az account show > /dev/null); then
         az login
     fi
-
+    
     # save connection string
     conn_string=$(az postgres flexible-server show-connection-string \
         --server-name $DBHOST_NAME \
