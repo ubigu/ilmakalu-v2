@@ -7,12 +7,8 @@ set -e
 # create Azure postgres flexible server
 # read configuration from provided YAML file
 
-usage () {
-    echo "Usage: $0"
-    exit 2
-}
-
 LOCATION=northeurope
+TAGS="Description=Ilmakalu emission calculator"
 
 # list resource groups
 az group list --query "[].name" --output tsv
@@ -38,7 +34,8 @@ az postgres flexible-server create \
     --public-access $MY_IP \
     --storage-size 32 \
     --version 13 \
-    --high-availability Disabled
+    --high-availability Disabled \
+    --tags $TAGS
 
 # Try to connect
 echo "Connecting to flexible server"
@@ -77,7 +74,7 @@ az postgres flexible-server parameter set \
     --resource-group $RG \
     --server-name $DBHOST_NAME \
     --name azure.extensions \
-    --value postgis,dblink,postgres_fdw
+    --value postgis
 
 echo "When done, delete resources:"
 echo "az group delete --yes --resource-group $RG"
