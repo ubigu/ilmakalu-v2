@@ -8,6 +8,7 @@ set -e
 # read configuration from provided YAML file
 
 LOCATION=northeurope
+TAGS="Description=Ilmakalu emission calculator"
 
 # list resource groups
 az group list --query "[].name" --output tsv
@@ -32,8 +33,9 @@ az postgres flexible-server create \
     --tier Burstable \
     --public-access $MY_IP \
     --storage-size 32 \
-    --version 14 \
-    --high-availability Disabled
+    --version 13 \
+    --high-availability Disabled \
+    --tags $TAGS
 
 # Try to connect
 echo "Connecting to flexible server"
