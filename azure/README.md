@@ -46,6 +46,16 @@ If unsure, login manually before running scripts.
 $ az login
 ```
 
+## Installs
+
+Install `az` extension *`rdbms-connect` if not yet installed.
+
+See install status with e.g.
+
+```sh
+$ az extension list-available --output table
+```
+
 ## Initialize resources
 
 Run provided shell script:
