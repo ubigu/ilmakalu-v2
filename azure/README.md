@@ -15,6 +15,16 @@ If unsure, login manually before running scripts.
 $ az login
 ```
 
+## Installs
+
+Install `az` extension *`rdbms-connect` if not yet installed.
+
+See install status with e.g.
+
+```sh
+$ az extension list-available --output table
+```
+
 ## Edit configuration
 
 Add configuration `ilmakalu_azure.yaml`. See supported fields from `ilmakalu_azure_template.yaml`.
