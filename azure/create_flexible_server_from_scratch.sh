@@ -7,11 +7,6 @@ set -e
 # create Azure postgres flexible server
 # read configuration from provided YAML file
 
-usage () {
-    echo "Usage: $0"
-    exit 2
-}
-
 LOCATION=northeurope
 
 # list resource groups
@@ -37,7 +32,7 @@ az postgres flexible-server create \
     --tier Burstable \
     --public-access $MY_IP \
     --storage-size 32 \
-    --version 13 \
+    --version 14 \
     --high-availability Disabled
 
 # Try to connect
@@ -76,9 +71,8 @@ az postgres flexible-server db list \
 az postgres flexible-server parameter set \
     --resource-group $RG \
     --server-name $DBHOST_NAME \
-    --subscription $SUBS \
     --name azure.extensions \
-    --value postgis,dblink,postgres_fdw
+    --value postgis
 
 echo "When done, delete resources:"
 echo "az group delete --yes --resource-group $RG"

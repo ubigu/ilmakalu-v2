@@ -61,11 +61,6 @@ if [ "$run_mode" = "azure" ]; then
         az login
     fi
 
-    SUBS=$(az account subscription list --query '[].subscriptionId' --output tsv)
-
-    # set subscription
-    az account set --subscription $SUBS
-
     # save connection string
     conn_string=$(az postgres flexible-server show-connection-string \
         --server-name $DBHOST_NAME \
