@@ -12,7 +12,7 @@ Create directory if it does not exist.
 
 ```sh
 cd datasets/dump_data
-PGPASSWORD="<password>" pg_dump -U <user> -h <host> <database> > emissiontest.sql
+pg_dump "user=<user> password=<password> host=<host> dbname=<database name>" > emissiontest.sql
 ```
 ## strip dump
 
