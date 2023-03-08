@@ -1,0 +1,34 @@
+# Fill in relevant values and save as "ilmakalu_azure.yaml"
+resource_group:
+  name: <generated resource group name>
+postgres_flexible_server:
+  server_name: <server name to be created>
+  admin_user: <admin user for database>
+  admin_password: <admin user password>
+  compute_database: <compute database>
+  compute_user: <compute database user>
+  compute_password: <compute database user password>
+  data_database: <user database name>
+  data_user: <user database user name>
+  data_password: <user database user password>
+postgres_compute_master:
+  server_name: <compute master source server name>
+  database: <database name>
+  user: <username>
+  password: <password>
+  dump_output_file: <dump output file>
+postgres_compute_service:
+  name: <compute service name for dblink>
+user_data_source:
+  server_name: <server name>
+  user: <database user>
+  database: <database name>
+  password: <password>
+  dump_output_file: <dump output file>
+user_data:
+  schemas:
+    - built
+      delineations
+      energy
+      grid_globals
+      traffic
