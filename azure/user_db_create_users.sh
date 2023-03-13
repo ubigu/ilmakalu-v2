@@ -2,8 +2,6 @@
 
 set -e
 
-# Create users for compute database
-
 # obtain variables
 . ./azure_variables.sh "$1"
 
