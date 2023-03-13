@@ -2,6 +2,7 @@ data/config/config.yaml
 data/__pycache__/
 data/config/__pycache__/
 azure/ilmakalu_azure.yaml
+azure/ilmakalu_local.yaml
 .vscode/
 env/
 services/.env
