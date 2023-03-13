@@ -13,7 +13,7 @@ psql "$conn_string" <<-EOSQL
 EOSQL
 
 # create (or replace) function and event trigger for ownership transfer
-psql "$conn_string" -f ./sql_files/create_trigger.sql
+psql "$conn_string" -f ./sql_files/table_owner_transfer_trigger.sql
 
 # Give the group required privileges in compute schemas
 for schema in aluejaot built delineations energy functions grid_globals traffic
