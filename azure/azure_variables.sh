@@ -55,6 +55,8 @@ COMPUTE_SCHEMAS=$(parse_config "user_data.schemas[]")
 RG=$(parse_config "resource_group.name")
 MY_IP=$(curl -s ifconfig.me)
 
+END_USERS=$(parse_config "end_users[]")
+
 if [ "$run_mode" = "azure" ]; then
     echo "Azure"
     if ! $(az account show > /dev/null); then
@@ -91,7 +93,7 @@ if [ "$run_mode" = "azure" ]; then
 else
     echo "Local"
     PORT=65432
-    conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/postgres?sslmode=require"
+    conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
     conn_string_adm_ilmakalu_data="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
     conn_string_ilmakalu_data="postgresql://$DATA_USER:$DATA_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
 fi

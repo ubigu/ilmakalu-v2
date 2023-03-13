@@ -33,3 +33,7 @@ user_data:
       grid_globals
       traffic
       functions
+# list wanted end users below. They will be created on database init. 
+end_users:
+  - user1
+  - user2
