@@ -30,6 +30,7 @@ $ docker-compose up
 $ sh user_db_create_users.sh local # not needed after first run
 $ sh user_db_init.sh local
 $ sh compute_db_init.sh local
+$ sh create_end_users.sh local
 # init variables to current shell
 $ . azure_variables.sh local
 # test connection
