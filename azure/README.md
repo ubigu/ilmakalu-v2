@@ -103,13 +103,7 @@ $ sh take_user_database_dump.sh
 
 ## Initialize databases
 
-Create extension(s) and (re)-initialize database:
-
-```sh
-$ sh compute_db_init.sh
-```
-
-(Re)-initialize userdata database
+(Re)-initialize userdata database. This needs to be run before `compute_db_init.sh` since it creates the database.
 
 BEWARE: existing database is dropped!
 
@@ -117,6 +111,12 @@ BEWARE: existing database is dropped!
 # BEWARE: USER data is dropped!
 $ sh user_db_init.sh
 # BEWARE: USER data is dropped!
+```
+
+Create extension(s) and (re)-initialize database:
+
+```sh
+$ sh compute_db_init.sh
 ```
 
 ## Remove users from compute database
