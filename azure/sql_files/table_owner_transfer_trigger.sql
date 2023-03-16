@@ -35,5 +35,4 @@ CREATE EVENT TRIGGER trigger_create_set_table_owner
 
 REVOKE ALL ON FUNCTION trigger_create_set_table_owner() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION trigger_create_set_table_owner() TO "end_users";
-
 COMMIT;
