@@ -10,13 +10,19 @@ DECLARE
   obj record;
 BEGIN
   FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE command_tag='CREATE TABLE' LOOP
-    EXECUTE format('ALTER TABLE %s OWNER TO end_users', obj.object_identity);
+    IF obj.schema_name='user_input' OR obj.schema_name='user_output'
+    THEN EXECUTE format('ALTER TABLE %s OWNER TO end_users', obj.object_identity);
+    END IF;
   END LOOP;
   FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE command_tag='CREATE SEQUENCE' LOOP
-    EXECUTE format('ALTER SEQUENCE %s OWNER TO end_users', obj.object_identity);
+    IF obj.schema_name='user_input' OR obj.schema_name='user_output'
+    THEN EXECUTE format('ALTER SEQUENCE %s OWNER TO end_users', obj.object_identity);
+    END IF;
   END LOOP;
   FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE command_tag='CREATE FUNCTION' LOOP
-    EXECUTE format('ALTER FUNCTION %s OWNER TO end_users', obj.object_identity);
+    IF obj.schema_name='user_input' OR obj.schema_name='user_output'
+    THEN EXECUTE format('ALTER FUNCTION %s OWNER TO end_users', obj.object_identity);
+    END IF;
   END LOOP;
 END;
 $$;
@@ -29,4 +35,5 @@ CREATE EVENT TRIGGER trigger_create_set_table_owner
 
 REVOKE ALL ON FUNCTION trigger_create_set_table_owner() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION trigger_create_set_table_owner() TO "end_users";
+
 COMMIT;
