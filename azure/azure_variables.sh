@@ -51,8 +51,9 @@ USER_DATA_MASTER_PASSWORD=$(parse_config "user_data_source.password")
 USER_DATA_MASTER_DUMP_FILE=$(parse_config "user_data_source.dump_output_file")
 
 COMPUTE_SCHEMAS=$(parse_config "user_data.schemas[]")
-
 RG=$(parse_config "resource_group.name")
+
+# without having internet connection, this will cause run to fail
 MY_IP=$(curl -s ifconfig.me)
 
 END_USERS=$(parse_config "end_users[]")
@@ -90,10 +91,11 @@ if [ "$run_mode" = "azure" ]; then
 
     # data database, admin user
     conn_string_adm_ilmakalu_data=$(echo $conn_string | sed "s/postgres?/${DATA_DATABASE}?/")
+
 else
     echo "Local"
     PORT=65432
-    conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
+    conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/postgres?sslmode=require"
     conn_string_adm_ilmakalu_data="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
     conn_string_ilmakalu_data="postgresql://$DATA_USER:$DATA_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
 fi
