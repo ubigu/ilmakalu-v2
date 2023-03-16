@@ -12,7 +12,7 @@ Instructions to init database either locally or to Azure.
 Add configuration `ilmakalu_azure.yaml`. See supported fields from `ilmakalu_azure_template.yaml`.
 
 Local configuration is written to: `ilmakalu_local.yaml`. Currently all data is parsed,
-but only some really used.
+but only some really used. 
 
 See also `dev-services` (especially admin credentials should be aligned)
 
@@ -30,11 +30,19 @@ $ docker-compose up
 $ sh user_db_create_users.sh local # not needed after first run
 $ sh user_db_init.sh local
 $ sh compute_db_init.sh local
-$ sh create_end_users.sh local
-# init variables to current shell
-$ . azure_variables.sh local
-# test connection
-$ psql "$conn_string_ilmakalu_data"
+$ sh create_end_users.sh local # List wanted end users to yaml. Copy user passwords from console output. 
+```
+
+Test connection and that everything is in place.
+```sh
+$ . azure_variables.sh local # init variables to current shell
+$ psql "$conn_string_ilmakalu_data" # test connection
+```
+
+### clean up end users and their management
+In order to quickly clean up end user group, individual end users and event trigger for table ownership transfer run the following. 
+```sh
+$ sh clean_up_end_users.sh local
 ```
 
 ## Azure login
