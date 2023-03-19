@@ -30,7 +30,8 @@ $ docker-compose up
 $ sh user_db_create_users.sh local # not needed after first run
 $ sh user_db_init.sh local
 $ sh compute_db_init.sh local
-$ sh create_end_users.sh local # List wanted end users to yaml. Copy user passwords from console output. 
+$ sh create_user_group_and_event_trigger local
+$ sh create_end_users.sh local # List wanted end users to yaml. Copy user passwords from console output. Set search path for each user. 
 ```
 
 Test connection and that everything is in place.
@@ -40,7 +41,7 @@ $ psql "$conn_string_ilmakalu_data" # test connection
 ```
 
 ### clean up end users and their management
-In order to quickly clean up end user group, individual end users and event trigger for table ownership transfer run the following. 
+In order to quickly clean up end users. Note that this will leave user group role and event trigger in place. 
 ```sh
 $ sh clean_up_end_users.sh local
 ```
