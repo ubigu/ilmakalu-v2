@@ -35,5 +35,5 @@ user_data:
       functions
 # list wanted end users below. They will be created on database init. 
 end_users:
-  - user1
-  - user2
+  #- user1
+  #- user2
