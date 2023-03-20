@@ -12,9 +12,10 @@ Teollisuus- ja varastorakennusten sähkön käyttö sisältää myös niiden kii
 
 */
 
-DROP FUNCTION IF EXISTS public.CO2_ElectricityIWHS;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_ElectricityIWHS;
 CREATE OR REPLACE FUNCTION
-public.CO2_ElectricityIWHS(
+functions.CO2_ElectricityIWHS(
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
     floorSpace real, -- rakennustyypin kerrosala YKR-ruudussa laskentavuonna [m2]. Riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta.

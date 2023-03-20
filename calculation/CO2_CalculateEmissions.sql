@@ -1,7 +1,8 @@
-DROP FUNCTION IF EXISTS CO2_CalculateEmissions;
+CREATE SCHEMA IF NOT EXISTS functions;
 
+DROP FUNCTION IF EXISTS functions.CO2_CalculateEmissions;
 CREATE OR REPLACE FUNCTION
-public.CO2_CalculateEmissions(
+functions.CO2_CalculateEmissions(
     municipalities integer[],
     aoi regclass, -- Tutkimusalue | area of interest
     includeLongDistance boolean default false,

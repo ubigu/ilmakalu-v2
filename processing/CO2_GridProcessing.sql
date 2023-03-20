@@ -1,92 +1,89 @@
-    DROP FUNCTION IF EXISTS public.CO2_GridProcessing;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_GridProcessing;
 
-    CREATE OR REPLACE FUNCTION
-    public.CO2_GridProcessing(
-        municipalities integer[],
-        aoi regclass, -- Area of interest
-        calculationYear integer,
-        baseYear integer,
-        km2hm2 real default 1.25,
-        targetYear integer default null,
-        plan_areas regclass default null,
-        plan_centers regclass default null,
-        plan_transit regclass default null
-    )
+CREATE OR REPLACE FUNCTION
+functions.CO2_GridProcessing(
+    municipalities integer[],
+    aoi regclass, -- Area of interest
+    calculationYear integer,
+    baseYear integer,
+    km2hm2 real default 1.25,
+    targetYear integer default null,
+    plan_areas regclass default null,
+    plan_centers regclass default null,
+    plan_transit regclass default null
+)
 
-    RETURNS TABLE (
-        geom geometry(MultiPolygon, 3067),
-        xyind varchar,
-        mun int,
-        zone bigint,
-        maa_ha real,
-        centdist smallint,
-        pop smallint,
-        employ smallint,
-        k_ap_ala int,
-        k_ar_ala int,
-        k_ak_ala int,
-        k_muu_ala int,
-        k_tp_yht integer,
-        k_poistuma int,
-        alueteho real,
-        alueteho_muutos real
-    ) AS $$
+RETURNS TABLE (
+    geom geometry(MultiPolygon, 3067),
+    xyind varchar,
+    mun int,
+    zone bigint,
+    maa_ha real,
+    centdist smallint,
+    pop smallint,
+    employ smallint,
+    k_ap_ala int,
+    k_ar_ala int,
+    k_ak_ala int,
+    k_muu_ala int,
+    k_tp_yht integer,
+    k_poistuma int,
+    alueteho real,
+    alueteho_muutos real
+) AS $$
 
-    DECLARE
-        demolitionsExist boolean;
-        startYearExists boolean;
-        endYearExists boolean;
-        completionYearExists boolean;
-        kapaExists boolean;
-        typeExists boolean;
-        pubtrans_zones int[] default ARRAY[3,12,41, 99911, 99921, 99931, 99941, 99951, 99961, 99901, 99912, 99922, 99932, 99942, 99952, 99962, 99902, 99913, 99923, 99933, 99943, 99953, 99963, 99903];
-    BEGIN
+DECLARE
+    demolitionsExist boolean;
+    startYearExists boolean;
+    endYearExists boolean;
+    completionYearExists boolean;
+    pubtrans_zones int[] default ARRAY[3,12,41, 99911, 99921, 99931, 99941, 99951, 99961, 99901, 99912, 99922, 99932, 99942, 99952, 99962, 99902, 99913, 99923, 99933, 99943, 99953, 99963, 99903];
+BEGIN
 
-    IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
-        /* Creating a temporary table with e.g. YKR population and workplace data */
+IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
+    /* Creating a temporary table with e.g. YKR population and workplace data */
+    EXECUTE format(
+    'CREATE TEMP TABLE IF NOT EXISTS grid AS SELECT
+        DISTINCT ON (grid.xyind, grid.geom)
+        grid.geom :: geometry(MultiPolygon, 3067),
+        grid.xyind :: varchar(13),
+        grid.mun :: int,
+        grid.zone :: bigint,
+        clc.maa_ha :: real,
+        grid.centdist :: smallint,
+        coalesce(pop.v_yht, 0) :: smallint AS pop,
+        coalesce(employ.tp_yht, 0) :: smallint AS employ,
+        0 :: int AS k_ap_ala,
+        0 :: int AS k_ar_ala,
+        0 :: int AS k_ak_ala,
+        0 :: int AS k_muu_ala,
+        0 :: int AS k_tp_yht,
+        0 :: int AS k_poistuma,
+        (((coalesce(pop.v_yht, 0) + coalesce(employ.tp_yht, 0)) * 50 * 1.25) :: real / 62500) :: real AS alueteho,
+        0 :: real AS alueteho_muutos
+        FROM delineations.grid grid
+        LEFT JOIN grid_globals.pop pop
+            ON grid.xyind :: varchar = pop.xyind :: varchar
+            AND grid.mun :: int = pop.kunta :: int
+        LEFT JOIN grid_globals.employ employ
+            ON grid.xyind :: varchar = employ.xyind :: varchar
+            AND grid.mun :: int = employ.kunta :: int
+        LEFT JOIN grid_globals.clc clc 
+            ON grid.xyind :: varchar = clc.xyind :: varchar
+        WHERE grid.mun = ANY(%1$L);'
+    , municipalities);
+    CREATE INDEX ON grid USING GIST (geom);
+    CREATE INDEX ON grid (xyind);
+    CREATE INDEX ON grid (zone);
+    CREATE INDEX ON grid (mun);
+
+    IF aoi IS NOT NULL THEN
         EXECUTE format(
-        'CREATE TEMP TABLE IF NOT EXISTS grid AS SELECT
-            DISTINCT ON (grid.xyind, grid.geom)
-            ST_MULTI(grid.geom) :: geometry(MultiPolygon, 3067) geom,
-            grid.xyind :: varchar(13),
-            grid.mun :: int,
-            grid.zone :: bigint,
-            clc.maa_ha :: real,
-            grid.centdist :: smallint,
-            coalesce(pop.v_yht, 0) :: smallint AS pop,
-            coalesce(employ.tp_yht, 0) :: smallint AS employ,
-            0 :: int AS k_ap_ala,
-            0 :: int AS k_ar_ala,
-            0 :: int AS k_ak_ala,
-            0 :: int AS k_muu_ala,
-            0 :: int AS k_tp_yht,
-            0 :: int AS k_poistuma,
-            (((coalesce(pop.v_yht, 0) + coalesce(employ.tp_yht, 0)) * 50 * 1.25) :: real / 62500) :: real AS alueteho,
-            0 :: real AS alueteho_muutos
-            FROM delineations.grid grid
-            LEFT JOIN grid_globals.pop pop
-                ON grid.xyind :: varchar = pop.xyind :: varchar
-                AND grid.mun :: int = pop.kunta :: int
-            LEFT JOIN grid_globals.employ employ
-                ON grid.xyind :: varchar = employ.xyind :: varchar
-                AND grid.mun :: int = employ.kunta :: int
-            LEFT JOIN grid_globals.clc clc 
-                ON grid.xyind :: varchar = clc.xyind :: varchar
-            WHERE grid.mun::int = ANY(%1$L);'
-        , municipalities);
-        CREATE INDEX ON grid USING GIST (geom);
-        CREATE INDEX ON grid (xyind);
-        CREATE INDEX ON grid (zone);
-        CREATE INDEX ON grid (mun);
-
-        IF aoi IS NOT NULL THEN
-            EXECUTE format(
-                'DELETE FROM grid
-                    WHERE NOT ST_Intersects(
-                        st_centroid(grid.geom),
-                        (SELECT st_union(bounds.geom) FROM %s bounds)
-                    );', aoi);
-        END IF;
+            'DELETE FROM grid
+                WHERE NOT ST_Intersects(st_centroid(grid.geom),
+                (SELECT st_union(bounds.geom) FROM %s bounds))', aoi);
+    END IF;
 
     END IF;
 

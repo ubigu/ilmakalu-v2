@@ -11,9 +11,10 @@ buildingTypeen käyttöveden lämmityksen tarvitseman ostoenergian kasvihuonekaa
     
 */
 
-DROP FUNCTION IF EXISTS public.CO2_PropertyWater;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_PropertyWater;
 CREATE OR REPLACE FUNCTION
-public.CO2_PropertyWater(
+functions.CO2_PropertyWater(
 	municipality int,
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario

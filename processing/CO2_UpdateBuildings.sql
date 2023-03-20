@@ -1,5 +1,8 @@
+CREATE SCHEMA IF NOT EXISTS functions;
+
+DROP FUNCTION IF EXISTS functions.CO2_UpdateBuildings;
 CREATE OR REPLACE FUNCTION
-public.CO2_UpdateBuildings(
+functions.CO2_UpdateBuildings(
     rak_taulu text,
     ykr_taulu text,
     calculationYears integer[] -- [year based on which emission values are calculated, min, max calculation years]

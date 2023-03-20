@@ -8,9 +8,10 @@ Rakennusten jäähdytykseen tarvitun ostoenergian kasvihuonekaasupäästöt [CO2
 
 */
 
-DROP FUNCTION IF EXISTS public.CO2_PropertyCooling;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_PropertyCooling;
 CREATE OR REPLACE FUNCTION
-public.CO2_PropertyCooling(
+functions.CO2_PropertyCooling(
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
     floorSpace integer, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna. Lukuarvo riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta [m2]

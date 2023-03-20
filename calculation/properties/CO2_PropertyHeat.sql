@@ -24,9 +24,10 @@ buildingTypeen tilojen lämmityksen tarvitseman ostoenergian kasvihuonekaasupä�
     tilat_co2 = tilat_kwh * (lmuoto_apu1 * klampo_gco2kwh + lmuoto_apu2 * sahko_gco2kwh + lmuoto_apu3 * tilat_gco2kwh)
 
 */
-DROP FUNCTION IF EXISTS public.CO2_PropertyHeat;
+CREATE SCHEMA IF NOT EXISTS functions;
+DROP FUNCTION IF EXISTS functions.CO2_PropertyHeat;
 CREATE OR REPLACE FUNCTION
-public.CO2_PropertyHeat(
+functions.CO2_PropertyHeat(
     municipality int,
     calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario
