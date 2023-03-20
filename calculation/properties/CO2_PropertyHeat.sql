@@ -102,7 +102,7 @@ BEGIN
                 -- Kerroin huomioi olevan rakennuskannan energiatehokkuuden kehityksen [kWh/m2/a].
                 SELECT %6$I as kwhm2
                 FROM built.spaces_kwhm2
-                    WHERE scenario = %1$L AND rakv = %2$L AND mun::int = %3$L AND year = %4$L LIMIT 1),
+                    WHERE scenario = %1$L AND rakv = %2$L AND year = %4$L LIMIT 1),
                 heating as (
                     SELECT ((1 - 0.005 * (%4$L::int - 2015)) * multiplier)::real as scaler
                         FROM energy.heating_degree_days dd

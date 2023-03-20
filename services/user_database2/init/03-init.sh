@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+PGPASSWORD=${ILMAKALU_USER_PW} psql -v ON_ERROR_STOP=1 --username "$ILMAKALU_USER" --dbname "$ILMAKALU_DB" -h localhost <<-EOSQL
+    CREATE TABLE koe AS SELECT a AS koe FROM GENERATE_SERIES(1,10) AS a WHERE a IN ($MUNICIPALITIES);
+EOSQL
