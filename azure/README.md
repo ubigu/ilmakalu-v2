@@ -5,6 +5,37 @@ populate contents with compute database and user database dumps.
 
 # Quickstart
 
+Instructions to init database either locally or to Azure.
+
+## Edit configuration
+
+Add configuration `ilmakalu_azure.yaml`. See supported fields from `ilmakalu_azure_template.yaml`.
+
+Local configuration is written to: `ilmakalu_local.yaml`. Currently all data is parsed,
+but only some really used.
+
+See also `dev-services` (especially admin credentials should be aligned)
+
+## Local dev
+
+### Start service in dev-services
+
+```sh
+# in dev-services -directory
+$ docker-compose up
+```
+
+### Run init scripts
+```sh
+$ sh user_db_create_users.sh local # not needed after first run
+$ sh user_db_init.sh local
+$ sh compute_db_init.sh local
+# init variables to current shell
+$ . azure_variables.sh local
+# test connection
+$ psql "$conn_string_ilmakalu_data"
+```
+
 ## Azure login
 
 Scripts will try to utilize latest Azure login.
@@ -24,10 +55,6 @@ See install status with e.g.
 ```sh
 $ az extension list-available --output table
 ```
-
-## Edit configuration
-
-Add configuration `ilmakalu_azure.yaml`. See supported fields from `ilmakalu_azure_template.yaml`.
 
 ## Initialize resources
 

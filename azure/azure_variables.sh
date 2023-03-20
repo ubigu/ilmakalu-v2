@@ -1,4 +1,10 @@
-config_yaml="./ilmakalu_azure.yaml"
+if [ "$1" = "local" ]; then
+    run_mode="local"
+    config_yaml="./ilmakalu_local.yaml"
+else
+    run_mode="azure"
+    config_yaml="./ilmakalu_azure.yaml"
+fi
 
 yq() {
   docker run --rm -i -v "${PWD}":/workdir mikefarah/yq "$@"
@@ -49,34 +55,43 @@ COMPUTE_SCHEMAS=$(parse_config "user_data.schemas[]")
 RG=$(parse_config "resource_group.name")
 MY_IP=$(curl -s ifconfig.me)
 
-if ! $(az account show > /dev/null); then
-    az login
+if [ "$run_mode" = "azure" ]; then
+    echo "Azure"
+    if ! $(az account show > /dev/null); then
+        az login
+    fi
+
+    # save connection string
+    conn_string=$(az postgres flexible-server show-connection-string \
+        --server-name $DBHOST_NAME \
+        --admin-user $ADMIN_USER \
+        --admin-password "$ADMIN_PASSWORD" \
+        --query "connectionStrings.psql_cmd" \
+        --output tsv)
+
+    # skeleton for connection string
+    conn_str_skel=$(az postgres \
+        flexible-server show-connection-string \
+        -d $COMPUTE_DATABASE_NAME --query "connectionStrings.psql_cmd" \
+        --out tsv)
+
+    # compute database, compute user
+    conn_string_ilmakalu=$(echo $conn_str_skel | \
+        sed "s/{login}/$COMPUTE_USER/;s/{password}/$COMPUTE_USER_PASSWORD/;s/{server}/$DBHOST_NAME/;s/postgres?/${COMPUTE_DATABASE_NAME}?/")
+
+    # data database, data user
+    conn_string_ilmakalu_data=$(echo $conn_str_skel | \
+        sed "s/{login}/$DATA_USER/;s/{password}/$DATA_PASSWORD/;s/{server}/$DBHOST_NAME/;s/postgres?/${DATA_DATABASE}?/")
+
+    # compute database, admin user
+    conn_string_adm_ilmakalu=$(echo $conn_string | sed "s/postgres?/${COMPUTE_DATABASE_NAME}?/")
+
+    # data database, admin user
+    conn_string_adm_ilmakalu_data=$(echo $conn_string | sed "s/postgres?/${DATA_DATABASE}?/")
+else
+    echo "Local"
+    PORT=65432
+    conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/postgres?sslmode=require"
+    conn_string_adm_ilmakalu_data="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
+    conn_string_ilmakalu_data="postgresql://$DATA_USER:$DATA_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
 fi
-
-# save connection string
-conn_string=$(az postgres flexible-server show-connection-string \
-    --server-name $DBHOST_NAME \
-    --admin-user $ADMIN_USER \
-    --admin-password "$ADMIN_PASSWORD" \
-    --query "connectionStrings.psql_cmd" \
-    --output tsv)
-
-# skeleton for connection string
-conn_str_skel=$(az postgres \
-    flexible-server show-connection-string \
-    -d $COMPUTE_DATABASE_NAME --query "connectionStrings.psql_cmd" \
-    --out tsv)
-
-# compute database, compute user
-conn_string_ilmakalu=$(echo $conn_str_skel | \
-    sed "s/{login}/$COMPUTE_USER/;s/{password}/$COMPUTE_USER_PASSWORD/;s/{server}/$DBHOST_NAME/;s/postgres?/${COMPUTE_DATABASE_NAME}?/")
-
-# data database, data user
-conn_string_ilmakalu_data=$(echo $conn_str_skel | \
-    sed "s/{login}/$DATA_USER/;s/{password}/$DATA_PASSWORD/;s/{server}/$DBHOST_NAME/;s/postgres?/${DATA_DATABASE}?/")
-
-# compute database, admin user
-conn_string_adm_ilmakalu=$(echo $conn_string | sed "s/postgres?/${COMPUTE_DATABASE_NAME}?/")
-
-# data database, admin user
-conn_string_adm_ilmakalu_data=$(echo $conn_string | sed "s/postgres?/${DATA_DATABASE}?/")
