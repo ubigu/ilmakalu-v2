@@ -34,5 +34,5 @@ user_data:
       traffic
       functions
 end_users:
-  - ernomakinen
-  - jussivalimaki
+  - user1
+  - user2
