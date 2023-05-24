@@ -110,6 +110,37 @@ $ sh user_db_init.sh
 # BEWARE: USER data is dropped!
 ```
 
+## Initialize end users
+
+Create a role group for all end users and initialize privileges for it. 
+
+```sh
+$ sh init_end_user_group.sh
+```
+
+Then create end users which are listed in configuration file. 
+You can state the users in yaml file like in the example below. 
+
+```
+end_users:
+  - user1
+  - user2
+```
+
+```sh
+$ sh create_end_users.sh
+```
+
+## Remove end users
+
+If needed you can remove end users by running the script below. 
+
+```sh
+$ sh drop_end_users.sh
+```
+
+Ownership of all their objects are given to application data user. 
+
 ## Remove users from compute database
 
 Remove user(s), if required.
