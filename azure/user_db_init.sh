@@ -36,5 +36,5 @@ done
 
 # set search path
 psql "$conn_string_adm_ilmakalu_data" <<-EOSQL
-    ALTER DATABASE $DATA_DATABASE SET search_path="\$user", functions, public;
+    ALTER DATABASE $DATA_DATABASE SET search_path=public,functions;
 EOSQL
