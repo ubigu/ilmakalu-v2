@@ -15,14 +15,13 @@ DROP FUNCTION IF EXISTS functions.CO2_BuildConstruct;
 CREATE OR REPLACE FUNCTION
 functions.CO2_BuildConstruct(
 	floorSpace real, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna [m2]. Lukuarvo riippuu laskentavuodesta ja rakennuksen tyypistä.
-    calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
+    calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar, -- Rakennustyyppi, esim. 'erpien', 'rivita'
     calculationScenario varchar -- PITKO:n mukainen kehitysskenaario
 )
 RETURNS real AS
 $$
 DECLARE
-    calculationYear integer;
     construction_energy_gco2m2 real; -- Rakennustyypin rakentamisvaiheen työmaatoimintojen ja kuljetusten kasvihuonekaasujen ominaispäästöjä yhtä rakennettua kerrosneliötä kohti [gCO2-ekv/m2]. Arvo riippuu taustaskenaariosta, tarkasteluvuodesta ja rakennustyypistä.
     construction_materials_gco2m2 real; -- Rakennustyypin rakentamiseen tarvittujen rakennustuotteiden tuotantoprosessin välillisiä kasvihuonekaasujen ominaispäästöjä yhtä rakennettua kerrosneliötä kohti [gCO2-ekv/m2]. Arvo riippuu taustaskenaariosta, tarkasteluvuodesta ja rakennustyypistä.
 BEGIN
@@ -32,10 +31,6 @@ IF floorSpace <= 0 OR floorSpace IS NULL THEN
     RETURN 0;
 /* In other cases continue with the calculation */
 ELSE
-    calculationYear := CASE WHEN calculationYears[1] < calculationYears[2] THEN calculationYears[2]
-        WHEN calculationYears[1] > calculationYears[3] THEN calculationYears[3]
-        ELSE calculationYears[1]
-END;
 
     /* If the year of construction is not the current year of calculation, return 0 */
 --      IF rakennusvuosi != year THEN

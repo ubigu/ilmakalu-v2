@@ -29,7 +29,7 @@ DROP FUNCTION IF EXISTS functions.CO2_PropertyHeat;
 CREATE OR REPLACE FUNCTION
 functions.CO2_PropertyHeat(
     municipality int,
-    calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
+    calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario
     floorSpace int, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna. Arvo riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta ja paikallista aineistoa käytettäessä lämmitysmuodosta [m2]
     buildingType varchar, -- buildingType, esim. 'erpien', 'rivita'S
@@ -40,7 +40,6 @@ functions.CO2_PropertyHeat(
 RETURNS real AS
 $$
 DECLARE -- Joillekin muuttujille on sekä yksittäiset että array-tyyppiset muuttujat, riippuen siitä, onko lähtödatana YKR-dataa (array) vai paikallisesti jalostettua rakennusdataa
-    calculationYear integer;
     heating_kwh real; -- Raw heating of spaces without efficiency ratio
     hyotysuhde real; -- Rakennustyypin ikäluokan lämmitysjärjestelmäkohtainen keskimääräinen vuosihyötysuhde tai lämpökerroin. Lukuarvo riippuu rakennuksen ikäluokasta, tyypistä ja lämmitysmuodosta [ei yksikköä].
     hyotysuhde_a real[]; -- Rakennustyypin ikäluokan keskimääräiset vuosihyötysuhteet eri lämmitysjärjestelmille. Lukuarvo riippuu rakennuksen ikäluokasta ja tyypistä [ei yksikköä].
@@ -57,11 +56,6 @@ BEGIN
         RETURN 0;
     /* In other cases continue with the calculation */
     ELSE
-
-        calculationYear := CASE WHEN calculationYears[1] < calculationYears[2] THEN calculationYears[2]
-        WHEN calculationYears[1] > calculationYears[3] THEN calculationYears[3]
-        ELSE calculationYears[1]
-        END;
 
         /* Used when local building register data has been used to derive grid level information incl. heating methods of building */
         IF heatSource IS NOT NULL THEN

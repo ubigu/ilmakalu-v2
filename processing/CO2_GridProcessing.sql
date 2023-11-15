@@ -1,20 +1,18 @@
 CREATE SCHEMA IF NOT EXISTS functions;
-DROP FUNCTION IF EXISTS functions.CO2_GridProcessing;
 
+DROP FUNCTION IF EXISTS functions.CO2_GridProcessing;
 CREATE OR REPLACE FUNCTION
 functions.CO2_GridProcessing(
-    municipalities integer[],
+    municipalities integer[], -- List of municipality codes (kuntanumero) in integer format, without leading zeroes
     aoi regclass, -- Area of interest
-    calculationYear integer,
-    baseYear integer,
-    km2hm2 real default 1.25,
+    calculationYear integer, -- Currently processed year in the year-to-year calculation loop
+    baseYear integer, -- The initial year, from which calculation started
     targetYear integer default null,
     plan_areas regclass default null,
+    plan_transit regclass default null,
     plan_centers regclass default null,
-    plan_transit regclass default null
-)
-
-RETURNS TABLE (
+    km2hm2 real default 1.25 -- Floor space to room space -ratio
+) RETURNS TABLE (
     geom geometry(MultiPolygon, 3067),
     xyind varchar,
     mun int,
@@ -27,26 +25,26 @@ RETURNS TABLE (
     k_ar_ala int,
     k_ak_ala int,
     k_muu_ala int,
-    k_tp_yht integer,
     k_poistuma int,
-    alueteho real,
-    alueteho_muutos real
-) AS $$
-
+    alueteho real
+)
+AS $$
 DECLARE
     demolitionsExist boolean;
     startYearExists boolean;
     endYearExists boolean;
+    kapaExists boolean;
+    typeExists boolean;
     completionYearExists boolean;
-    pubtrans_zones int[] default ARRAY[3,12,41, 99911, 99921, 99931, 99941, 99951, 99961, 99901, 99912, 99922, 99932, 99942, 99952, 99962, 99902, 99913, 99923, 99933, 99943, 99953, 99963, 99903];
+    pubtrans_zones int[] default ARRAY[3,12,41, 99901, 99902, 99911, 99921, 99931, 99941, 99951, 99961, 99901, 99912, 99922, 99932, 99942, 99952, 99962, 99902, 99913, 99923, 99933, 99943, 99953, 99963, 99903];
 BEGIN
 
-IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
+IF calculationYear <= baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
     /* Creating a temporary table with e.g. YKR population and workplace data */
     EXECUTE format(
     'CREATE TEMP TABLE IF NOT EXISTS grid AS SELECT
         DISTINCT ON (grid.xyind, grid.geom)
-        grid.geom :: geometry(MultiPolygon, 3067),
+        (ST_DUMP(grid.geom)).geom :: geometry(Polygon, 3067) AS geom,
         grid.xyind :: varchar(13),
         grid.mun :: int,
         grid.zone :: bigint,
@@ -58,10 +56,8 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         0 :: int AS k_ar_ala,
         0 :: int AS k_ak_ala,
         0 :: int AS k_muu_ala,
-        0 :: int AS k_tp_yht,
         0 :: int AS k_poistuma,
-        (((coalesce(pop.v_yht, 0) + coalesce(employ.tp_yht, 0)) * 50 * 1.25) :: real / 62500) :: real AS alueteho,
-        0 :: real AS alueteho_muutos
+        0 :: real AS alueteho
         FROM delineations.grid grid
         LEFT JOIN grid_globals.pop pop
             ON grid.xyind :: varchar = pop.xyind :: varchar
@@ -71,7 +67,7 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             AND grid.mun :: int = employ.kunta :: int
         LEFT JOIN grid_globals.clc clc 
             ON grid.xyind :: varchar = clc.xyind :: varchar
-        WHERE grid.mun = ANY(%1$L);'
+        WHERE grid.mun::int = ANY(%1$L);'
     , municipalities);
     CREATE INDEX ON grid USING GIST (geom);
     CREATE INDEX ON grid (xyind);
@@ -82,10 +78,21 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         EXECUTE format(
             'DELETE FROM grid
                 WHERE NOT ST_Intersects(st_centroid(grid.geom),
-                (SELECT st_union(bounds.geom) FROM %s bounds))', aoi);
+                (SELECT st_union(st_transform(bounds.geom,3067)) FROM %s bounds))', aoi);
     END IF;
 
-    END IF;
+    /* Calculate initial aluetehokkuus = built floor square meters divided by the area's land area */    
+    WITH buildings as (
+        SELECT b.xyind, SUM(b.rakyht_ala)::int AS floorspace
+            FROM grid_globals.buildings b
+        WHERE b.rakv::int != 0 
+        group by b.xyind
+    ) UPDATE grid
+        SET alueteho = CASE WHEN grid.maa_ha = 0 THEN 0 ELSE buildings.floorspace / (grid.maa_ha * 10000) END
+        FROM buildings
+        WHERE buildings.xyind = grid.xyind;
+
+END IF;
 
     IF targetYear IS NOT NULL AND plan_areas IS NOT NULL THEN
 
@@ -122,6 +129,7 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         EXECUTE format('SELECT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = %L::regclass AND attname = %L AND NOT attisdropped)', plan_areas, 'type') INTO typeExists;
         EXECUTE format('SELECT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = %L::regclass AND attname = %L AND NOT attisdropped)', plan_areas, 'k_ap_ala') INTO kapaExists;
 
+        /* tp_yht column added to data originating from Vasara 2.0, since does not include this information */
         ALTER TABLE kt ADD COLUMN IF NOT EXISTS k_tp_yht int DEFAULT 0;
 
         /* Lasketaan käyttötarkoitusalueilta numeeriset arvot grid-ruuduille. */
@@ -129,39 +137,45 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             UPDATE grid
             SET k_ap_ala = (
                 SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ap_ala <= 0 THEN 0 ELSE kt.k_ap_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
+                    (CASE WHEN kt.k_ap_ala <= 0 OR kt.k_ap_ala IS NULL THEN 0 ELSE kt.k_ap_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
                 FROM kt
                 WHERE ST_Intersects(grid.geom, kt.geom)
-                AND COALESCE(kt.k_aloitusv,baseYear) <= calculationYear
-                AND COALESCE(kt.k_valmisv,targetYear) >= calculationYear
+                AND COALESCE(kt.k_aloitusv, baseYear) <= calculationYear
+                AND COALESCE(kt.k_valmisv, targetYear) >= calculationYear
             ), k_ar_ala = (
-                SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) * (CASE WHEN kt.k_ar_ala <= 0 THEN 0 ELSE kt.k_ar_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
+                SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) * 
+                    (CASE WHEN kt.k_ar_ala <= 0 OR kt.k_ar_ala IS NULL THEN 0 ELSE kt.k_ar_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
                 FROM kt
                 WHERE ST_Intersects(grid.geom, kt.geom)
-                AND COALESCE(kt.k_aloitusv,baseYear) <= calculationYear
-                AND COALESCE(kt.k_valmisv,targetYear) >= calculationYear
+                AND COALESCE(kt.k_aloitusv, baseYear) <= calculationYear
+                AND COALESCE(kt.k_valmisv, targetYear) >= calculationYear
             ), k_ak_ala = (
                 SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ak_ala <= 0 THEN 0 ELSE kt.k_ak_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
+                    (CASE WHEN kt.k_ak_ala <= 0 OR kt.k_ak_ala IS NULL THEN 0 ELSE kt.k_ak_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
                 FROM kt
-                WHERE ST_Intersects(grid.geom, kt.geom)
-                AND COALESCE(kt.k_aloitusv,baseYear) <= calculationYear
-                AND COALESCE(kt.k_valmisv,targetYear) >= calculationYear
+                    WHERE ST_Intersects(grid.geom, kt.geom)
+                    AND COALESCE(kt.k_aloitusv, baseYear) <= calculationYear
+                    AND COALESCE(kt.k_valmisv, targetYear) >= calculationYear
             ), k_muu_ala = (
                 SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_muu_ala <= 0 THEN 0 ELSE kt.k_muu_ala / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
+                    (CASE WHEN kt.k_muu_ala <= 0 OR kt.k_muu_ala IS NULL THEN 0 ELSE 
+                    kt.k_muu_ala / (COALESCE(kt.k_valmisv, targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
                 FROM kt
                 WHERE ST_Intersects(grid.geom, kt.geom)
-                AND COALESCE(kt.k_aloitusv,baseYear) <= calculationYear
-                AND COALESCE(kt.k_valmisv,targetYear) >= calculationYear
-            ), k_tp_yht = (
-                SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) * kt.k_tp_yht / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1))
-                FROM kt WHERE ST_Intersects(grid.geom, kt.geom) AND COALESCE(kt.k_aloitusv,baseYear) <= calculationYear AND COALESCE(kt.k_valmisv,targetYear) >= calculationYear
-            );
+                AND COALESCE(kt.k_aloitusv, baseYear) <= calculationYear
+                AND COALESCE(kt.k_valmisv, targetYear) >= calculationYear
+            ), employ = COALESCE(grid.employ,0) + CASE WHEN ST_Intersects(grid.geom, (SELECT ST_UNION(kt.geom) FROM kt)) THEN (
+                SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) * 
+                    COALESCE(kt.k_tp_yht,0) / (COALESCE(kt.k_valmisv, targetYear) - COALESCE(kt.k_aloitusv, baseYear) + 1))
+                FROM kt
+                    WHERE ST_Intersects(grid.geom, kt.geom)
+                    AND COALESCE(kt.k_aloitusv, baseYear) <= calculationYear
+                    AND COALESCE(kt.k_valmisv, targetYear) >= calculationYear
+            ) ELSE 0 END;
                 IF demolitionsExist THEN
                     UPDATE grid SET k_poistuma = (
                         SELECT SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) / (kt.area_ha * 10000) *
-                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) * (-1) ELSE kt.k_poistuma / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
+                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) * (-1) WHEN kt.k_poistuma IS NULL THEN 0 ELSE kt.k_poistuma / (COALESCE(kt.k_valmisv,targetYear) - COALESCE(kt.k_aloitusv,baseYear) + 1) END))
                         FROM kt WHERE ST_Intersects(grid.geom, kt.geom) AND COALESCE(kt.k_aloitusv,baseYear) <= calculationYear AND COALESCE(kt.k_valmisv,targetYear) >= calculationYear
                     );
                 ELSE
@@ -175,7 +189,7 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             SET k_ap_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.kem2 <= 0 THEN 0 ELSE kt.kem2 END)), 0)
+                    (CASE WHEN kt.kem2 <= 0 OR kt.kem2 IS NULL THEN 0 ELSE kt.kem2 END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.type IN ('ao','ap')
@@ -183,7 +197,7 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             ), k_ar_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.kem2 <= 0 THEN 0 ELSE kt.kem2 END)), 0)
+                    (CASE WHEN kt.kem2 <= 0 OR kt.kem2 IS NULL THEN 0 ELSE kt.kem2 END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.type IN ('ar','kr')
@@ -191,7 +205,7 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             ), k_ak_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.kem2 <= 0 THEN 0 ELSE kt.kem2 END)), 0)
+                    (CASE WHEN kt.kem2 <= 0 OR kt.kem2 IS NULL THEN 0 ELSE kt.kem2 END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.type IN ('ak','c')
@@ -199,25 +213,24 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             ), k_muu_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.kem2 <= 0 THEN 0 ELSE kt.kem2 END)), 0)
+                    (CASE WHEN kt.kem2 <= 0 OR kt.kem2 IS NULL THEN 0 ELSE kt.kem2 END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.type IN ('tp','muu')
                     AND kt.year_completion = calculationYear
-            ), k_tp_yht = (
+            ), employ = COALESCE(grid.employ,0) + CASE WHEN ST_Intersects(grid.geom, (SELECT ST_UNION(kt.geom) FROM kt)) THEN (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
-                    (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_tp_yht <= 0 THEN 0 ELSE kt.k_tp_yht END)), 0)
+                    (kt.area_ha * 10000) * COALESCE(kt.k_tp_yht,0)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
-                    AND baseYear <= calculationYear
-            );
+                    AND kt.year_completion = calculationYear
+            ) ELSE 0 END;
 
             IF demolitionsExist THEN
                 UPDATE grid SET k_poistuma = (
                     SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                         (kt.area_ha * 10000) *
-                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
+                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) WHEN kt.k_poistuma IS NULL THEN 0 ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
                     FROM kt
                         WHERE ST_Intersects(grid.geom, kt.geom)
                         AND baseYear <= calculationYear
@@ -232,45 +245,45 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             SET k_ap_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ap_ala <= 0 THEN 0 ELSE kt.k_ap_ala END)), 0)
+                    (CASE WHEN kt.k_ap_ala <= 0 OR kt.k_ap_ala IS NULL THEN 0 ELSE kt.k_ap_ala END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.year_completion = calculationYear
             ), k_ar_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ar_ala <= 0 THEN 0 ELSE kt.k_ar_ala END)), 0)
+                    (CASE WHEN kt.k_ar_ala <= 0 OR kt.k_ar_ala IS NULL THEN 0 ELSE kt.k_ar_ala END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.year_completion = calculationYear
             ), k_ak_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ak_ala <= 0 THEN 0 ELSE kt.k_ak_ala END)), 0)
+                    (CASE WHEN kt.k_ak_ala <= 0 OR kt.k_ak_ala IS NULL THEN 0 ELSE kt.k_ak_ala END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.year_completion = calculationYear
             ), k_muu_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_muu_ala <= 0 THEN 0 ELSE kt.k_muu_ala END)), 0)
+                    (CASE WHEN kt.k_muu_ala <= 0 OR kt.k_muu_ala IS NULL THEN 0 ELSE kt.k_muu_ala END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND kt.year_completion = calculationYear
-            ), k_tp_yht = (
+            ), employ = COALESCE(grid.employ,0) + CASE WHEN ST_Intersects(grid.geom, (SELECT ST_UNION(kt.geom) FROM kt)) THEN (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_tp_yht <= 0 THEN 0 ELSE kt.k_tp_yht END)), 0)
+                    (CASE WHEN kt.k_tp_yht <= 0 OR kt.k_tp_yht IS NULL THEN 0 ELSE kt.k_tp_yht END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
-                    AND baseYear <= calculationYear
-            );
+                    AND kt.year_completion = calculationYear
+            ) ELSE 0 END;
 
             IF demolitionsExist THEN
                 UPDATE grid SET k_poistuma = (
                     SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                         (kt.area_ha * 10000) *
-                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
+                        (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) WHEN kt.k_poistuma IS NULL THEN 0 ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
                     FROM kt
                         WHERE ST_Intersects(grid.geom, kt.geom)
                         AND baseYear <= calculationYear
@@ -284,44 +297,44 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
             SET k_ap_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ap_ala <= 0 THEN 0 ELSE kt.k_ap_ala / (targetYear - baseYear + 1) END)), 0)
+                    (CASE WHEN kt.k_ap_ala <= 0 OR kt.k_ap_ala IS NULL THEN 0 ELSE kt.k_ap_ala / (targetYear - baseYear + 1) END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND baseYear <= calculationYear
             ), k_ar_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ar_ala <= 0 THEN 0 ELSE kt.k_ar_ala / (targetYear - baseYear + 1) END)), 0)
+                    (CASE WHEN kt.k_ar_ala <= 0 OR kt.k_ar_ala IS NULL THEN 0 ELSE kt.k_ar_ala / (targetYear - baseYear + 1) END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND baseYear <= calculationYear
             ), k_ak_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_ak_ala <= 0 THEN 0 ELSE kt.k_ak_ala / (targetYear - baseYear + 1) END)), 0)
+                    (CASE WHEN kt.k_ak_ala <= 0 OR kt.k_ak_ala IS NULL THEN 0 ELSE kt.k_ak_ala / (targetYear - baseYear + 1) END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND baseYear <= calculationYear
             ), k_muu_ala = (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (CASE WHEN kt.k_muu_ala <= 0 THEN 0 ELSE kt.k_muu_ala / (targetYear - baseYear + 1) END)), 0)
+                    (CASE WHEN kt.k_muu_ala <= 0 OR kt.k_muu_ala IS NULL THEN 0 ELSE kt.k_muu_ala / (targetYear - baseYear + 1) END)), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND baseYear <= calculationYear
-            ), k_tp_yht = (
+            ), employ =COALESCE(grid.employ,0) + CASE WHEN ST_Intersects(grid.geom, (SELECT ST_UNION(kt.geom) FROM kt)) THEN (
                 SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                     (kt.area_ha * 10000) *
-                    (kt.k_tp_yht / (targetYear - baseYear + 1))), 0)
+                    (COALESCE(kt.k_tp_yht,0) / (targetYear - baseYear + 1))), 0)
                 FROM kt
                     WHERE ST_Intersects(grid.geom, kt.geom)
                     AND baseYear <= calculationYear
-            );
+            ) ELSE 0 END;
                 IF demolitionsExist THEN
                     UPDATE grid SET k_poistuma = (
                         SELECT COALESCE(SUM(ST_Area(ST_Intersection(grid.geom, kt.geom)) /
                             (kt.area_ha * 10000) *
-                            (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
+                            (CASE WHEN kt.k_poistuma < 0 THEN kt.k_poistuma / (targetYear - baseYear + 1) * (-1) WHEN kt.k_poistuma IS NULL THEN 0 ELSE kt.k_poistuma / (targetYear - baseYear + 1) END)), 0)
                         FROM kt
                             WHERE ST_Intersects(grid.geom, kt.geom)
                             AND baseYear <= calculationYear
@@ -338,21 +351,16 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         tehdään täyttöjä (laskettu 20%:lla keskimääräisestä n. 10000 m2 rakennusten pohja-alasta per ruutu, jaettuna 10 v. toteutusajalle).
         Lasketaan samalla aluetehokkuuden muutos ja päivitetään aluetehokkuus. */
 
-        UPDATE grid g
+        UPDATE grid
             SET maa_ha = 5.9
-            WHERE g.k_ak_ala >= 200;
+            WHERE grid.k_ak_ala >= 200;
+
         UPDATE grid
-            SET alueteho_muutos = CASE WHEN
-                grid.maa_ha != 0
+            SET alueteho = COALESCE(grid.alueteho,0) + (CASE WHEN
+                grid.maa_ha > 0
                 THEN
-                (COALESCE(grid.k_ap_ala,0) + COALESCE(grid.k_ar_ala,0) + COALESCE(grid.k_ak_ala,0) + COALESCE(grid.k_muu_ala,0)) / (10000 * grid.maa_ha)
-                ELSE 0 END;
-        UPDATE grid
-            SET alueteho = CASE WHEN
-                COALESCE(grid.alueteho,0) + COALESCE(grid.alueteho_muutos,0) > 0
-                THEN
-                COALESCE(grid.alueteho,0) + COALESCE(grid.alueteho_muutos,0)
-                ELSE 0 END;
+                (COALESCE(grid.k_ap_ala, 0) + COALESCE(grid.k_ar_ala, 0) + COALESCE(grid.k_ak_ala, 0) + COALESCE(grid.k_muu_ala, 0) - COALESCE(grid.k_poistuma, 0)) / (10000 * grid.maa_ha)
+                ELSE 0 END);
 
         /* Lasketaan väestön lisäys asumisväljyyden avulla. 1.25 = kerroin kerrosalasta huoneistoalaksi. */
         UPDATE grid
@@ -364,10 +372,8 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         FROM built.occupancy bo
             WHERE bo.year = calculationYear
             AND bo.mun::int = grid.mun::int;
-
-        UPDATE grid SET employ = grid.employ + COALESCE(grid.k_tp_yht,0);
         
-        /*  KESKUSVERKON PÄIVITTÄMINEN
+        /* KESKUSVERKON PÄIVITTÄMINEN
         Luodaan väliaikainen taso valtakunnallisesta keskusta-alueaineistosta
         Poistetaan ylimääräiset / virheelliset keskustat
         Muutetaan valtakunnallinen keskusta-alueaineisto keskipisteiksi (Point). */
@@ -431,15 +437,16 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         /** Tested OK */
         CREATE TEMP TABLE IF NOT EXISTS grid_new AS
         SELECT * FROM
-        (SELECT DISTINCT ON (grid.geom) grid.geom, grid.xyind,
-        CASE WHEN left(grid.zone::varchar,6)::int 
-            IN (999112, 999212, 999312, 999412, 999512, 999612, 999101, 999811, 999821, 999831, 999841, 999851, 999861, 999871)
-                THEN concat('99911',right(grid.zone::varchar,4))::bigint
-        WHEN left(grid.zone::varchar,6)::int
-            IN (999122, 999222, 999322, 999422, 999522, 999622, 999102, 999812, 999822, 999832, 999842, 999852, 999862, 999872)
-                THEN concat('99912',right(grid.zone::varchar,4))::bigint
-        ELSE 1 END AS zone
-        FROM grid
+        (
+            SELECT DISTINCT ON (grid.geom) grid.geom, grid.xyind,
+            CASE
+                WHEN left(grid.zone::varchar, 6)::int IN (999112, 999212, 999312, 999412, 999512, 999612, 999101, 999811, 999821, 999831, 999841, 999851, 999861, 999871)
+                    THEN concat('99911', right(grid.zone::varchar, 4))::bigint
+                WHEN left(grid.zone::varchar, 6)::int IN (999122, 999222, 999322, 999422, 999522, 999622, 999102, 999812, 999822, 999832, 999842, 999852, 999862, 999872)
+                    THEN concat('99912', right(grid.zone::varchar, 4))::bigint
+                ELSE 1
+            END AS zone
+            FROM grid
         /* Search for grid cells within current UZ central areas delineation */
         /* and those cells that touch the current centers - have to use d_within for fastest approximation, st_touches doesn't work due to false DE-9IM relations */
         WHERE (grid.zone = 1 OR LEFT(grid.zone::varchar, 6)::int IN (999112, 999122)) OR (grid.maa_ha != 0 AND
@@ -472,40 +479,48 @@ IF calculationYear = baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
         
         /* Olemassaolevien alakeskusten reunojen kasvatus */
         /** Tested OK */
-        INSERT INTO grid_new
-        SELECT * FROM
-        (SELECT DISTINCT ON (grid.geom) grid.geom, grid.xyind, 
-        CASE WHEN grid.zone IN (3,4,5, 81, 82, 83 ,84 ,85 ,86 ,87 ) THEN 10
-        WHEN left(grid.zone::varchar,6)::int 
-            IN (999312, 999412, 999512, 999612, 999101, 999811, 999821, 999831, 999841, 999851, 999861, 999871)
-                THEN concat('999101',right(grid.zone::varchar,4))::bigint
-        WHEN left(grid.zone::varchar,6)::int
-            IN (999322, 999422, 999522, 999622, 999102, 999812, 999822, 999832, 999842, 999852, 999862, 999872)
-                THEN concat('999102',right(grid.zone::varchar,4))::bigint
-        ELSE grid.zone END AS zone
-        FROM grid, centralnetwork
-        /* Search for grid cells within current UZ central areas delineation */
-        WHERE grid.xyind NOT IN (SELECT grid_new.xyind FROM grid_new) AND (grid.zone IN (10,11,12,6,837101) OR LEFT(grid.zone::varchar, 6)::int
-            IN (999101, 999102, 999111, 999112, 999121, 999122, 999612, 999622)) OR (grid.maa_ha != 0
-            AND st_dwithin(grid.geom, 
-                (SELECT st_union(grid.geom)
-                    FROM grid
-                    WHERE (grid.zone IN (10,11,12,6,837101) OR LEFT(grid.zone::varchar, 6)::int IN (999101, 999102, 999111, 999112, 999121, 999122, 999612, 999622))
-                ), 25)
-            AND (grid.alueteho > 0.05 AND grid.employ > 0)
-            AND (grid.alueteho > 0.2 AND grid.pop >= 100 AND grid.employ > 0))
+        INSERT INTO grid_new (geom, xyind, zone)
+        SELECT DISTINCT ON (grid.geom) grid.geom, grid.xyind,
+        CASE
+            WHEN grid.zone IN (3,4,5, 81, 82, 83 ,84 ,85 ,86 ,87) THEN 10
+            WHEN LEFT(grid.zone::varchar, 6)::int 
+                IN (999312, 999412, 999512, 999612, 999101, 999811, 999821, 999831, 999841, 999851, 999861, 999871)
+                    THEN CONCAT('999101', RIGHT(grid.zone::varchar, 4))::bigint
+            WHEN LEFT(grid.zone::varchar, 6)::int
+                IN (999322, 999422, 999522, 999622, 999102, 999812, 999822, 999832, 999842, 999852, 999862, 999872)
+                    THEN CONCAT('999102', RIGHT(grid.zone::varchar, 4))::bigint
+            ELSE grid.zone
+        END AS zone
+        FROM grid
+        JOIN centralnetwork ON (
+            /* Search for grid cells within current UZ central areas delineation */
+            grid.xyind NOT IN (SELECT grid_new.xyind FROM grid_new)
+            /* Conditions for filtering */
+            AND (
+                (grid.zone IN (10,11,12,6,837101) 
+                OR LEFT(grid.zone::varchar, 6)::int IN (999101, 999102, 999111, 999112, 999121, 999122, 999612, 999622))
+                OR (
+                    grid.maa_ha != 0
+                    AND ST_DWithin(
+                        grid.geom, 
+                        (SELECT ST_Union(grid.geom) FROM grid WHERE (grid.zone IN (10, 11, 12, 6, 837101) 
+                        OR LEFT(grid.zone::varchar, 6)::int IN (999101, 999102, 999111, 999112, 999121, 999122, 999612, 999622))), 25)
+                    AND (grid.alueteho > 0.05 AND grid.employ > 0)
+                    AND (grid.alueteho > 0.2 AND grid.pop >= 100 AND grid.employ > 0)
+                )
+            )
             /* Select only edge neighbours, no corner touchers */
-            /* we have to use a buffer + area based intersection trick due to topological errors */
-            AND st_area(
-                st_intersection(
+            /* Buffer + area based intersection trick */
+            AND ST_Area(
+                ST_Intersection(
                     grid.geom,
-                    st_buffer(
-                        (SELECT st_union(grid.geom)
-                            FROM grid
-                            WHERE (grid.zone = 1 OR LEFT(grid.zone::varchar, 6)::int IN (999112, 999122))
-                        ), 1)
-                )) > 1
-            AND (0.014028 * grid.pop + 0.821276 * grid.employ -3.67) > 10) uz10;
+                    ST_Buffer(
+                        (SELECT ST_Union(grid.geom) FROM grid WHERE (grid.zone = 1) 
+                        OR LEFT(grid.zone::varchar, 6)::int IN (999112, 999122)), 1)
+                )
+            ) > 1
+            AND (0.014028 * grid.pop + 0.821276 * grid.employ - 3.67) > 10
+        );
         
         INSERT INTO grid_new
         SELECT * FROM

@@ -5,19 +5,19 @@ CREATE OR REPLACE FUNCTION
 functions.CO2_CalculateEmissionsLoop(
     municipalities integer[],
     aoi regclass, -- Tutkimusalue | area of interest
-    includeLongDistance boolean,
-    includeBusinessTravel boolean,
     calculationScenario varchar, -- PITKO:n mukainen scenario
     method varchar, -- Päästöallokointimenetelmä, 'em' tai 'hjm'
     electricityType varchar, -- Sähkön päästölaji, 'hankinta' tai 'tuotanto'
     baseYear integer, -- Laskennan lähtövuosi
     targetYear integer, -- Laskennan tavoitevuosi
     plan_areas regclass default null, -- Taulu, jossa käyttötarkoitusalueet tai vastaavat
+    plan_transit regclass default null, -- Taulu, jossa intensiivinen joukkoliikennejärjestelmä,
     plan_centers regclass default null, -- Taulu, jossa keskusverkkotiedot 
-    plan_transit regclass default null -- Taulu, jossa intensiivinen joukkoliikennejärjestelmä,
+    includeLongDistance boolean default true,
+    includeBusinessTravel boolean default true
 )
 RETURNS TABLE(
-    geom geometry(MultiPolygon, 3067),
+    geom geometry(Polygon, 3067),
     xyind varchar(13),
     mun int,
     zone bigint,
@@ -60,14 +60,14 @@ BEGIN
         IF calculationYear = baseYear THEN
             CREATE TEMP TABLE res AS
             SELECT * FROM
-                CO2_CalculateEmissions(
-                    municipalities, aoi, includeLongDistance, includeBusinessTravel, array[calculationYear, 2017, 2050], calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_centers, plan_transit
+                functions.CO2_CalculateEmissions(
+                    municipalities, aoi, calculationYear, calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_transit, plan_centers, includeLongDistance, includeBusinessTravel
                 );
         ELSE 
             INSERT INTO res
             SELECT * FROM
-                CO2_CalculateEmissions(
-                    municipalities, aoi, includeLongDistance, includeBusinessTravel, array[calculationYear, 2017, 2050], calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_centers, plan_transit
+                functions.CO2_CalculateEmissions(
+                    municipalities, aoi, calculationYear, calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_transit, plan_centers, includeLongDistance, includeBusinessTravel
                 );
         END IF;
         

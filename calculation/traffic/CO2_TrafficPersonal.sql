@@ -3,7 +3,7 @@ DROP FUNCTION IF EXISTS functions.CO2_TrafficPersonal;
 CREATE OR REPLACE FUNCTION functions.CO2_TrafficPersonal(
     municipality integer,
     pop_or_employ integer, -- Population or number of workplaces
-    calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
+    calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     mode varchar, -- Mode of transportation
     centdist integer,
     zone bigint,
@@ -14,7 +14,6 @@ CREATE OR REPLACE FUNCTION functions.CO2_TrafficPersonal(
 ) RETURNS real AS $$
 
 DECLARE
-calculationYear integer; 
 trafficTable varchar;
 km_muutos_bussi real default 0;
 km_muutos_hlauto real default 0;
@@ -30,12 +29,7 @@ BEGIN
     IF pop_or_employ <= 0 OR pop_or_employ IS NULL
 THEN RETURN 0;
 
-else
-
-    calculationYear := CASE WHEN calculationYears[1] < calculationYears[2] THEN calculationYears[2]
-    WHEN calculationYears[1] > calculationYears[3] THEN calculationYears[3]
-    ELSE calculationYears[1]
-    END;
+ELSE
 
 /* Matkat ja kuormitukset */
 EXECUTE format('SELECT hlt_table FROM traffic.hlt_lookup WHERE mun::int = %L', municipality)
@@ -60,11 +54,11 @@ IF zone::bigint NOT IN (1, 2, 6, 10, 837101) THEN
 END IF;
 
 EXECUTE FORMAT('SELECT bussi
-FROM traffic.%1$I
-WHERE zone = CASE
+    FROM traffic.%1$I
+    WHERE zone = CASE
     WHEN LEFT(%2$L::varchar, 4)::int = 9990 THEN 10
             WHEN LEFT(%2$L::varchar, 3)::int = 999
-                THEN left(right(%2$L, 2), 1)::int
+                THEN left(right(LEFT(%2$L::varchar, 5), 2), 1)::int
             WHEN %2$L::bigint = 837101 THEN 6
             ELSE %2$L::bigint END
 ', trafficTable, zone) INTO bussi;
@@ -75,7 +69,7 @@ EXECUTE FORMAT(
         WHERE zone = CASE 
         WHEN LEFT(%2$L::varchar, 4)::int = 9990 THEN 10
             WHEN LEFT(%2$L::varchar, 3)::int = 999
-                THEN left(right(%2$L, 2), 1)::int
+                THEN left(right(LEFT(%2$L::varchar, 5), 2), 1)::int
             WHEN %2$L::bigint = 837101 THEN 6
             ELSE %2$L::bigint END
 ', trafficTable, zone) INTO raide;
@@ -85,7 +79,7 @@ FROM traffic.%1$I
 WHERE zone = CASE 
     WHEN LEFT(%2$L::varchar, 4)::int = 9990 THEN 10
             WHEN LEFT(%2$L::varchar, 3)::int = 999
-                THEN left(right(%2$L, 2), 1)::int
+                THEN left(right(LEFT(%2$L::varchar, 5), 2), 1)::int
             WHEN %2$L::bigint = 837101 THEN 6
             ELSE %2$L::bigint END
 ', trafficTable, zone) INTO hlauto;
@@ -95,7 +89,7 @@ FROM traffic.%1$I
 WHERE zone = CASE 
     WHEN LEFT(%2$L::varchar, 4)::int = 9990 THEN 10
             WHEN LEFT(%2$L::varchar, 3)::int = 999
-                THEN left(right(%2$L, 2), 1)::int
+                THEN left(right(LEFT(%2$L::varchar, 5), 2), 1)::int
             WHEN %2$L::bigint = 837101 THEN 6
             ELSE %2$L::bigint END
 ', trafficTable, zone) INTO muu;
@@ -104,20 +98,21 @@ muu := CASE WHEN includeLongDistance THEN muu * 1.6 ELSE 1 END;
 
 bussi := (
     CASE WHEN centdist > 2 AND centdist < 10
-            AND zone IN (3, 5, 99931, 99932, 99951, 99952, 81, 82, 83, 84, 85, 86, 87)
+            AND (zone IN (3, 5, 81, 82, 83, 84, 85, 86, 87) OR LEFT(zone::varchar, 5)::int IN (99931, 99932, 99951, 99952))
             THEN COALESCE(bussi + (centdist - 2) * km_muutos_bussi, 0)
         WHEN centdist > 2
-            AND zone IN (4, 99941, 99942)
+            AND (zone = 4 OR LEFT(zone::varchar, 5)::int IN (99941, 99942))
         THEN COALESCE(bussi - (centdist - 2) * km_muutos_bussi, 0)
     ELSE bussi END
 ) * CASE WHEN includeLongDistance THEN 3.3 ELSE 1 END; -- HLT-based multipliers for 
 
 hlauto := (
     CASE WHEN centdist > 2 AND centdist < 10
-            AND zone IN (3, 5, 99931, 99932, 99951, 99952, 81, 82, 83, 84, 85, 86, 87)
+            AND (zone IN (3, 5, 81, 82, 83, 84, 85, 86, 87) OR LEFT(zone::varchar, 5)::int IN (99931, 99932, 99951, 99952))
             THEN COALESCE(hlauto + (centdist - 2) * km_muutos_hlauto, 0)
-        WHEN centdist > 2 AND zone IN (4, 99941, 99942)
-            THEN COALESCE(hlauto - (centdist - 2) * km_muutos_hlauto, 0)
+        WHEN centdist > 2 
+            AND (zone = 4 OR LEFT(zone::varchar, 5)::int IN (99941, 99942))
+        THEN COALESCE(hlauto - (centdist - 2) * km_muutos_hlauto, 0)
     ELSE hlauto END
 ) * CASE WHEN includeLongDistance THEN 1.2 ELSE 1 END;
 
@@ -230,7 +225,7 @@ EXECUTE FORMAT('
     ),  distance as (
         SELECT 
             %7$s::int * %9$L::real * %10$L::real *
-            COALESCE(CASE WHEN %6$L = ''pop'' THEN   (1 - COALESCE(share_w, 0.1) - CASE WHEN %11$L = TRUE THEN 0.05 ELSE 0 END)::real ELSE COALESCE(share_w + CASE WHEN %11$L = TRUE THEN 0.05 ELSE 0 END, 0.1)::real END, 0)
+            COALESCE(CASE WHEN %6$L = ''pop'' THEN (1 - COALESCE(share_w, 0.1) - CASE WHEN %11$L = TRUE THEN 0.05 ELSE 0 END)::real ELSE COALESCE(share_w + CASE WHEN %11$L = TRUE THEN 0.05 ELSE 0 END, 0.1)::real END, 0)
             / unitload::real
         as km
             FROM traffic_load, work_share
