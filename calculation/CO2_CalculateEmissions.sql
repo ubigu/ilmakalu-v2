@@ -52,8 +52,6 @@
         localbuildings boolean;
         refined boolean;
         defaultdemolition boolean;
-        initialScenario varchar;
-        initialYear integer;
         grams_to_tons real default 0.000001; -- Muuntaa grammat tonneiksi (0.000001) [t/g].
     BEGIN
 
@@ -61,10 +59,13 @@
             Samalla sidotaan laskennan referenssivuodeksi laskennan aloitusyear.
             If the 'static' skenaario is selected, i.e. only changes in the urban structure are taken into account, set the PITKO skenaario to 'wem'.
             At the same time, fix the calculation reference year into current year / baseYear */
+        /* Kun käytetään static-skenaariota tulevaisuuslaskennassa, aseta laskenta lähtövuoden referenssitasolle */
+        /* When using a 'static' scenario in the future scenario calculation, set the calculation reference year to baseYear */
+
         IF calculationScenario = 'static'
             THEN
                 calculationScenario := 'wem';
-                initialScenario := 'static';
+                calculationYear := baseYear;
         END IF;
 
         loopYear := calculationYear;
@@ -301,14 +302,6 @@
         FROM grid g
             WHERE (COALESCE(g.pop,0) > 0 OR COALESCE(g.employ,0) > 0 )
                 OR g.xyind::varchar IN (SELECT DISTINCT ON (grid2.xyind) grid2.xyind::varchar FROM grid2);
-
-        /* Kun käytetään static-skenaariota tulevaisuuslaskennassa, aseta laskenta lähtövuoden referenssitasolle */
-        /* When using a 'static' scenario in the future scenario calculation, set the calculation reference year to baseYear */
-        IF initialScenario = 'static'
-            AND targetYear IS NOT NULL THEN
-            initialYear := calculationYear;
-            calculationYear := baseYear;
-        END IF;
 
         ALTER TABLE grid2 ADD COLUMN IF NOT EXISTS mun int;
         UPDATE grid2 g2
@@ -646,10 +639,6 @@
                     OR (g.employ IS NOT NULL AND g.employ > 0)
             GROUP BY g.xyind) pop
         WHERE pop.xyind = results.xyind;
-
-        IF initialScenario = 'static' AND targetYear IS NOT NULL
-            THEN calculationYear := initialYear;
-        END IF;
 
         /* Add categorical total sums to results */
         UPDATE results r SET

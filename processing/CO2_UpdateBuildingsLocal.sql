@@ -436,23 +436,24 @@ FROM kaukolampo, sahko, puu, maalampo, muu_lammitys;
 
 /* Päivitetään paikallisen lämmitysmuotojakauman ja kansallisen lämmitysmuotojakauman erot */
 /* Updating differences between local and "global" heating distributions */
-UPDATE local_jakauma l
-JOIN global_jakauma g ON l.rakennus_tyyppi = g.rakennus_tyyppi
-SET l.kaukolampo = CASE 
+UPDATE local_jakauma AS l SET
+kaukolampo = CASE 
     	WHEN l.kaukolampo IS NULL AND l.sahko IS NULL AND l.puu IS NULL AND l.maalampo IS NULL AND l.muu_lammitys IS NULL THEN g.kaukolampo
     	ELSE localweight * COALESCE(l.kaukolampo, 0) + globalweight * g.kaukolampo END,
-    l.sahko = CASE 
+    sahko = CASE 
         WHEN l.kaukolampo IS NULL AND l.sahko IS NULL AND l.puu IS NULL AND l.maalampo IS NULL AND l.muu_lammitys IS NULL THEN g.sahko
         ELSE localweight * COALESCE(l.sahko, 0) + globalweight * g.sahko END,
-    l.puu = CASE 
+    puu = CASE 
         WHEN l.kaukolampo IS NULL AND l.sahko IS NULL AND l.puu IS NULL AND l.maalampo IS NULL AND l.muu_lammitys IS NULL THEN g.puu
         ELSE localweight * COALESCE(l.puu, 0) + globalweight * g.puu END,
-    l.maalampo = CASE 
+    maalampo = CASE 
         WHEN l.kaukolampo IS NULL AND l.sahko IS NULL AND l.puu IS NULL AND l.maalampo IS NULL AND l.muu_lammitys IS NULL THEN g.maalampo
         ELSE localweight * COALESCE(l.maalampo, 0) + globalweight * g.maalampo END,
-    l.muu_lammitys = CASE 
+    muu_lammitys = CASE 
         WHEN l.kaukolampo IS NULL AND l.sahko IS NULL AND l.puu IS NULL AND l.maalampo IS NULL AND l.muu_lammitys IS NULL THEN g.muu_lammitys
-        ELSE localweight * COALESCE(l.muu_lammitys, 0) + globalweight * g.muu_lammitys END;
+        ELSE localweight * COALESCE(l.muu_lammitys, 0) + globalweight * g.muu_lammitys END
+FROM global_jakauma g
+WHERE l.rakennus_tyyppi =  g.rakennus_tyyppi;
 
 /* Rakennetaan uudet rakennukset energiamuodoittain */
 /* Building new buildings, per primary energy source */
