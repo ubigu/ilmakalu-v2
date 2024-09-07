@@ -7,12 +7,26 @@ volumes:
     external: false
     
 services:
+  ilmakalu_api:
+    container_name: ilmakalu_api
+    image: flaskapp:1.0.0
+    build:
+      context: ./../backend
+      dockerfile: flask.dockerfile
+    ports:
+      - '4000:4000'
+    restart: always
+    environment:
+      - DATABASE_URL=postgres://docker:docker@ilmakalu_user:65432/ilmakalu_data?sslmode=require
+    depends_on:
+      - ilmakalu_user
   ilmakalu_user:
+    container_name: ilmakalu_user
     image: kartoza/postgis:13.0
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ilmakalu_data
 #      POSTGRES_MULTIPLE_EXTENSIONS: postgis,"uuid-ossp"
       DEFAULT_CTYPE: 'fi_FI.UTF8'
       DEFAULT_COLLATION: 'fi_FI.UTF8'
