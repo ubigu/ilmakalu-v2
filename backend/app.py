@@ -3,14 +3,24 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  
 from os import environ
 import csv
+from sqlalchemy.schema import CreateSchema
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DATABASE_URL')
 db = SQLAlchemy(app)
-  
-from db_built import *
+
+def createSchema(schema):
+  with db.engine.connect() as conn:
+      if not conn.dialect.has_schema(conn, schema):
+          conn.execute(CreateSchema(schema))
+
+from models.db_built import *
+from models.db_delineations import *
+from models.db_energy import *
+from models.db_grid_globals import *
+from models.db_traffic import *
 
 db.create_all()
 

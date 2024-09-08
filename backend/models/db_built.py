@@ -1,10 +1,7 @@
-from app import db
-from sqlalchemy.schema import CreateSchema
+from app import db, createSchema
 
 schema = 'built'
-with db.engine.connect() as conn:
-    if not conn.dialect.has_schema(conn, schema):
-        conn.execute(CreateSchema(schema))
+createSchema(schema)
 
 class build_demolish_energy_gco2m2(db.Model):
     __table_args__ = { 'schema': schema }
@@ -192,18 +189,18 @@ class electricity_property_change(db.Model):
     __table_args__ = { 'schema': schema }
     scenario = db.Column(db.Text, primary_key=True)
     year = db.Column(db.Integer, primary_key=True)
-    c_9999 = db.Column("9999",db.Float)
-    c_1920 = db.Column("1920",db.Float)
-    c_1929 = db.Column("1929",db.Float)
-    c_1939 = db.Column("1939",db.Float)
-    c_1949 = db.Column("1949",db.Float)
-    c_1959 = db.Column("1959",db.Float)
-    c_1969 = db.Column("1969",db.Float)
-    c_1979 = db.Column("1979",db.Float)
-    c_1989 = db.Column("1989",db.Float)
-    c_1999 = db.Column("1999",db.Float)
-    c_2009 = db.Column("2009",db.Float)
-    c_2010 = db.Column("2010",db.Float)
+    _c_9999 = db.Column("9999",db.Float)
+    _c_1920 = db.Column("1920",db.Float)
+    _c_1929 = db.Column("1929",db.Float)
+    _c_1939 = db.Column("1939",db.Float)
+    _c_1949 = db.Column("1949",db.Float)
+    _c_1959 = db.Column("1959",db.Float)
+    _c_1969 = db.Column("1969",db.Float)
+    _c_1979 = db.Column("1979",db.Float)
+    _c_1989 = db.Column("1989",db.Float)
+    _c_1999 = db.Column("1999",db.Float)
+    _c_2009 = db.Column("2009",db.Float)
+    _c_2010 = db.Column("2010",db.Float)
 
 class electricity_property_kwhm2(db.Model):
     __table_args__ = { 'schema': schema }
@@ -220,7 +217,7 @@ class iwhs_sizes(db.Model):
 
 class occupancy(db.Model):
     __table_args__ = { 'schema': schema }
-    mun = db.Column(db.Integer, primary_key=True)
+    mun = db.Column(db.Text, primary_key=True)
     year = db.Column(db.Integer, primary_key=True)
     erpien = db.Column(db.Float)
     rivita = db.Column(db.Float)
@@ -244,7 +241,7 @@ class spaces_efficiency(db.Model):
 
 class spaces_kwhm2(db.Model):
     __table_args__ = { 'schema': schema }
-    mun = db.Column(db.Integer, primary_key=True)
+    mun = db.Column(db.Text, primary_key=True)
     scenario = db.Column(db.Text, primary_key=True)
     year = db.Column(db.Integer, primary_key=True)
     rakv = db.Column(db.Integer, primary_key=True)
