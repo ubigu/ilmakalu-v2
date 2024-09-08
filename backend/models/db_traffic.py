@@ -1,7 +1,7 @@
-from app import db, createSchema
+from app import db, create_schema
 
 schema = 'traffic'
-createSchema(schema)
+create_schema(schema)
 
 class citizen_traffic_stress(db.Model):
     __table_args__ = { 'schema': schema }

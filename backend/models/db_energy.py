@@ -1,7 +1,7 @@
-from app import db, createSchema
+from app import db, create_schema
 
 schema = 'energy'
-createSchema(schema)
+create_schema(schema)
 
 class cooling_gco2kwh(db.Model):
     __table_args__ = { 'schema': schema }

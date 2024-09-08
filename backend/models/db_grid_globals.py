@@ -1,11 +1,11 @@
-from app import db, createSchema
+from app import db, create_schema
 
 schema = 'grid_globals'
-createSchema(schema)
+create_schema(schema)
 
 class buildings(db.Model):
     __table_args__ = { 'schema': schema }
-    xyind = db.Column(db.Integer, primary_key=True)
+    xyind = db.Column(db.BigInteger, primary_key=True)
     rakv = db.Column(db.Integer, primary_key=True)
     energiam = db.Column(db.Text, primary_key=True)
     rakyht_lkm = db.Column(db.Integer)
@@ -103,20 +103,20 @@ class clc(db.Model):
     clc5111 = db.Column(db.Float)
     clc5121 = db.Column(db.Float)
     clc5231 = db.Column(db.Float)
-    xyind = db.Column(db.Integer, primary_key=True)
+    xyind = db.Column(db.BigInteger, primary_key=True)
 
 class employ(db.Model):
     __table_args__ = { 'schema': schema }
     vuosi = db.Column(db.Integer, primary_key=True)
     kunta = db.Column(db.Text)
     tp_yht = db.Column(db.Integer)
-    xyind = db.Column(db.Integer, primary_key=True)
+    xyind = db.Column(db.BigInteger, primary_key=True)
 
 class pop(db.Model):
     __table_args__ = { 'schema': schema }
     vuosi = db.Column(db.Integer, primary_key=True)
     kunta = db.Column(db.Text)
-    xyind = db.Column(db.Integer, primary_key=True)
+    xyind = db.Column(db.BigInteger, primary_key=True)
     v_yht = db.Column(db.Integer)
     v_0_6 = db.Column(db.Integer)
     v_7_14 = db.Column(db.Integer)
