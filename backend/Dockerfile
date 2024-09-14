@@ -1,4 +1,4 @@
-FROM python:3.6-slim-buster
+FROM python:3.9
 
 WORKDIR /app
 
@@ -12,4 +12,4 @@ EXPOSE 4000
 
 ENV PYTHONUNBUFFERED=1
 
-CMD [ "flask", "run", "--host=0.0.0.0", "--port=4000"]
+ENTRYPOINT ["/app/entrypoint.sh"]

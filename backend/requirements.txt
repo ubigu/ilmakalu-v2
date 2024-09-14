@@ -1,5 +1,4 @@
-flask
-psycopg2-binary
-Flask-SQLAlchemy
-Flask-CORS
+fastapi[standard]
 sqlalchemy
+alembic
+psycopg2-binary
