@@ -697,3 +697,5 @@ class workers_traffic_stress(Base):
     raide: Mapped[float] = mapped_column()
     hlauto: Mapped[float] = mapped_column()
     muu: Mapped[float] = mapped_column()
+
+create_schema("functions")
