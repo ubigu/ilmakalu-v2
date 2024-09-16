@@ -4,8 +4,6 @@ from database import engine, Base
 
 app = FastAPI()
 
-Base.metadata.create_all(engine)
-
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

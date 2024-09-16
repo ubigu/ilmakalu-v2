@@ -1,8 +1,7 @@
-from database import Base, create_schema
+from database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
 schema = 'built'
-create_schema(schema)
 
 class build_demolish_energy_gco2m2(Base):
     __tablename__ = "build_demolish_energy_gco2m2"

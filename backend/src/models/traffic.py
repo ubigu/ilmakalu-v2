@@ -1,8 +1,7 @@
-from database import Base, create_schema
+from database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
 schema = 'traffic'
-create_schema(schema)
 
 class citizen_traffic_stress(Base):
     __tablename__ = "citizen_traffic_stress"

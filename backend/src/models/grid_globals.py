@@ -1,8 +1,7 @@
-from database import Base, create_schema
+from database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
 schema = 'grid_globals'
-create_schema(schema)
 
 class buildings(Base):
     __tablename__ = "buildings"

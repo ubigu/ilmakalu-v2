@@ -1,8 +1,7 @@
-from database import Base, create_schema
+from database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
 schema = 'delineations'
-create_schema(schema)
 
 class centroids(Base):
     __tablename__ = "centroids"
