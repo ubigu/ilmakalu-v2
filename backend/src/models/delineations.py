@@ -16,7 +16,7 @@ class grid(Base):
     __tablename__ = "grid"
     __table_args__ = { 'schema': schema }
     WKT: Mapped[str] = mapped_column()
-    xyind: Mapped[int] = mapped_column(primary_key=True)
+    xyind: Mapped[str] = mapped_column(primary_key=True)
     mun: Mapped[int] = mapped_column()
-    zone: Mapped[int] = mapped_column()
+    zone: Mapped[str] = mapped_column()
     centdist: Mapped[int] = mapped_column()

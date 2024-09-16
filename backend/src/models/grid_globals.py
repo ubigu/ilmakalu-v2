@@ -7,7 +7,7 @@ create_schema(schema)
 class buildings(Base):
     __tablename__ = "buildings"
     __table_args__ = { 'schema': schema }
-    xyind: Mapped[int] = mapped_column(primary_key=True)
+    xyind: Mapped[str] = mapped_column(primary_key=True)
     rakv: Mapped[int] = mapped_column(primary_key=True)
     energiam: Mapped[str] = mapped_column(primary_key=True)
     rakyht_lkm: Mapped[int] = mapped_column()
@@ -53,8 +53,8 @@ class buildings(Base):
 class clc(Base):
     __tablename__ = "clc"
     __table_args__ = { 'schema': schema }
-    vuosi: Mapped[int] = mapped_column()
-    kunta: Mapped[str] = mapped_column()
+    vuosi: Mapped[int] = mapped_column(primary_key=True)
+    kunta: Mapped[str] = mapped_column(primary_key=True)
     maa_ha: Mapped[float] = mapped_column()
     vesi_ha: Mapped[float] = mapped_column()
     clc1111: Mapped[float] = mapped_column()
@@ -106,22 +106,22 @@ class clc(Base):
     clc5111: Mapped[float] = mapped_column()
     clc5121: Mapped[float] = mapped_column()
     clc5231: Mapped[float] = mapped_column()
-    xyind: Mapped[int] = mapped_column(primary_key=True)
+    xyind: Mapped[str] = mapped_column(primary_key=True)
 
 class employ(Base):
     __tablename__ = "employ"
     __table_args__ = { 'schema': schema }
     vuosi: Mapped[int] = mapped_column(primary_key=True)
-    kunta: Mapped[str] = mapped_column()
+    kunta: Mapped[str] = mapped_column(primary_key=True)
     tp_yht: Mapped[int] = mapped_column()
-    xyind: Mapped[int] = mapped_column(primary_key=True)
+    xyind: Mapped[str] = mapped_column(primary_key=True)
 
 class pop(Base):
     __tablename__ = "pop"
     __table_args__ = { 'schema': schema }
     vuosi: Mapped[int] = mapped_column(primary_key=True)
-    kunta: Mapped[str] = mapped_column()
-    xyind: Mapped[int] = mapped_column(primary_key=True)
+    kunta: Mapped[str] = mapped_column(primary_key=True)
+    xyind: Mapped[str] = mapped_column(primary_key=True)
     v_yht: Mapped[int] = mapped_column()
     v_0_6: Mapped[int] = mapped_column()
     v_7_14: Mapped[int] = mapped_column()
