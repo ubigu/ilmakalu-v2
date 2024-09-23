@@ -6,12 +6,10 @@ WKT;id;keskustyyp;keskusnimi
 "POINT (374075.0 6677000.0)";5;Kaupunkiseudun iso alakeskus;Kauniainen
 "POINT (387325 6685625)";6;Kaupunkiseudun iso alakeskus;Pakkala
 "POINT (407666.666666667 6685916.66666667)";7;Kaupunkiseudun iso alakeskus;Söderkulla
-"POINT (407666.666666667 6685916.66666667)";7;Kaupunkiseudun iso alakeskus;Söderkulla
 "POINT (393951.923076923 6691990.38461538)";8;Kaupunkiseudun iso alakeskus;Korso
 "POINT (238086.538461539 6713432.69230769)";9;Kaupunkiseudun iso alakeskus;Länsikeskus
 "POINT (319089.285714285 6828553.57142857)";10;Kaupunkiseudun iso alakeskus;Ylöjärvi
 "POINT (227513.888888889 7009097.22222222)";11;Kaupunkiseudun iso alakeskus;Palosaari
-;;;
 "POINT (308875.0 6746000.0)";12;Kaupunkiseudun iso alakeskus;Jokioinen
 "POINT (370125.0 6676500.0)";13;Kaupunkiseudun iso alakeskus;Espoon keskus
 "POINT (382987.5 6675912.5)";14;Kaupunkiseudun iso alakeskus;Munkkiniemi-Pikku-Huopalahti
@@ -35,7 +33,6 @@ WKT;id;keskustyyp;keskusnimi
 "POINT (397232.142857143 6675910.71428571)";32;Kaupunkiseudun iso alakeskus;Vuosaari
 "POINT (372410.714285714 6756446.42857143)";33;Kaupunkiseudun iso alakeskus;Turenki
 "POINT (387791.666666667 7299958.33333333)";34;Kaupunkiseudun iso alakeskus;Keminmaa
-"POINT (387791.666666667 7299958.33333333)";aaaa;Kaupunkiseudun iso alakeskus;Keminmaa
 "POINT (496156.25 6708906.25)";35;Kaupunkiseudun iso alakeskus;Karhula
 "POINT (479647.727272727 6752579.54545454)";36;Kaupunkiseudun iso alakeskus;Kuusankoski
 "POINT (419597.222222222 6762458.33333333)";37;Kaupunkiseudun iso alakeskus;Salpakangas

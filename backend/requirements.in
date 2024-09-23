@@ -1,5 +1,6 @@
 alembic
-asyncpg
 fastapi[standard]
 sqlmodel
+psycopg2
 uvicorn
+pandas
