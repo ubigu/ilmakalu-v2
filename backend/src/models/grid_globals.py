@@ -1,132 +1,127 @@
-from database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlmodel import SQLModel, Field
 
 schema = 'grid_globals'
 
-class buildings(Base):
-    __tablename__ = "buildings"
-    __table_args__ = { 'schema': schema }
-    xyind: Mapped[str] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    energiam: Mapped[str] = mapped_column(primary_key=True)
-    rakyht_lkm: Mapped[int] = mapped_column()
-    teoll_lkm: Mapped[int] = mapped_column()
-    varast_lkm: Mapped[int] = mapped_column()
-    rakyht_ala: Mapped[int] = mapped_column()
-    asuin_ala: Mapped[int] = mapped_column()
-    erpien_ala: Mapped[int] = mapped_column()
-    rivita_ala: Mapped[int] = mapped_column()
-    askert_ala: Mapped[int] = mapped_column()
-    liike_ala: Mapped[int] = mapped_column()
-    myymal_ala: Mapped[int] = mapped_column()
-    myymal_pien_ala: Mapped[int] = mapped_column()
-    myymal_super_ala: Mapped[int] = mapped_column()
-    myymal_hyper_ala: Mapped[int] = mapped_column()
-    myymal_muu_ala: Mapped[int] = mapped_column()
-    majoit_ala: Mapped[int] = mapped_column()
-    asla_ala: Mapped[int] = mapped_column()
-    ravint_ala: Mapped[int] = mapped_column()
-    tsto_ala: Mapped[int] = mapped_column()
-    liiken_ala: Mapped[int] = mapped_column()
-    hoito_ala: Mapped[int] = mapped_column()
-    kokoon_ala: Mapped[int] = mapped_column()
-    opetus_ala: Mapped[int] = mapped_column()
-    teoll_ala: Mapped[int] = mapped_column()
-    teoll_elint_ala: Mapped[int] = mapped_column()
-    teoll_tekst_ala: Mapped[int] = mapped_column()
-    teoll_puu_ala: Mapped[int] = mapped_column()
-    teoll_paper_ala: Mapped[int] = mapped_column()
-    teoll_miner_ala: Mapped[int] = mapped_column()
-    teoll_kemia_ala: Mapped[int] = mapped_column()
-    teoll_kone_ala: Mapped[int] = mapped_column()
-    teoll_mjalos_ala: Mapped[int] = mapped_column()
-    teoll_metal_ala: Mapped[int] = mapped_column()
-    teoll_vesi_ala: Mapped[int] = mapped_column()
-    teoll_energ_ala: Mapped[int] = mapped_column()
-    teoll_yhdysk_ala: Mapped[int] = mapped_column()
-    teoll_kaivos_ala: Mapped[int] = mapped_column()
-    teoll_muu_ala: Mapped[int] = mapped_column()
-    varast_ala: Mapped[int] = mapped_column()
-    muut_ala: Mapped[int] = mapped_column()
+class buildings(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    xyind: str = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    energiam: str = Field(primary_key=True)
+    rakyht_lkm: int
+    teoll_lkm: int
+    varast_lkm: int
+    rakyht_ala: int
+    asuin_ala: int
+    erpien_ala: int
+    rivita_ala: int
+    askert_ala: int
+    liike_ala: int
+    myymal_ala: int
+    myymal_pien_ala: int
+    myymal_super_ala: int
+    myymal_hyper_ala: int
+    myymal_muu_ala: int
+    majoit_ala: int
+    asla_ala: int
+    ravint_ala: int
+    tsto_ala: int
+    liiken_ala: int
+    hoito_ala: int
+    kokoon_ala: int
+    opetus_ala: int
+    teoll_ala: int
+    teoll_elint_ala: int
+    teoll_tekst_ala: int
+    teoll_puu_ala: int
+    teoll_paper_ala: int
+    teoll_miner_ala: int
+    teoll_kemia_ala: int
+    teoll_kone_ala: int
+    teoll_mjalos_ala: int
+    teoll_metal_ala: int
+    teoll_vesi_ala: int
+    teoll_energ_ala: int
+    teoll_yhdysk_ala: int
+    teoll_kaivos_ala: int
+    teoll_muu_ala: int
+    varast_ala: int
+    muut_ala: int
 
-class clc(Base):
-    __tablename__ = "clc"
-    __table_args__ = { 'schema': schema }
-    vuosi: Mapped[int] = mapped_column(primary_key=True)
-    kunta: Mapped[str] = mapped_column(primary_key=True)
-    maa_ha: Mapped[float] = mapped_column()
-    vesi_ha: Mapped[float] = mapped_column()
-    clc1111: Mapped[float] = mapped_column()
-    clc1121: Mapped[float] = mapped_column()
-    clc1211: Mapped[float] = mapped_column()
-    clc1212: Mapped[float] = mapped_column()
-    clc1221: Mapped[float] = mapped_column()
-    clc1231: Mapped[float] = mapped_column()
-    clc1241: Mapped[float] = mapped_column()
-    clc1311: Mapped[float] = mapped_column()
-    clc1312: Mapped[float] = mapped_column()
-    clc1321: Mapped[float] = mapped_column()
-    clc1331: Mapped[float] = mapped_column()
-    clc1411: Mapped[float] = mapped_column()
-    clc1421: Mapped[float] = mapped_column()
-    clc1422: Mapped[float] = mapped_column()
-    clc1423: Mapped[float] = mapped_column()
-    clc1424: Mapped[float] = mapped_column()
-    clc2111: Mapped[float] = mapped_column()
-    clc2221: Mapped[float] = mapped_column()
-    clc2311: Mapped[float] = mapped_column()
-    clc2312: Mapped[float] = mapped_column()
-    clc2431: Mapped[float] = mapped_column()
-    clc2441: Mapped[float] = mapped_column()
-    clc3111: Mapped[float] = mapped_column()
-    clc3112: Mapped[float] = mapped_column()
-    clc3121: Mapped[float] = mapped_column()
-    clc3122: Mapped[float] = mapped_column()
-    clc3123: Mapped[float] = mapped_column()
-    clc3131: Mapped[float] = mapped_column()
-    clc3132: Mapped[float] = mapped_column()
-    clc3133: Mapped[float] = mapped_column()
-    clc3211: Mapped[float] = mapped_column()
-    clc3221: Mapped[float] = mapped_column()
-    clc3241: Mapped[float] = mapped_column()
-    clc3242: Mapped[float] = mapped_column()
-    clc3243: Mapped[float] = mapped_column()
-    clc3244: Mapped[float] = mapped_column()
-    clc3246: Mapped[float] = mapped_column()
-    clc3311: Mapped[float] = mapped_column()
-    clc3321: Mapped[float] = mapped_column()
-    clc3331: Mapped[float] = mapped_column()
-    clc4111: Mapped[float] = mapped_column()
-    clc4112: Mapped[float] = mapped_column()
-    clc4121: Mapped[float] = mapped_column()
-    clc4122: Mapped[float] = mapped_column()
-    clc4211: Mapped[float] = mapped_column()
-    clc4212: Mapped[float] = mapped_column()
-    clc5111: Mapped[float] = mapped_column()
-    clc5121: Mapped[float] = mapped_column()
-    clc5231: Mapped[float] = mapped_column()
-    xyind: Mapped[str] = mapped_column(primary_key=True)
+class clc(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    vuosi: int = Field(primary_key=True)
+    kunta: str = Field(primary_key=True)
+    maa_ha: float
+    vesi_ha: float
+    clc1111: float
+    clc1121: float
+    clc1211: float
+    clc1212: float
+    clc1221: float
+    clc1231: float
+    clc1241: float
+    clc1311: float
+    clc1312: float
+    clc1321: float
+    clc1331: float
+    clc1411: float
+    clc1421: float
+    clc1422: float
+    clc1423: float
+    clc1424: float
+    clc2111: float
+    clc2221: float
+    clc2311: float
+    clc2312: float
+    clc2431: float
+    clc2441: float
+    clc3111: float
+    clc3112: float
+    clc3121: float
+    clc3122: float
+    clc3123: float
+    clc3131: float
+    clc3132: float
+    clc3133: float
+    clc3211: float
+    clc3221: float
+    clc3241: float
+    clc3242: float
+    clc3243: float
+    clc3244: float
+    clc3246: float
+    clc3311: float
+    clc3321: float
+    clc3331: float
+    clc4111: float
+    clc4112: float
+    clc4121: float
+    clc4122: float
+    clc4211: float
+    clc4212: float
+    clc5111: float
+    clc5121: float
+    clc5231: float
+    xyind: str = Field(primary_key=True)
 
-class employ(Base):
-    __tablename__ = "employ"
-    __table_args__ = { 'schema': schema }
-    vuosi: Mapped[int] = mapped_column(primary_key=True)
-    kunta: Mapped[str] = mapped_column(primary_key=True)
-    tp_yht: Mapped[int] = mapped_column()
-    xyind: Mapped[str] = mapped_column(primary_key=True)
+class employ(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    vuosi: int = Field(primary_key=True)
+    kunta: str = Field(primary_key=True)
+    tp_yht: int
+    xyind: str = Field(primary_key=True)
 
-class pop(Base):
-    __tablename__ = "pop"
-    __table_args__ = { 'schema': schema }
-    vuosi: Mapped[int] = mapped_column(primary_key=True)
-    kunta: Mapped[str] = mapped_column(primary_key=True)
-    xyind: Mapped[str] = mapped_column(primary_key=True)
-    v_yht: Mapped[int] = mapped_column()
-    v_0_6: Mapped[int] = mapped_column()
-    v_7_14: Mapped[int] = mapped_column()
-    v_15_17: Mapped[int] = mapped_column()
-    v_18_29: Mapped[int] = mapped_column()
-    v_30_49: Mapped[int] = mapped_column()
-    v_50_64: Mapped[int] = mapped_column()
-    v_65_74: Mapped[int] = mapped_column()
-    v_75: Mapped[int] = mapped_column()
+class pop(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    vuosi: int = Field(primary_key=True)
+    kunta: str = Field(primary_key=True)
+    xyind: str = Field(primary_key=True)
+    v_yht: int
+    v_0_6: int
+    v_7_14: int
+    v_15_17: int
+    v_18_29: int
+    v_30_49: int
+    v_50_64: int
+    v_65_74: int
+    v_75: int

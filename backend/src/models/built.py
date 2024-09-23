@@ -1,284 +1,265 @@
-from database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlmodel import SQLModel, Field
 
 schema = 'built'
 
-class build_demolish_energy_gco2m2(Base):
-    __tablename__ = "build_demolish_energy_gco2m2"
+class build_demolish_energy_gco2m2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class build_materia_gco2m2(Base):
-    __tablename__ = "build_materia_gco2m2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+class build_materia_gco2m2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class build_new_construction_energy_gco2m2(Base):
-    __tablename__ = "build_new_construction_energy_gco2m2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+class build_new_construction_energy_gco2m2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class build_rebuilding_energy_gco2m2(Base):
-    __tablename__ = "build_rebuilding_energy_gco2m2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+class build_rebuilding_energy_gco2m2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class build_rebuilding_share(Base):
-    __tablename__ = "build_rebuilding_share"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+class build_rebuilding_share(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class build_renovation_energy_gco2m2(Base):
-    __tablename__ = "build_renovation_energy_gco2m2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+class build_renovation_energy_gco2m2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class cooling_proportions_kwhm2(Base):
-    __tablename__ = "cooling_proportions_kwhm2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    rakennus_tyyppi: Mapped[str] = mapped_column(primary_key=True)
-    jaahdytys_osuus: Mapped[float] = mapped_column()
-    jaahdytys_kwhm2: Mapped[float] = mapped_column()
-    jaahdytys_kaukok: Mapped[float] = mapped_column()
-    jaahdytys_sahko: Mapped[float] = mapped_column()
-    jaahdytys_pumput: Mapped[float] = mapped_column()
-    jaahdytys_muu: Mapped[float] = mapped_column()
+class cooling_proportions_kwhm2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    rakennus_tyyppi: str = Field(primary_key=True)
+    jaahdytys_osuus: float
+    jaahdytys_kwhm2: float
+    jaahdytys_kaukok: float
+    jaahdytys_sahko: float
+    jaahdytys_pumput: float
+    jaahdytys_muu: float
 
 
-class distribution_heating_systems(Base):
-    __tablename__ = "distribution_heating_systems"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    rakennus_tyyppi: Mapped[str] = mapped_column(primary_key=True)
-    kaukolampo: Mapped[float] = mapped_column()
-    kevyt_oljy: Mapped[float] = mapped_column()
-    kaasu: Mapped[float] = mapped_column()
-    sahko: Mapped[float] = mapped_column()
-    puu: Mapped[float] = mapped_column()
-    maalampo: Mapped[float] = mapped_column()
-    muu_lammitys: Mapped[float] = mapped_column()
+class distribution_heating_systems(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    rakennus_tyyppi: str = Field(primary_key=True)
+    kaukolampo: float
+    kevyt_oljy: float
+    kaasu: float
+    sahko: float
+    puu: float
+    maalampo: float
+    muu_lammitys: float
 
-class electricity_home_device(Base):
-    __tablename__ = "electricity_home_device"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
+class electricity_home_device(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
 
-class electricity_home_light(Base):
-    __tablename__ = "electricity_home_light"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
+class electricity_home_light(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
 
-class electricity_iwhs_kwhm2(Base):
-    __tablename__ = "electricity_iwhs_kwhm2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    myymal_hyper: Mapped[float] = mapped_column()
-    myymal_super: Mapped[float] = mapped_column()
-    myymal_pien: Mapped[float] = mapped_column()
-    myymal_muu: Mapped[float] = mapped_column()
-    majoit: Mapped[float] = mapped_column()
-    asla: Mapped[float] = mapped_column()
-    ravint: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
-    teoll_kaivos: Mapped[float] = mapped_column()
-    teoll_elint: Mapped[float] = mapped_column()
-    teoll_tekst: Mapped[float] = mapped_column()
-    teoll_puu: Mapped[float] = mapped_column()
-    teoll_paper: Mapped[float] = mapped_column()
-    teoll_kemia: Mapped[float] = mapped_column()
-    teoll_miner: Mapped[float] = mapped_column()
-    teoll_mjalos: Mapped[float] = mapped_column()
-    teoll_metal: Mapped[float] = mapped_column()
-    teoll_kone: Mapped[float] = mapped_column()
-    teoll_muu: Mapped[float] = mapped_column()
-    teoll_energ: Mapped[float] = mapped_column()
-    teoll_vesi: Mapped[float] = mapped_column()
-    teoll_yhdysk: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    myymal: Mapped[float] = mapped_column()
+class electricity_iwhs_kwhm2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    myymal_hyper: float
+    myymal_super: float
+    myymal_pien: float
+    myymal_muu: float
+    majoit: float
+    asla: float
+    ravint: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    muut: float
+    teoll_kaivos: float
+    teoll_elint: float
+    teoll_tekst: float
+    teoll_puu: float
+    teoll_paper: float
+    teoll_kemia: float
+    teoll_miner: float
+    teoll_mjalos: float
+    teoll_metal: float
+    teoll_kone: float
+    teoll_muu: float
+    teoll_energ: float
+    teoll_vesi: float
+    teoll_yhdysk: float
+    varast: float
+    teoll: float
+    liike: float
+    myymal: float
 
-class electricity_property_change(Base):
-    __tablename__ = "electricity_property_change"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    _c_9999: Mapped[float] = mapped_column("9999")
-    _c_1920: Mapped[float] = mapped_column("1920")
-    _c_1929: Mapped[float] = mapped_column("1929")
-    _c_1939: Mapped[float] = mapped_column("1939")
-    _c_1949: Mapped[float] = mapped_column("1949")
-    _c_1959: Mapped[float] = mapped_column("1959")
-    _c_1969: Mapped[float] = mapped_column("1969")
-    _c_1979: Mapped[float] = mapped_column("1979")
-    _c_1989: Mapped[float] = mapped_column("1989")
-    _c_1999: Mapped[float] = mapped_column("1999")
-    _c_2009: Mapped[float] = mapped_column("2009")
-    _c_2010: Mapped[float] = mapped_column("2010")
+class electricity_property_change(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    c_9999: float = Field(sa_column_kwargs={'name': '9999'})
+    c_1920: float = Field(sa_column_kwargs={'name': '1920'})
+    c_1929: float = Field(sa_column_kwargs={'name': '1929'})
+    c_1939: float = Field(sa_column_kwargs={'name': '1939'})
+    c_1949: float = Field(sa_column_kwargs={'name': '1949'})
+    c_1959: float = Field(sa_column_kwargs={'name': '1959'})
+    c_1969: float = Field(sa_column_kwargs={'name': '1969'})
+    c_1979: float = Field(sa_column_kwargs={'name': '1979'})
+    c_1989: float = Field(sa_column_kwargs={'name': '1989'})
+    c_1999: float = Field(sa_column_kwargs={'name': '1999'})
+    c_2009: float = Field(sa_column_kwargs={'name': '2009'})
+    c_2010: float = Field(sa_column_kwargs={'name': '2010'})
 
-class electricity_property_kwhm2(Base):
-    __tablename__ = "electricity_property_kwhm2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    rakennus_tyyppi: Mapped[str] = mapped_column(primary_key=True)
-    sahko_kiinteisto_kwhm2: Mapped[float] = mapped_column()
+class electricity_property_kwhm2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    rakennus_tyyppi: str = Field(primary_key=True)
+    sahko_kiinteisto_kwhm2: float
 
-class iwhs_sizes(Base):
-    __tablename__ = "iwhs_sizes"
-    __table_args__ = { 'schema': schema }
-    type: Mapped[str] = mapped_column(primary_key=True)
-    several: Mapped[int] = mapped_column()
-    single: Mapped[int] = mapped_column()
+class iwhs_sizes(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    type: str = Field(primary_key=True)
+    several: int
+    single: int
 
-class occupancy(Base):
-    __tablename__ = "occupancy"
-    __table_args__ = { 'schema': schema }
-    mun: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
+class occupancy(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    mun: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
 
-class spaces_efficiency(Base):
-    __tablename__ = "spaces_efficiency"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    rakennus_tyyppi: Mapped[str] = mapped_column(primary_key=True)
-    kaukolampo: Mapped[float] = mapped_column()
-    kevyt_oljy: Mapped[float] = mapped_column()
-    raskas_oljy: Mapped[float] = mapped_column()
-    kaasu: Mapped[float] = mapped_column()
-    sahko: Mapped[float] = mapped_column()
-    puu: Mapped[float] = mapped_column()
-    turve: Mapped[float] = mapped_column()
-    hiili: Mapped[float] = mapped_column()
-    maalampo: Mapped[float] = mapped_column()
-    muu_lammitys: Mapped[float] = mapped_column()
+class spaces_efficiency(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    rakennus_tyyppi: str = Field(primary_key=True)
+    kaukolampo: float
+    kevyt_oljy: float
+    raskas_oljy: float
+    kaasu: float
+    sahko: float
+    puu: float
+    turve: float
+    hiili: float
+    maalampo: float
+    muu_lammitys: float
 
-class spaces_kwhm2(Base):
-    __tablename__ = "spaces_kwhm2"
-    __table_args__ = { 'schema': schema }
-    mun: Mapped[str] = mapped_column(primary_key=True)
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    year: Mapped[int] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    erpien: Mapped[float] = mapped_column()
-    rivita: Mapped[float] = mapped_column()
-    askert: Mapped[float] = mapped_column()
-    liike: Mapped[float] = mapped_column()
-    tsto: Mapped[float] = mapped_column()
-    liiken: Mapped[float] = mapped_column()
-    hoito: Mapped[float] = mapped_column()
-    kokoon: Mapped[float] = mapped_column()
-    opetus: Mapped[float] = mapped_column()
-    teoll: Mapped[float] = mapped_column()
-    varast: Mapped[float] = mapped_column()
-    muut: Mapped[float] = mapped_column()
+class spaces_kwhm2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    mun: str = Field(primary_key=True)
+    scenario: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    erpien: float
+    rivita: float
+    askert: float
+    liike: float
+    tsto: float
+    liiken: float
+    hoito: float
+    kokoon: float
+    opetus: float
+    teoll: float
+    varast: float
+    muut: float
 
-class water_kwhm2(Base):
-    __tablename__ = "water_kwhm2"
-    __table_args__ = { 'schema': schema }
-    scenario: Mapped[str] = mapped_column(primary_key=True)
-    rakv: Mapped[int] = mapped_column(primary_key=True)
-    rakennus_tyyppi: Mapped[str] = mapped_column(primary_key=True)
-    vesi_kwh_m2: Mapped[float] = mapped_column()
+class water_kwhm2(SQLModel, table=True):
+    __table_args__ = { "schema": schema }
+    scenario: str = Field(primary_key=True)
+    rakv: int = Field(primary_key=True)
+    rakennus_tyyppi: str = Field(primary_key=True)
+    vesi_kwh_m2: float

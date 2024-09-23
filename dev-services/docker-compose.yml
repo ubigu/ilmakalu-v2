@@ -9,15 +9,15 @@ volumes:
 services:
   ilmakalu_api:
     container_name: ilmakalu_api
-    image: flaskapp:1.0.0
+    image: fastapi:1.0.0
     build:
       context: ./../backend
-      dockerfile: flask.dockerfile
+      dockerfile: Dockerfile
     ports:
       - '4000:4000'
     restart: always
     environment:
-      - DATABASE_URL=postgres://docker:docker@ilmakalu_user:65432/ilmakalu_data?sslmode=require
+      - DATABASE_URL=postgresql+asyncpg://docker:docker@ilmakalu_user:5432/ilmakalu_data
     depends_on:
       - ilmakalu_user
   ilmakalu_user:
@@ -35,7 +35,7 @@ services:
     volumes:
       - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is for Linux env and now dev is done on windows. 
     ports:
-      - "65432:5432"
+      - "5432:5432"
     restart: on-failure
     healthcheck:
      test: "exit 0"

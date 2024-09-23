@@ -1,0 +1,5 @@
+alembic
+asyncpg
+fastapi[standard]
+sqlmodel
+uvicorn
