@@ -28,7 +28,7 @@ class district_heating(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: str = Field(primary_key=True)
     em: int
@@ -59,7 +59,7 @@ class electricity_home_percapita(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: str = Field(primary_key=True)
     sahko_koti_as: int
@@ -91,7 +91,7 @@ class heating_degree_days(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     mun_name: str
     degreedays: int
     multiplier: float

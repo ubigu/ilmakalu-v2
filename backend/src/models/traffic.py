@@ -12,7 +12,7 @@ class citizen_traffic_stress(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     jalkapyora: float
@@ -41,7 +41,7 @@ class hlt_kmchange(SQLModel, table=True):
 
 class hlt_lookup(SQLModel, table=True):
     __table_args__ = { "schema": schema }
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     hlt_table: str
 
 class hlt_workshare(SQLModel, table=True):
@@ -123,7 +123,7 @@ class mode_power_distribution(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
@@ -237,7 +237,7 @@ class workers_traffic_stress(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     jalkapyora: float

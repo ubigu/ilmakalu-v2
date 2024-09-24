@@ -1,4 +1,6 @@
 from sqlmodel import SQLModel, Field, Index
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import REAL
 
 schema = 'built'
 
@@ -317,11 +319,11 @@ class occupancy(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
+    erpien: float = Field(sa_column=Column(REAL))
+    rivita: float = Field(sa_column=Column(REAL))
+    askert: float = Field(sa_column=Column(REAL))
 
 class spaces_efficiency(SQLModel, table=True):
     __table_args__ = (
@@ -357,7 +359,7 @@ class spaces_kwhm2(SQLModel, table=True):
         ),
         { "schema": schema }
     )
-    mun: str = Field(primary_key=True)
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     rakv: int = Field(primary_key=True)

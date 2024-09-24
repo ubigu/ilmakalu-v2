@@ -1,8 +1,8 @@
 """Import data
 
-Revision ID: e93c587d5c8f
-Revises: 589975698939
-Create Date: 2024-09-23 18:45:32.744575
+Revision ID: 549fab520a40
+Revises: fad8f477458f
+Create Date: 2024-09-24 14:30:03.831130
 
 """
 from typing import Sequence, Union
@@ -10,28 +10,30 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 import sqlmodel
+import geoalchemy2
+
+
+# revision identifiers, used by Alembic.
+revision: str = '549fab520a40'
+down_revision: Union[str, None] = 'fad8f477458f'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
 import os
 from csv import DictReader
 
-connection = op.get_bind()
 tables = sqlmodel.SQLModel.metadata.tables
 delimiter = ';'
 encoding = 'utf-8-sig'
 
-# revision identifiers, used by Alembic.
-revision: str = 'e93c587d5c8f'
-down_revision: Union[str, None] = '589975698939'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
-
-
 def import_data_from_csv(file, table_name):
+    connection = op.get_bind()
     try:
         with open(file, encoding=encoding) as f:
             with connection.begin_nested():
                 stmt = f"COPY {table_name} FROM STDIN DELIMITER '{delimiter}' CSV HEADER;"
                 connection.connection.cursor().copy_expert(stmt, f)
-    except:
+    except Exception:
         # If COPY fails, try to insert rows one by one (this is slow)
         if table_name not in tables:
             return
