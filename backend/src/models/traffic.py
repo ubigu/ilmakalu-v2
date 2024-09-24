@@ -1,9 +1,17 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Index
 
 schema = 'traffic'
 
 class citizen_traffic_stress(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "personal_traffic_index",
+            "mun",
+            "scenario",
+            "year"
+        ),
+        { "schema": schema }
+    )
     mun: str = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
@@ -46,7 +54,15 @@ class hlt_workshare(SQLModel, table=True):
     muu: float
 
 class industr_performance(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "industry_performance_index",
+            "scenario",
+            "year",
+            "kmuoto"
+        ),
+        { "schema": schema }
+    )
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
@@ -68,7 +84,15 @@ class industr_performance(SQLModel, table=True):
     teoll: int
 
 class industr_transport_km(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "industry_performance_km_index",
+            "scenario",
+            "year",
+            "kmuoto"
+        ),
+        { "schema": schema }
+    )
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
@@ -90,7 +114,15 @@ class industr_transport_km(SQLModel, table=True):
     teoll: int
 
 class mode_power_distribution(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "mode_power_distribution_index",
+            "scenario",
+            "year",
+            "kmuoto"
+        ),
+        { "schema": schema }
+    )
     mun: str = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
@@ -106,13 +138,28 @@ class mode_power_distribution(SQLModel, table=True):
     kvoima_muut: float
 
 class power_fossil_share(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "power_fossil_share_index",
+            "scenario",
+            "year"
+        ),
+        { "schema": schema }
+    )
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     share: float
 
 class power_kwhkm(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "power_kwhkm_index",
+            "scenario",
+            "year",
+            "kmuoto"
+        ),
+        { "schema": schema }
+    )
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
@@ -127,7 +174,15 @@ class power_kwhkm(SQLModel, table=True):
     kvoima_muut: float
 
 class service_performance(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "service_performance_index",
+            "scenario",
+            "year",
+            "kmuoto"
+        ),
+        { "schema": schema }
+    )
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
@@ -146,7 +201,15 @@ class service_performance(SQLModel, table=True):
     muut: float
 
 class services_transport_km(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "service_transport_index",
+            "scenario",
+            "year",
+            "kmuoto"
+        ),
+        { "schema": schema }
+    )
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
@@ -165,7 +228,15 @@ class services_transport_km(SQLModel, table=True):
     muut: int
 
 class workers_traffic_stress(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = (
+        Index(
+            "workers_traffic_stress_index",
+            "mun",
+            "scenario",
+            "year"
+        ),
+        { "schema": schema }
+    )
     mun: str = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)

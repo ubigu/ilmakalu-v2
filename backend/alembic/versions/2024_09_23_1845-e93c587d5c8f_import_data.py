@@ -13,6 +13,7 @@ import sqlmodel
 import os
 from csv import DictReader
 
+connection = op.get_bind()
 tables = sqlmodel.SQLModel.metadata.tables
 delimiter = ';'
 encoding = 'utf-8-sig'
@@ -24,7 +25,7 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-def import_data_from_csv(connection, file, table_name):
+def import_data_from_csv(file, table_name):
     try:
         with open(file, encoding=encoding) as f:
             with connection.begin_nested():
@@ -37,10 +38,9 @@ def import_data_from_csv(connection, file, table_name):
         table = tables[table_name]
         with open(file, encoding=encoding) as f:
             for row in DictReader(f, skipinitialspace=True, delimiter=delimiter):
-                record = {k: v for k, v in row.items()}
                 try:
                     with connection.begin_nested():
-                        connection.execute(table.insert().values(record))
+                        connection.execute(table.insert().values({k: v for k, v in row.items()}))
                 except Exception:
                     continue
 
@@ -48,7 +48,6 @@ def upgrade() -> None:
     """ It is assumed that the paths follow
     the pattern '{root_dir}/{schema}/{table_name}.csv' """
 
-    connection = op.get_bind()
     root_dir = 'database'
     schemas = next(os.walk(root_dir))[1]
 
@@ -60,7 +59,7 @@ def upgrade() -> None:
                 continue
             table = f'{schema}.{table_name}'
             print(f'Importing data into table {table}...')
-            import_data_from_csv(connection, os.path.join(dir, filename), table)
+            import_data_from_csv(os.path.join(dir, filename), table)
 
 def downgrade() -> None:
     pass
