@@ -14,7 +14,7 @@ DROP FUNCTION IF EXISTS functions.CO2_ElectricityHousehold;
 CREATE OR REPLACE FUNCTION
 functions.CO2_ElectricityHousehold(
     municipality int,
-    calculationYears integer[], -- [year based on which emission values are calculated, min, max calculation years]
+    calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
     area_or_pop real, -- Rakennustyypin ikäluokkakohtainen kerrosala YKR-ruudussa laskentavuonna [m2] tai väestö laskentavuonna.
     buildingType varchar -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'
@@ -22,17 +22,11 @@ functions.CO2_ElectricityHousehold(
 RETURNS real AS
 $$
 DECLARE
-    calculationYear integer;
     result_gco2 real;
 BEGIN
     IF area_or_pop <= 0 OR area_or_pop IS NULL THEN
         RETURN 0;
     ELSE
-
-        calculationYear := CASE WHEN calculationYears[1] < calculationYears[2] THEN calculationYears[2]
-            WHEN calculationYears[1] > calculationYears[3] THEN calculationYears[3]
-            ELSE calculationYears[1]
-        END;
 
     IF buildingType IS NULL THEN
             EXECUTE FORMAT(
