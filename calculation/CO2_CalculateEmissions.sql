@@ -51,7 +51,6 @@
         loopYear integer;
         localbuildings boolean;
         refined boolean;
-        defaultdemolition boolean;
         grams_to_tons real default 0.000001; -- Muuntaa grammat tonneiksi (0.000001) [t/g].
     BEGIN
 
@@ -62,14 +61,16 @@
         /* Kun käytetään static-skenaariota tulevaisuuslaskennassa, aseta laskenta lähtövuoden referenssitasolle */
         /* When using a 'static' scenario in the future scenario calculation, set the calculation reference year to baseYear */
 
+        IF baseYear IS NULL THEN baseYear := calculationYear; END IF;
+
+        loopYear := calculationYear;
+
         IF calculationScenario = 'static'
             THEN
                 calculationScenario := 'wem';
                 calculationYear := baseYear;
         END IF;
 
-        loopYear := calculationYear;
-        IF baseYear IS NULL THEN baseYear := calculationYear; END IF;
         IF calculationYear < 2018 THEN calculationYear := 2018; END IF;
         IF calculationYear > 2050 THEN calculationYear := 2050; END IF;
 
@@ -92,7 +93,7 @@
         /* Numeeristetaan suunnitelma-aineistoa | 'Numerizing' the given plan data */
         DROP TABLE IF EXISTS grid_temp;
         CREATE TEMP TABLE grid_temp AS
-            SELECT * FROM functions.CO2_GridProcessing(municipalities, aoi, calculationYear, baseYear, targetYear, plan_areas, plan_transit, plan_centers, 1.25::real);
+            SELECT * FROM functions.CO2_GridProcessing(municipalities, aoi, loopYear, baseYear, targetYear, plan_areas, plan_transit, plan_centers, 1.25::real);
         DROP TABLE IF EXISTS grid;
         ALTER TABLE grid_temp RENAME TO grid;
 
@@ -104,7 +105,7 @@
             /* Building a template for manipulating building data */
             /* Ensimmäisenä laskentavuotena otetaan pohjat YKR-rakennuksista */
             /* Filter out years = 0 / 0000 = total sum rows */
-            IF calculationYear = baseYear
+            IF loopYear = baseYear
                 THEN
                     EXECUTE format(
                         'CREATE TEMP TABLE IF NOT EXISTS rak_initial AS
@@ -113,40 +114,20 @@
                                 AND xyind::varchar IN
                                     (SELECT grid.xyind::varchar FROM grid)
                                 AND rakv::int <= %L',
-                    calculationYear);
+                    loopYear);
                     /* Seuraavina vuosina otetaan pohjat loopatusta rakennusdatasta */
                 ELSE 
                     ALTER TABLE grid2 RENAME to rak_initial;
             END IF;
 
-            SELECT CASE WHEN k_poistuma > 999998 AND k_poistuma < 1000000 THEN TRUE ELSE FALSE END FROM grid LIMIT 1 INTO defaultdemolition;
+            ANALYZE rak_initial;
+            DROP INDEX IF EXISTS rak_initial_index;
+            CREATE INDEX IF NOT EXISTS rak_initial_index ON rak_initial (xyind, rakv, energiam);
 
             /* Luodaan väliaikainen taulu rakennusten purkamisen päästölaskentaa varten
             Creating a temporary table for emission calculations of demolishing buildings
             Default demolishing rate: 0.15% annually of existing building stock.
             Huuhka, S. & Lahdensivu J. Statistical and geographical study on demolish buildings. Building research and information vol 44:1, 73-96. */
-
-            IF defaultdemolition = TRUE THEN
-            CREATE TEMP TABLE poistuma_alat AS 
-                SELECT rak_initial.xyind, 
-                    0.0015 * SUM(rakyht_ala)::real rakyht,
-                    0.0015 * SUM(erpien_ala)::real erpien,
-                    0.0015 * SUM(rivita_ala)::real rivita,
-                    0.0015 * SUM(askert_ala)::real askert,
-                    0.0015 * SUM(liike_ala)::real liike,
-                    0.0015 * SUM(tsto_ala)::real tsto,
-                    0.0015 * SUM(liiken_ala)::real liiken,
-                    0.0015 * SUM(hoito_ala)::real hoito,
-                    0.0015 * SUM(kokoon_ala)::real kokoon,
-                    0.0015 * SUM(opetus_ala)::real opetus,
-                    0.0015 * SUM(teoll_ala)::real teoll,
-                    0.0015 * SUM(varast_ala)::real varast,
-                    0.0015 * SUM(muut_ala)::real muut
-                FROM rak_initial
-                WHERE rakyht_ala > 0
-                GROUP BY rak_initial.xyind;
-
-            ELSE
 
                 CREATE TEMP TABLE poistuma_alat AS 
                 WITH poistuma AS (
@@ -185,7 +166,6 @@
                 FROM poistuma
                     LEFT JOIN buildings ON buildings.xyind = poistuma.xyind
                 WHERE poistuma > 0;
-            END IF;
 
             /* Kyselyt: Puretaan rakennukset datasta ja rakennetaan uusia */
             /* Valitaan ajettava kysely sen perusteella, millaista rakennusdataa on käytössä */
@@ -302,6 +282,9 @@
         FROM grid g
             WHERE (COALESCE(g.pop,0) > 0 OR COALESCE(g.employ,0) > 0 )
                 OR g.xyind::varchar IN (SELECT DISTINCT ON (grid2.xyind) grid2.xyind::varchar FROM grid2);
+
+        ANALYZE results;
+        CREATE INDEX IF NOT EXISTS results_xyind_index ON results (xyind);
 
         ALTER TABLE grid2 ADD COLUMN IF NOT EXISTS mun int;
         UPDATE grid2 g2
