@@ -1,7 +1,9 @@
 alembic
 fastapi[standard]
 sqlmodel
-psycopg2
 uvicorn
+psycopg2
 pandas
 geoalchemy2
+geopandas
+lxml

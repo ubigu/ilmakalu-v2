@@ -13,6 +13,8 @@ certifi==2024.8.30
     # via
     #   httpcore
     #   httpx
+    #   pyogrio
+    #   pyproj
 click==8.1.7
     # via
     #   typer
@@ -30,6 +32,8 @@ fastapi==0.115.0
 fastapi-cli==0.0.5
     # via fastapi
 geoalchemy2==0.15.2
+    # via -r requirements.in
+geopandas==1.0.1
     # via -r requirements.in
 greenlet==3.1.1
     # via sqlalchemy
@@ -50,6 +54,8 @@ idna==3.10
     #   httpx
 jinja2==3.1.4
     # via fastapi
+lxml==5.3.0
+    # via -r requirements.in
 mako==1.3.5
     # via alembic
 markdown-it-py==3.0.0
@@ -61,11 +67,20 @@ markupsafe==2.1.5
 mdurl==0.1.2
     # via markdown-it-py
 numpy==2.1.1
-    # via pandas
+    # via
+    #   geopandas
+    #   pandas
+    #   pyogrio
+    #   shapely
 packaging==24.1
-    # via geoalchemy2
+    # via
+    #   geoalchemy2
+    #   geopandas
+    #   pyogrio
 pandas==2.2.3
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   geopandas
 psycopg2==2.9.9
     # via -r requirements.in
 pydantic==2.9.2
@@ -76,6 +91,10 @@ pydantic-core==2.23.4
     # via pydantic
 pygments==2.18.0
     # via rich
+pyogrio==0.9.0
+    # via geopandas
+pyproj==3.6.1
+    # via geopandas
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.0.1
@@ -88,6 +107,8 @@ pyyaml==6.0.2
     # via uvicorn
 rich==13.8.1
     # via typer
+shapely==2.0.6
+    # via geopandas
 shellingham==1.5.4
     # via typer
 six==1.16.0
