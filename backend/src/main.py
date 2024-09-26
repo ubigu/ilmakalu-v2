@@ -13,7 +13,10 @@ engine = create_engine(DATABASE_URL)
 from models import built, delineations, energy, grid_globals, traffic
 SQLModel.metadata.create_all(engine)
 
-def execute(stmt, outputformat):
+geometry_col = 'geom'
+crs = 'EPSG:3067'
+
+def __execute(stmt, outputformat):
     if type(outputformat) == str:
         outputformat = outputformat.lower()
 
@@ -27,9 +30,13 @@ def execute(stmt, outputformat):
                     media_type="application/xml"
                 )
             case 'geojson':
-                data['geom'] = gp.GeoSeries.from_wkt(data['geom'])
+                if geometry_col not in data.columns:
+                    gdf = gp.GeoDataFrame(columns=[geometry_col], geometry=geometry_col, crs=crs)
+                else:
+                    data[geometry_col] = gp.GeoSeries.from_wkt(data[geometry_col])
+                    gdf = gp.GeoDataFrame(data, geometry=geometry_col, crs=crs)
                 return Response(
-                    content=gp.GeoDataFrame(data, geometry='geom', crs="EPSG:3067").to_json(drop_id=True),
+                    content=gdf.to_json(drop_id=True),
                     media_type="application/geo+json"
                 )
             case _:
@@ -53,8 +60,8 @@ def CO2_CalculateEmissions(
     outputformat: str | None = None
 ):
     stmt = text(
-        """SELECT
-            ST_AsText(geom) as geom, xyind, mun, zone,
+        f"""SELECT
+            ST_AsText(geom) as {geometry_col}, xyind, mun, zone,
             date_part('year', year) as year, floorspace, pop,
             employ, tilat_vesi_tco2, tilat_lammitys_tco2,
             tilat_jaahdytys_tco2, sahko_kiinteistot_tco2,
@@ -95,7 +102,7 @@ def CO2_CalculateEmissions(
         plan_centers=plan_centers,
         plan_transit=plan_transit
     )
-    return execute(stmt, outputformat)
+    return __execute(stmt, outputformat)
     
 @app.get("/co2-calculate-emissions-loop/")
 def CO2_CalculateEmissionsLoop(
@@ -114,8 +121,8 @@ def CO2_CalculateEmissionsLoop(
     outputformat: str | None = None
 ):
     stmt = text(
-        """SELECT
-            ST_AsText(geom) as geom, xyind, mun, zone,
+        f"""SELECT
+            ST_AsText(geom) as {geometry_col}, xyind, mun, zone,
             date_part('year', year) as year, floorspace, pop,
             employ, tilat_vesi_tco2, tilat_lammitys_tco2,
             tilat_jaahdytys_tco2, sahko_kiinteistot_tco2,
@@ -153,5 +160,5 @@ def CO2_CalculateEmissionsLoop(
         plan_centers=plan_centers,
         plan_transit=plan_transit
     )
-    return execute(stmt, outputformat)
+    return __execute(stmt, outputformat)
     
