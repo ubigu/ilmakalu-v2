@@ -33,7 +33,6 @@ RETURNS TABLE (
     muut_ala int
 ) AS $$
 DECLARE
-	defaultdemolition boolean;
 	energiamuoto varchar;
 	energyarray real[];
 	laskentavuodet int[];
@@ -52,8 +51,11 @@ SELECT 1::real / laskenta_length INTO step;
 SELECT (calculationYear - baseYear + 1) * step INTO globalweight;
 SELECT 1 - globalweight INTO localweight;
 
-EXECUTE 'CREATE TEMP TABLE IF NOT EXISTS ykr AS SELECT xyind, zone, k_ap_ala, k_ar_ala, k_ak_ala, k_muu_ala, k_poistuma FROM ' || quote_ident(ykr_taulu) || ' WHERE (k_ap_ala IS NOT NULL AND k_ap_ala != 0) OR (k_ar_ala IS NOT NULL AND k_ar_ala != 0) OR (k_ak_ala IS NOT NULL AND k_ak_ala != 0) OR (k_muu_ala IS NOT NULL AND k_muu_ala != 0) OR (k_poistuma IS NOT NULL AND k_poistuma != 0)';
+EXECUTE 'CREATE TEMP TABLE IF NOT EXISTS ykr AS SELECT xyind, zone, alueteho, maa_ha, k_ap_ala, k_ar_ala, k_ak_ala, k_muu_ala, k_poistuma FROM ' || quote_ident(ykr_taulu) || ' WHERE (k_ap_ala IS NOT NULL AND k_ap_ala != 0) OR (k_ar_ala IS NOT NULL AND k_ar_ala != 0) OR (k_ak_ala IS NOT NULL AND k_ak_ala != 0) OR (k_muu_ala IS NOT NULL AND k_muu_ala != 0) OR (k_poistuma IS NOT NULL AND k_poistuma != 0)';
 EXECUTE 'CREATE TEMP TABLE IF NOT EXISTS rak AS SELECT xyind, rakv::int, energiam::varchar, rakyht_ala::int, asuin_ala::int, erpien_ala::int, rivita_ala::int, askert_ala::int, liike_ala::int, myymal_ala::int, majoit_ala::int, asla_ala::int, ravint_ala::int, tsto_ala::int, liiken_ala::int, hoito_ala::int, kokoon_ala::int, opetus_ala::int, teoll_ala::int, varast_ala::int, muut_ala::int FROM ' || quote_ident(rak_taulu) ||' WHERE rakv::int != 0';
+
+ANALYZE rak;
+CREATE INDEX rak_index ON rak (xyind, rakv, energiam);
 
 /* Haetaan globaalit lämmitysmuotojakaumat laskentavuodelle ja -skenaariolle */
 /* Fetching global heating ratios for current calculation year and scenario */
@@ -71,10 +73,8 @@ INSERT INTO global_jakauma (rakennus_tyyppi, kaukolampo, sahko, puu, maalampo)
 	SELECT 'rakyht', avg(kaukolampo), avg(sahko), avg(puu), avg(maalampo)
 	FROM global_jakauma;
 
-/* Puretaan rakennuksia  */
+/* Puretaan rakennuksia 0.0015 */
 /* Demolishing buildings */
-SELECT CASE WHEN k_poistuma > 999998 AND k_poistuma < 1000000 THEN TRUE ELSE FALSE END FROM ykr LIMIT 1 INTO defaultdemolition;
-
 UPDATE rak b SET
     erpien_ala = GREATEST(b.erpien_ala - erpien, 0),
     rivita_ala = GREATEST(b.rivita_ala - rivita, 0),
@@ -94,26 +94,26 @@ UPDATE rak b SET
     muut_ala = GREATEST(b.muut_ala - muut, 0)
 FROM (
 WITH poistuma AS (
-    SELECT ykr.xyind, (CASE WHEN defaultdemolition = TRUE THEN 0.0015 ELSE SUM(k_poistuma) END) AS poistuma FROM ykr GROUP BY ykr.xyind
+    SELECT ykr.xyind, GREATEST(SUM(k_poistuma), SUM(alueteho * maa_ha * 10000) * 0.0015) poistuma FROM ykr GROUP BY ykr.xyind
 ),
 buildings AS (
 	SELECT rak.xyind, rak.rakv,
-		CASE WHEN defaultdemolition = TRUE THEN rak.erpien_ala :: real ELSE rak.erpien_ala :: real / NULLIF(grouped.rakyht_ala, 0) END erpien,
-		CASE WHEN defaultdemolition = TRUE THEN rak.rivita_ala :: real ELSE rak.rivita_ala :: real / NULLIF(grouped.rakyht_ala, 0) END rivita,
-		CASE WHEN defaultdemolition = TRUE THEN rak.askert_ala :: real ELSE rak.askert_ala :: real / NULLIF(grouped.rakyht_ala, 0) END askert,
-		CASE WHEN defaultdemolition = TRUE THEN rak.liike_ala :: real ELSE rak.liike_ala :: real / NULLIF(grouped.rakyht_ala, 0) END liike,
-        CASE WHEN defaultdemolition = TRUE THEN rak.myymal_ala :: real ELSE rak.myymal_ala :: real / NULLIF(grouped.rakyht_ala, 0) END myymal,
-        CASE WHEN defaultdemolition = TRUE THEN rak.majoit_ala :: real ELSE rak.majoit_ala :: real / NULLIF(grouped.rakyht_ala, 0) END majoit,
-        CASE WHEN defaultdemolition = TRUE THEN rak.asla_ala :: real ELSE rak.asla_ala :: real / NULLIF(grouped.rakyht_ala, 0) END asla,
-        CASE WHEN defaultdemolition = TRUE THEN rak.ravint_ala :: real ELSE rak.ravint_ala :: real / NULLIF(grouped.rakyht_ala, 0) END ravint,
-		CASE WHEN defaultdemolition = TRUE THEN rak.tsto_ala :: real ELSE rak.tsto_ala :: real / NULLIF(grouped.rakyht_ala, 0) END tsto,
-		CASE WHEN defaultdemolition = TRUE THEN rak.liiken_ala :: real ELSE rak.liiken_ala :: real / NULLIF(grouped.rakyht_ala, 0) END liiken,
-		CASE WHEN defaultdemolition = TRUE THEN rak.hoito_ala :: real ELSE rak.hoito_ala :: real / NULLIF(grouped.rakyht_ala, 0) END hoito,
-		CASE WHEN defaultdemolition = TRUE THEN rak.kokoon_ala :: real ELSE rak.kokoon_ala :: real / NULLIF(grouped.rakyht_ala, 0) END kokoon,
-		CASE WHEN defaultdemolition = TRUE THEN rak.opetus_ala :: real ELSE rak.opetus_ala :: real / NULLIF(grouped.rakyht_ala, 0) END opetus,
-		CASE WHEN defaultdemolition = TRUE THEN rak.teoll_ala :: real ELSE rak.teoll_ala :: real / NULLIF(grouped.rakyht_ala, 0) END teoll,
-		CASE WHEN defaultdemolition = TRUE THEN rak.varast_ala :: real ELSE rak.varast_ala:: real / NULLIF(grouped.rakyht_ala, 0) END varast,
-		CASE WHEN defaultdemolition = TRUE THEN rak.muut_ala :: real ELSE rak.muut_ala :: real / NULLIF(grouped.rakyht_ala, 0) END muut
+		rak.erpien_ala :: real / NULLIF(grouped.rakyht_ala, 0) erpien,
+		rak.rivita_ala :: real / NULLIF(grouped.rakyht_ala, 0) rivita,
+		rak.askert_ala :: real / NULLIF(grouped.rakyht_ala, 0) askert,
+		rak.liike_ala :: real / NULLIF(grouped.rakyht_ala, 0) liike,
+        rak.myymal_ala :: real / NULLIF(grouped.rakyht_ala, 0) myymal,
+        rak.majoit_ala :: real / NULLIF(grouped.rakyht_ala, 0) majoit,
+        rak.asla_ala :: real / NULLIF(grouped.rakyht_ala, 0) asla,
+        rak.ravint_ala :: real / NULLIF(grouped.rakyht_ala, 0) ravint,
+		rak.tsto_ala :: real / NULLIF(grouped.rakyht_ala, 0) tsto,
+		rak.liiken_ala :: real / NULLIF(grouped.rakyht_ala, 0) liiken,
+		rak.hoito_ala :: real / NULLIF(grouped.rakyht_ala, 0) hoito,
+		rak.kokoon_ala :: real / NULLIF(grouped.rakyht_ala, 0) kokoon,
+		rak.opetus_ala :: real / NULLIF(grouped.rakyht_ala, 0) opetus,
+		rak.teoll_ala :: real / NULLIF(grouped.rakyht_ala, 0) teoll,
+		rak.varast_ala:: real / NULLIF(grouped.rakyht_ala, 0) varast,
+		rak.muut_ala :: real / NULLIF(grouped.rakyht_ala, 0) muut
 	FROM rak JOIN
 	(SELECT build2.xyind, SUM(build2.rakyht_ala) rakyht_ala FROM rak build2 GROUP BY build2.xyind) grouped
 	ON grouped.xyind = rak.xyind
@@ -141,7 +141,7 @@ FROM poistuma LEFT JOIN buildings ON buildings.xyind = poistuma.xyind
 WHERE poistuma > 0 AND buildings.rakv IS NOT NULL) poistumat
 WHERE b.xyind = poistumat.xyind AND b.rakv = poistumat.rakv;
 
-UPDATE rak SET energiam = 'muu_lammitys' WHERE energiam IS NULL;
+UPDATE rak SET energiam = 'muu_lammitys' WHERE rak.energiam IS NULL;
 
 /* Lisätään puuttuvat sarakkeet väliaikaiseen YKR-dataan */
 /* Adding new columns into the temporary YKR data */
@@ -160,6 +160,9 @@ ALTER TABLE ykr
     ADD COLUMN varast_osuus real,
     ADD COLUMN muut_osuus real,
     ADD COLUMN muu_ala real;
+
+ANALYZE ykr;
+CREATE INDEX ykr_xyind_index ON ykr (xyind);
 
 /* Lasketaan myös vakiokäyttötapausjakaumat uusia alueita varten */
 /* Käyttöalaperusteinen käyttötapajakauma generoidaan rakennusdatasta UZ-vyöhykkeittäin */
@@ -236,203 +239,35 @@ WHERE ykr.zone = ktj.zone;
 /* Lasketaan nykyisen paikallisesta rakennusdatasta muodostetun ruutuaineiston mukainen ruutukohtainen energiajakauma rakennustyypeittäin */
 /* Laskenta tehdään vain 2000-luvulta eteenpäin rakennetuille tai rakennettaville rakennuksille */
 CREATE TEMP TABLE IF NOT EXISTS local_jakauma AS
-WITH kaukolampo AS (
-    SELECT
-		SUM(rak.rakyht_ala) as rakyht,
-		SUM(rak.erpien_ala) as erpien,
-		SUM(rak.rivita_ala) as rivita,
-		SUM(rak.askert_ala) as askert,
-		SUM(rak.liike_ala) as liike,
-		SUM(rak.tsto_ala) as tsto,
-		SUM(rak.liiken_ala) as liiken,
-		SUM(rak.hoito_ala) as hoito,
-		SUM(rak.kokoon_ala) as kokoon,
-		SUM(rak.opetus_ala) as opetus,
-		SUM(rak.teoll_ala) as teoll,
-		SUM(rak.varast_ala) as varast,
-		SUM(rak.muut_ala) as muut
-	FROM rak WHERE rak.energiam='kaukolampo' AND rak.rakv > 2000 
-    ), sahko AS (
-    SELECT
-		SUM(rak.rakyht_ala) as rakyht,
-		SUM(rak.erpien_ala) as erpien,
-		SUM(rak.rivita_ala) as rivita,
-		SUM(rak.askert_ala) as askert, 
-		SUM(rak.liike_ala) as liike, 
-		SUM(rak.tsto_ala) as tsto, 
-		SUM(rak.liiken_ala) as liiken,
-		SUM(rak.hoito_ala) as hoito,
-		SUM(rak.kokoon_ala) as kokoon,
-		SUM(rak.opetus_ala) as opetus,		 
-		SUM(rak.teoll_ala) as teoll,
-		SUM(rak.varast_ala) as varast,
-		SUM(rak.muut_ala) as muut
-	FROM rak WHERE rak.energiam='sahko' AND rak.rakv > 2000
-    ), puu AS (
-    SELECT
-		SUM(rak.rakyht_ala) as rakyht,
-		SUM(rak.erpien_ala) as erpien,
-		SUM(rak.rivita_ala) as rivita,
-		SUM(rak.askert_ala) as askert, 
-		SUM(rak.liike_ala) as liike, 
-		SUM(rak.tsto_ala) as tsto, 
-		SUM(rak.liiken_ala) as liiken,
-		SUM(rak.hoito_ala) as hoito,
-		SUM(rak.kokoon_ala) as kokoon,
-		SUM(rak.opetus_ala) as opetus,		 
-		SUM(rak.teoll_ala) as teoll,
-		SUM(rak.varast_ala) as varast,
-		SUM(rak.muut_ala) as muut
-	FROM rak WHERE rak.energiam='puu' AND rak.rakv > 2000
-    ), maalampo AS (
-    SELECT
-		SUM(rak.rakyht_ala) as rakyht,
-		SUM(rak.erpien_ala) as erpien,
-		SUM(rak.rivita_ala) as rivita,
-		SUM(rak.askert_ala) as askert, 
-		SUM(rak.liike_ala) as liike, 
-		SUM(rak.tsto_ala) as tsto, 
-		SUM(rak.liiken_ala) as liiken,
-		SUM(rak.hoito_ala) as hoito,
-		SUM(rak.kokoon_ala) as kokoon,
-		SUM(rak.opetus_ala) as opetus,		 
-		SUM(rak.teoll_ala) as teoll,
-		SUM(rak.varast_ala) as varast,
-		SUM(rak.muut_ala) as muut
-	FROM rak WHERE rak.energiam='maalampo' AND rak.rakv > 2000
-    ), muu_lammitys AS (
-    SELECT 
-		SUM(rak.rakyht_ala) as rakyht,
-		SUM(rak.erpien_ala) as erpien,
-		SUM(rak.rivita_ala) as rivita,
-		SUM(rak.askert_ala) as askert,
-		SUM(rak.liike_ala) as liike,
-		SUM(rak.tsto_ala) as tsto,
-		SUM(rak.liiken_ala) as liiken,
-		SUM(rak.hoito_ala) as hoito,
-		SUM(rak.kokoon_ala) as kokoon,
-		SUM(rak.opetus_ala) as opetus,
-		SUM(rak.teoll_ala) as teoll,
-		SUM(rak.varast_ala) as varast,
-		SUM(rak.muut_ala) as muut
-	FROM rak WHERE rak.energiam='muu_lammitys' AND rak.rakv > 2000
-)
-	
-SELECT 'rakyht' as rakennus_tyyppi,
-kaukolampo.rakyht :: float(4)/ NULLIF(COALESCE(kaukolampo.rakyht,0) + COALESCE(sahko.rakyht,0) + COALESCE(puu.rakyht,0) + COALESCE(maalampo.rakyht,0) + COALESCE(muu_lammitys.rakyht,0),0) AS kaukolampo,
-sahko.rakyht :: float(4)/ NULLIF(COALESCE(kaukolampo.rakyht,0) + COALESCE(sahko.rakyht,0) + COALESCE(puu.rakyht,0) + COALESCE(maalampo.rakyht,0) + COALESCE(muu_lammitys.rakyht,0),0) AS sahko,
-puu.rakyht :: float(4)/ NULLIF(COALESCE(kaukolampo.rakyht,0) + COALESCE(sahko.rakyht,0) + COALESCE(puu.rakyht,0) + COALESCE(maalampo.rakyht,0) + COALESCE(muu_lammitys.rakyht,0),0) AS puu,
-maalampo.rakyht :: float(4)/ NULLIF(COALESCE(kaukolampo.rakyht,0) + COALESCE(sahko.rakyht,0) + COALESCE(puu.rakyht,0) + COALESCE(maalampo.rakyht,0) + COALESCE(muu_lammitys.rakyht,0),0) AS maalampo,
-muu_lammitys.rakyht :: float(4)/ NULLIF(COALESCE(kaukolampo.rakyht,0) + COALESCE(sahko.rakyht,0) + COALESCE(puu.rakyht,0) + COALESCE(maalampo.rakyht,0) + COALESCE(muu_lammitys.rakyht,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION
-SELECT 'erpien' as rakennus_tyyppi,
-kaukolampo.erpien :: float(4)/ NULLIF(COALESCE(kaukolampo.erpien,0) + COALESCE(sahko.erpien,0) + COALESCE(puu.erpien,0) + COALESCE(maalampo.erpien,0) + COALESCE(muu_lammitys.erpien,0),0) AS kaukolampo,
-sahko.erpien :: float(4)/ NULLIF(COALESCE(kaukolampo.erpien,0) + COALESCE(sahko.erpien,0) + COALESCE(puu.erpien,0) + COALESCE(maalampo.erpien,0) + COALESCE(muu_lammitys.erpien,0),0) AS sahko,
-puu.erpien :: float(4)/ NULLIF(COALESCE(kaukolampo.erpien,0) + COALESCE(sahko.erpien,0) + COALESCE(puu.erpien,0) + COALESCE(maalampo.erpien,0) + COALESCE(muu_lammitys.erpien,0),0) AS puu,
-maalampo.erpien :: float(4)/ NULLIF(COALESCE(kaukolampo.erpien,0) + COALESCE(sahko.erpien,0) + COALESCE(puu.erpien,0) + COALESCE(maalampo.erpien,0) + COALESCE(muu_lammitys.erpien,0),0) AS maalampo,
-muu_lammitys.erpien :: float(4)/ NULLIF(COALESCE(kaukolampo.erpien,0) + COALESCE(sahko.erpien,0) + COALESCE(puu.erpien,0) + COALESCE(maalampo.erpien,0) + COALESCE(muu_lammitys.erpien,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION
-SELECT 'rivita' as rakennus_tyyppi,
-kaukolampo.rivita :: float(4)/ NULLIF(COALESCE(kaukolampo.rivita,0) + COALESCE(sahko.rivita,0) + COALESCE(puu.rivita,0) + COALESCE(maalampo.rivita,0) + COALESCE(muu_lammitys.rivita,0),0) AS kaukolampo,
-sahko.rivita :: float(4)/ NULLIF(COALESCE(kaukolampo.rivita,0) + COALESCE(sahko.rivita,0) + COALESCE(puu.rivita,0) + COALESCE(maalampo.rivita,0) + COALESCE(muu_lammitys.rivita,0),0) AS sahko,
-puu.rivita :: float(4)/ NULLIF(COALESCE(kaukolampo.rivita,0) + COALESCE(sahko.rivita,0) + COALESCE(puu.rivita,0) + COALESCE(maalampo.rivita,0) + COALESCE(muu_lammitys.rivita,0),0) AS puu,
-maalampo.rivita :: float(4)/ NULLIF(COALESCE(kaukolampo.rivita,0) + COALESCE(sahko.rivita,0) + COALESCE(puu.rivita,0) + COALESCE(maalampo.rivita,0) + COALESCE(muu_lammitys.rivita,0),0) AS maalampo,
-muu_lammitys.rivita :: float(4)/ NULLIF(COALESCE(kaukolampo.rivita,0) + COALESCE(sahko.rivita,0) + COALESCE(puu.rivita,0) + COALESCE(maalampo.rivita,0) + COALESCE(muu_lammitys.rivita,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION
-SELECT 'askert' as rakennus_tyyppi,
-kaukolampo.askert :: float(4)/ NULLIF(COALESCE(kaukolampo.askert,0) + COALESCE(sahko.askert,0) + COALESCE(puu.askert,0) + COALESCE(maalampo.askert,0) + COALESCE(muu_lammitys.askert,0),0) AS kaukolampo,
-sahko.askert :: float(4)/ NULLIF(COALESCE(kaukolampo.askert,0) + COALESCE(sahko.askert,0) + COALESCE(puu.askert,0) + COALESCE(maalampo.askert,0) + COALESCE(muu_lammitys.askert,0),0) AS sahko,
-puu.askert :: float(4)/ NULLIF(COALESCE(kaukolampo.askert,0) + COALESCE(sahko.askert,0) + COALESCE(puu.askert,0) + COALESCE(maalampo.askert,0) + COALESCE(muu_lammitys.askert,0),0) AS puu,
-maalampo.askert :: float(4)/ NULLIF(COALESCE(kaukolampo.askert,0) + COALESCE(sahko.askert,0) + COALESCE(puu.askert,0) + COALESCE(maalampo.askert,0) + COALESCE(muu_lammitys.askert,0),0) AS maalampo,
-muu_lammitys.askert :: float(4)/ NULLIF(COALESCE(kaukolampo.askert,0) + COALESCE(sahko.askert,0) + COALESCE(puu.askert,0) + COALESCE(maalampo.askert,0) + COALESCE(muu_lammitys.askert,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION
-SELECT 'liike' as rakennus_tyyppi,
-kaukolampo.liike :: float(4)/ NULLIF(COALESCE(kaukolampo.liike,0) + COALESCE(sahko.liike,0) + COALESCE(puu.liike,0) + COALESCE(maalampo.liike,0) + COALESCE(muu_lammitys.liike,0),0) AS kaukolampo,
-sahko.liike :: float(4)/ NULLIF(COALESCE(kaukolampo.liike,0) + COALESCE(sahko.liike,0) + COALESCE(puu.liike,0) + COALESCE(maalampo.liike,0) + COALESCE(muu_lammitys.liike,0),0) AS sahko,
-puu.liike :: float(4)/ NULLIF(COALESCE(kaukolampo.liike,0) + COALESCE(sahko.liike,0) + COALESCE(puu.liike,0) + COALESCE(maalampo.liike,0) + COALESCE(muu_lammitys.liike,0),0) AS puu,
-maalampo.liike :: float(4)/ NULLIF(COALESCE(kaukolampo.liike,0) + COALESCE(sahko.liike,0) + COALESCE(puu.liike,0) + COALESCE(maalampo.liike,0) + COALESCE(muu_lammitys.liike,0),0) AS maalampo,
-muu_lammitys.liike :: float(4)/ NULLIF(COALESCE(kaukolampo.liike,0) + COALESCE(sahko.liike,0) + COALESCE(puu.liike,0) + COALESCE(maalampo.liike,0) + COALESCE(muu_lammitys.liike,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION
-SELECT 'tsto' as rakennus_tyyppi,
-kaukolampo.tsto :: float(4)/ NULLIF(COALESCE(kaukolampo.tsto,0) + COALESCE(sahko.tsto,0) + COALESCE(puu.tsto,0) + COALESCE(maalampo.tsto,0) + COALESCE(muu_lammitys.tsto,0),0) AS kaukolampo,
-sahko.tsto :: float(4)/ NULLIF(COALESCE(kaukolampo.tsto,0) + COALESCE(sahko.tsto,0) + COALESCE(puu.tsto,0) + COALESCE(maalampo.tsto,0) + COALESCE(muu_lammitys.tsto,0),0) AS sahko,
-puu.tsto :: float(4)/ NULLIF(COALESCE(kaukolampo.tsto,0) + COALESCE(sahko.tsto,0) + COALESCE(puu.tsto,0) + COALESCE(maalampo.tsto,0) + COALESCE(muu_lammitys.tsto,0),0) AS puu,
-maalampo.tsto :: float(4)/ NULLIF(COALESCE(kaukolampo.tsto,0) + COALESCE(sahko.tsto,0) + COALESCE(puu.tsto,0) + COALESCE(maalampo.tsto,0) + COALESCE(muu_lammitys.tsto,0),0) AS maalampo,
-muu_lammitys.tsto :: float(4)/ NULLIF(COALESCE(kaukolampo.tsto,0) + COALESCE(sahko.tsto,0) + COALESCE(puu.tsto,0) + COALESCE(maalampo.tsto,0) + COALESCE(muu_lammitys.tsto,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION 
-SELECT 'liiken' as rakennus_tyyppi,
-kaukolampo.liiken :: float(4)/ NULLIF(COALESCE(kaukolampo.liiken,0) + COALESCE(sahko.liiken,0) + COALESCE(puu.liiken,0) + COALESCE(maalampo.liiken,0) + COALESCE(muu_lammitys.liiken,0),0) AS kaukolampo,
-sahko.liiken :: float(4)/ NULLIF(COALESCE(kaukolampo.liiken,0) + COALESCE(sahko.liiken,0) + COALESCE(puu.liiken,0) + COALESCE(maalampo.liiken,0) + COALESCE(muu_lammitys.liiken,0),0) AS sahko,
-puu.liiken :: float(4)/ NULLIF(COALESCE(kaukolampo.liiken,0) + COALESCE(sahko.liiken,0) + COALESCE(puu.liiken,0) + COALESCE(maalampo.liiken,0) + COALESCE(muu_lammitys.liiken,0),0) AS puu,
-maalampo.liiken :: float(4)/ NULLIF(COALESCE(kaukolampo.liiken,0) + COALESCE(sahko.liiken,0) + COALESCE(puu.liiken,0) + COALESCE(maalampo.liiken,0) + COALESCE(muu_lammitys.liiken,0),0) AS maalampo,
-muu_lammitys.liiken :: float(4)/ NULLIF(COALESCE(kaukolampo.liiken,0) + COALESCE(sahko.liiken,0) + COALESCE(puu.liiken,0) + COALESCE(maalampo.liiken,0) + COALESCE(muu_lammitys.liiken,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION 
-SELECT 'hoito' as rakennus_tyyppi,
-kaukolampo.hoito :: float(4)/ NULLIF(COALESCE(kaukolampo.hoito,0) + COALESCE(sahko.hoito,0) + COALESCE(puu.hoito,0) + COALESCE(maalampo.hoito,0) + COALESCE(muu_lammitys.hoito,0),0) AS kaukolampo,
-sahko.hoito :: float(4)/ NULLIF(COALESCE(kaukolampo.hoito,0) + COALESCE(sahko.hoito,0) + COALESCE(puu.hoito,0) + COALESCE(maalampo.hoito,0) + COALESCE(muu_lammitys.hoito,0),0) AS sahko,
-puu.hoito :: float(4)/ NULLIF(COALESCE(kaukolampo.hoito,0) + COALESCE(sahko.hoito,0) + COALESCE(puu.hoito,0) + COALESCE(maalampo.hoito,0) + COALESCE(muu_lammitys.hoito,0),0) AS puu,
-maalampo.hoito :: float(4)/ NULLIF(COALESCE(kaukolampo.hoito,0) + COALESCE(sahko.hoito,0) + COALESCE(puu.hoito,0) + COALESCE(maalampo.hoito,0) + COALESCE(muu_lammitys.hoito,0),0) AS maalampo,
-muu_lammitys.hoito :: float(4)/ NULLIF(COALESCE(kaukolampo.hoito,0) + COALESCE(sahko.hoito,0) + COALESCE(puu.hoito,0) + COALESCE(maalampo.hoito,0) + COALESCE(muu_lammitys.hoito,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION 
-SELECT 'kokoon' as rakennus_tyyppi,
-kaukolampo.kokoon :: float(4)/ NULLIF(COALESCE(kaukolampo.kokoon,0) + COALESCE(sahko.kokoon,0) + COALESCE(puu.kokoon,0) + COALESCE(maalampo.kokoon,0) + COALESCE(muu_lammitys.kokoon,0),0) AS kaukolampo,
-sahko.kokoon :: float(4)/ NULLIF(COALESCE(kaukolampo.kokoon,0) + COALESCE(sahko.kokoon,0) + COALESCE(puu.kokoon,0) + COALESCE(maalampo.kokoon,0) + COALESCE(muu_lammitys.kokoon,0),0) AS sahko,
-puu.kokoon :: float(4)/ NULLIF(COALESCE(kaukolampo.kokoon,0) + COALESCE(sahko.kokoon,0) + COALESCE(puu.kokoon,0) + COALESCE(maalampo.kokoon,0) + COALESCE(muu_lammitys.kokoon,0),0) AS puu,
-maalampo.kokoon :: float(4)/ NULLIF(COALESCE(kaukolampo.kokoon,0) + COALESCE(sahko.kokoon,0) + COALESCE(puu.kokoon,0) + COALESCE(maalampo.kokoon,0) + COALESCE(muu_lammitys.kokoon,0),0) AS maalampo,
-muu_lammitys.kokoon :: float(4)/ NULLIF(COALESCE(kaukolampo.kokoon,0) + COALESCE(sahko.kokoon,0) + COALESCE(puu.kokoon,0) + COALESCE(maalampo.kokoon,0) + COALESCE(muu_lammitys.kokoon,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION 
-SELECT 'opetus' as rakennus_tyyppi,
-kaukolampo.opetus :: float(4)/ NULLIF(COALESCE(kaukolampo.opetus,0) + COALESCE(sahko.opetus,0) + COALESCE(puu.opetus,0) + COALESCE(maalampo.opetus,0) + COALESCE(muu_lammitys.opetus,0),0) AS kaukolampo,
-sahko.opetus :: float(4)/ NULLIF(COALESCE(kaukolampo.opetus,0) + COALESCE(sahko.opetus,0) + COALESCE(puu.opetus,0) + COALESCE(maalampo.opetus,0) + COALESCE(muu_lammitys.opetus,0),0) AS sahko,
-puu.opetus :: float(4)/ NULLIF(COALESCE(kaukolampo.opetus,0) + COALESCE(sahko.opetus,0) + COALESCE(puu.opetus,0) + COALESCE(maalampo.opetus,0) + COALESCE(muu_lammitys.opetus,0),0) AS puu,
-maalampo.opetus :: float(4)/ NULLIF(COALESCE(kaukolampo.opetus,0) + COALESCE(sahko.opetus,0) + COALESCE(puu.opetus,0) + COALESCE(maalampo.opetus,0) + COALESCE(muu_lammitys.opetus,0),0) AS maalampo,
-muu_lammitys.opetus :: float(4)/ NULLIF(COALESCE(kaukolampo.opetus,0) + COALESCE(sahko.opetus,0) + COALESCE(puu.opetus,0) + COALESCE(maalampo.opetus,0) + COALESCE(muu_lammitys.opetus,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION 
-SELECT 'teoll' as rakennus_tyyppi,
-kaukolampo.teoll :: float(4)/ NULLIF(COALESCE(kaukolampo.teoll,0) + COALESCE(sahko.teoll,0) + COALESCE(puu.teoll,0) + COALESCE(maalampo.teoll,0) + COALESCE(muu_lammitys.teoll,0),0) AS kaukolampo,
-sahko.teoll :: float(4)/ NULLIF(COALESCE(kaukolampo.teoll,0) + COALESCE(sahko.teoll,0) + COALESCE(puu.teoll,0) + COALESCE(maalampo.teoll,0) + COALESCE(muu_lammitys.teoll,0),0) AS sahko,
-puu.teoll :: float(4)/ NULLIF(COALESCE(kaukolampo.teoll,0) + COALESCE(sahko.teoll,0) + COALESCE(puu.teoll,0) + COALESCE(maalampo.teoll,0) + COALESCE(muu_lammitys.teoll,0),0) AS puu,
-maalampo.teoll :: float(4)/ NULLIF(COALESCE(kaukolampo.teoll,0) + COALESCE(sahko.teoll,0) + COALESCE(puu.teoll,0) + COALESCE(maalampo.teoll,0) + COALESCE(muu_lammitys.teoll,0),0) AS maalampo,
-muu_lammitys.teoll :: float(4)/ NULLIF(COALESCE(kaukolampo.teoll,0) + COALESCE(sahko.teoll,0) + COALESCE(puu.teoll,0) + COALESCE(maalampo.teoll,0) + COALESCE(muu_lammitys.teoll,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION 
-SELECT 'varast' as rakennus_tyyppi,
-kaukolampo.varast :: float(4)/ NULLIF(COALESCE(kaukolampo.varast,0) + COALESCE(sahko.varast,0) + COALESCE(puu.varast,0) + COALESCE(maalampo.varast,0) + COALESCE(muu_lammitys.varast,0),0) AS kaukolampo,
-sahko.varast :: float(4)/ NULLIF(COALESCE(kaukolampo.varast,0) + COALESCE(sahko.varast,0) + COALESCE(puu.varast,0) + COALESCE(maalampo.varast,0) + COALESCE(muu_lammitys.varast,0),0) AS sahko,
-puu.varast :: float(4)/ NULLIF(COALESCE(kaukolampo.varast,0) + COALESCE(sahko.varast,0) + COALESCE(puu.varast,0) + COALESCE(maalampo.varast,0) + COALESCE(muu_lammitys.varast,0),0) AS puu,
-maalampo.varast :: float(4)/ NULLIF(COALESCE(kaukolampo.varast,0) + COALESCE(sahko.varast,0) + COALESCE(puu.varast,0) + COALESCE(maalampo.varast,0) + COALESCE(muu_lammitys.varast,0),0) AS maalampo,
-muu_lammitys.varast :: float(4)/ NULLIF(COALESCE(kaukolampo.varast,0) + COALESCE(sahko.varast,0) + COALESCE(puu.varast,0) + COALESCE(maalampo.varast,0) + COALESCE(muu_lammitys.varast,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys
-
-UNION
-SELECT 'muut' as rakennus_tyyppi,
-kaukolampo.muut :: float(4)/ NULLIF(COALESCE(kaukolampo.muut,0) + COALESCE(sahko.muut,0) + COALESCE(puu.muut,0)  + COALESCE(maalampo.muut,0) + COALESCE(muu_lammitys.muut,0),0) AS kaukolampo,
-sahko.muut :: float(4)/ NULLIF(COALESCE(kaukolampo.muut,0) +  COALESCE(sahko.muut,0) + COALESCE(puu.muut,0) + COALESCE(maalampo.muut,0) + COALESCE(muu_lammitys.muut,0),0) AS sahko,
-puu.muut :: float(4)/ NULLIF(COALESCE(kaukolampo.muut,0) + COALESCE(sahko.muut,0) + COALESCE(puu.muut,0) + COALESCE(maalampo.muut,0) + COALESCE(muu_lammitys.muut,0),0) AS puu,
-maalampo.muut :: float(4)/ NULLIF(COALESCE(kaukolampo.muut,0) + COALESCE(sahko.muut,0) + COALESCE(puu.muut,0) + COALESCE(maalampo.muut,0) + COALESCE(muu_lammitys.muut,0),0) AS maalampo,
-muu_lammitys.muut :: float(4)/ NULLIF(COALESCE(kaukolampo.muut,0) + COALESCE(sahko.muut,0) + COALESCE(puu.muut,0) + COALESCE(maalampo.muut,0) + COALESCE(muu_lammitys.muut,0),0) AS muu_lammitys
-FROM kaukolampo, sahko, puu, maalampo, muu_lammitys;
+SELECT rakennus_tyyppi, 
+	SUM(ala) FILTER (WHERE sq.energiam = 'kaukolampo') / SUM(ala) AS kaukolampo,
+	SUM(ala) FILTER (WHERE sq.energiam = 'sahko') / SUM(ala) AS sahko,
+	SUM(ala) FILTER (WHERE sq.energiam = 'puu') / SUM(ala) AS puu,
+	SUM(ala) FILTER (WHERE sq.energiam = 'maalampo') / SUM(ala) AS maalampo,
+	SUM(ala) FILTER (WHERE sq.energiam = 'muu_lammitys') / SUM(ala) AS muu_lammitys
+FROM
+(SELECT 
+	UNNEST(ARRAY['rakyht','erpien','rivita','askert','liike','tsto','liiken','hoito','kokoon','opetus','teoll','varast','muut']) AS rakennus_tyyppi,
+    rak.energiam,
+	UNNEST(ARRAY[
+		SUM(rak.rakyht_ala), 
+		SUM(rak.erpien_ala), 
+		SUM(rak.rivita_ala), 
+		SUM(rak.askert_ala), 
+		SUM(rak.liike_ala), 
+		SUM(rak.tsto_ala),
+		SUM(rak.liiken_ala), 
+		SUM(rak.hoito_ala), 
+		SUM(rak.kokoon_ala),
+		SUM(rak.opetus_ala),
+		SUM(rak.teoll_ala),
+		SUM(rak.varast_ala),
+		SUM(rak.muut_ala)]
+	) as ala
+FROM rak
+	WHERE rak.rakv > 2000 AND rak.energiam NOT IN ('kaasu', 'kevyt_oljy')
+	GROUP BY rak.energiam) sq
+GROUP BY rakennus_tyyppi;
 
 /* Päivitetään paikallisen lämmitysmuotojakauman ja kansallisen lämmitysmuotojakauman erot */
 /* Updating differences between local and "global" heating distributions */
@@ -547,6 +382,10 @@ FROM rak r2
 WHERE r2.rakv < 2019
 	) sq 
 ON sq.xyind = r.xyind AND sq.rakv = r.rakv where r.rakv < 2019;
+
+ANALYZE rak_temp;
+CREATE INDEX rak_temp_rakv_index ON rak_temp (rakv);
+CREATE INDEX rak_temp_energiam_index ON rak_temp (energiam);
 
 UPDATE rak_temp future set rakyht_ala = past.rakyht_ala,
 	asuin_ala = past.asuin_ala, erpien_ala = past.erpien_ala, rivita_ala = past.rivita_ala, askert_ala = past.askert_ala, liike_ala = past.liike_ala, myymal_ala = past.myymal_ala,
