@@ -357,7 +357,7 @@ END IF;
         Päivitetään mahdolliset ranta- ja vesialueiden täytöt maa_ha -sarakkeeseen.
         Maa_ha -arvoksi täytöille asetetaan 5.9, joka on rakennettujen ruutujen keskimääräinen maa-ala.
         Tässä oletetaan, että jos alle 20% ruudusta (1.25 ha) on nykyisin maata, ja alueelle rakennetaan vuodessa yli 200 neliötä kerrostaloja,
-        tehdään täyttöjä (laskettu 20%:lla keskimääräisestä n. 10000 m2 rakennusten pohja-alasta per ruutu, jaettuna 10 v. toteutusajalle).
+        tehdään täyttöjä (laskettu 20%lla keskimääräisestä n. 10000 m2 rakennusten pohja-alasta per ruutu, jaettuna 10 v. toteutusajalle).
         Lasketaan samalla aluetehokkuuden muutos ja päivitetään aluetehokkuus. */
 
         IF (SELECT COALESCE(COUNT(*),0) FROM kt) > 0 THEN

@@ -26,8 +26,16 @@ tables = sqlmodel.SQLModel.metadata.tables
 delimiter = ';'
 encoding = 'utf-8-sig'
 
-def import_data_from_csv(file, table_name):
-    connection = op.get_bind()
+def __import_from_sql(file, connection):
+    with open(file) as f:
+        stmt = sa.sql.text(f.read())
+        with connection.begin_nested():
+            connection.execute(stmt)
+
+def __import_from_csv(file, name, schema, connection):
+    """ It is assumed that the file path follows
+    the pattern '{root_dir}/{schema}/{table_name}.csv' """
+    table_name = f"{schema}.{name}"
     try:
         with open(file, encoding=encoding) as f:
             with connection.begin_nested():
@@ -47,21 +55,21 @@ def import_data_from_csv(file, table_name):
                     continue
 
 def upgrade() -> None:
-    """ It is assumed that the paths follow
-    the pattern '{root_dir}/{schema}/{table_name}.csv' """
-
+    connection = op.get_bind()
     root_dir = 'database'
-    schemas = next(os.walk(root_dir))[1]
-
-    for schema in schemas:
-        dir = os.path.join(root_dir, schema)
-        for filename in os.listdir(dir):
-            table_name, ext = os.path.splitext(os.fsdecode(filename))
-            if not (ext == ".csv"): 
-                continue
-            table = f'{schema}.{table_name}'
-            print(f'Importing data into table {table}...')
-            import_data_from_csv(os.path.join(dir, filename), table)
+    for subdir, _, files in os.walk(root_dir):
+        for file_name in files:
+            file = os.path.join(subdir, file_name)
+            print(f'Importing from file {file}...')
+            name, ext = os.path.splitext(os.fsdecode(file_name))
+            match ext:
+                case '.sql':
+                    __import_from_sql(file, connection)
+                case '.csv':
+                    dir = os.path.basename(os.path.normpath(subdir))
+                    __import_from_csv(file, name, dir, connection)
+                case _:
+                    continue
 
 def downgrade() -> None:
     pass

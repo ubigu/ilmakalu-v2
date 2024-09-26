@@ -44,7 +44,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('build_demolish_index', 'build_demolish_energy_gco2m2', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('build_materia_gco2m2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -63,7 +62,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('build_materia_index', 'build_materia_gco2m2', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('build_new_construction_energy_gco2m2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -82,7 +80,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('construction_index', 'build_new_construction_energy_gco2m2', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('build_rebuilding_energy_gco2m2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -101,7 +98,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('build_rebuilding_energy_index', 'build_rebuilding_energy_gco2m2', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('build_rebuilding_share',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -121,7 +117,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'rakv'),
     schema='built'
     )
-    op.create_index('build_rebuilding_share_index', 'build_rebuilding_share', ['scenario', 'year', 'rakv'], unique=False, schema='built')
     op.create_table('build_renovation_energy_gco2m2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -140,7 +135,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('build_renovation_energy_index', 'build_renovation_energy_gco2m2', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('cooling_proportions_kwhm2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('rakv', sa.Integer(), nullable=False),
@@ -154,7 +148,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'rakv', 'rakennus_tyyppi'),
     schema='built'
     )
-    op.create_index('cooling_proportions_index', 'cooling_proportions_kwhm2', ['scenario', 'rakv'], unique=False, schema='built')
     op.create_table('distribution_heating_systems',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -170,7 +163,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'rakv', 'rakennus_tyyppi'),
     schema='built'
     )
-    op.create_index('distribution_heating_system_index', 'distribution_heating_systems', ['scenario', 'year', 'rakv', 'rakennus_tyyppi'], unique=False, schema='built')
     op.create_table('electricity_home_device',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -180,7 +172,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('electricity_home_device_index', 'electricity_home_device', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('electricity_home_light',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -190,7 +181,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('electricity_home_light_index', 'electricity_home_light', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('electricity_iwhs_kwhm2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -228,7 +218,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('electricity_industry_index', 'electricity_iwhs_kwhm2', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('electricity_property_change',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -247,7 +236,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='built'
     )
-    op.create_index('electricity_property_change_index', 'electricity_property_change', ['scenario', 'year'], unique=False, schema='built')
     op.create_table('electricity_property_kwhm2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('rakv', sa.Integer(), nullable=False),
@@ -256,7 +244,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'rakv', 'rakennus_tyyppi'),
     schema='built'
     )
-    op.create_index('electricity_property_kwhkm_index', 'electricity_property_kwhm2', ['scenario', 'rakv'], unique=False, schema='built')
     op.create_table('iwhs_sizes',
     sa.Column('type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('several', sa.Integer(), nullable=False),
@@ -273,7 +260,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'year'),
     schema='built'
     )
-    op.create_index('occupancy_index', 'occupancy', ['mun', 'year'], unique=False, schema='built')
     op.create_table('spaces_efficiency',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('rakv', sa.Integer(), nullable=False),
@@ -291,7 +277,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'rakv', 'rakennus_tyyppi'),
     schema='built'
     )
-    op.create_index('spaces_efficiency_index', 'spaces_efficiency', ['scenario', 'rakv', 'rakennus_tyyppi'], unique=False, schema='built')
     op.create_table('spaces_kwhm2',
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -312,7 +297,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'scenario', 'year', 'rakv'),
     schema='built'
     )
-    op.create_index('spaces_kwhm2_index', 'spaces_kwhm2', ['scenario', 'rakv', 'year'], unique=False, schema='built')
     op.create_table('water_kwhm2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('rakv', sa.Integer(), nullable=False),
@@ -321,7 +305,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'rakv', 'rakennus_tyyppi'),
     schema='built'
     )
-    op.create_index('water_kwhm2_index', 'water_kwhm2', ['scenario', 'rakv', 'rakennus_tyyppi'], unique=False, schema='built')
     op.create_table('centroids',
     sa.Column('WKT', geoalchemy2.types.Geometry(geometry_type='POINT', from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
@@ -349,7 +332,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='energy'
     )
-    op.create_index('cooling_gco2kwh_index', 'cooling_gco2kwh', ['scenario', 'year'], unique=False, schema='energy')
     op.create_table('district_heating',
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -359,7 +341,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'scenario', 'year'),
     schema='energy'
     )
-    op.create_index('district_heating_index', 'district_heating', ['scenario', 'mun', 'year'], unique=False, schema='energy')
     op.create_table('electricity',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -369,7 +350,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'metodi', 'paastolaji'),
     schema='energy'
     )
-    op.create_index('electricity_index', 'electricity', ['scenario', 'year'], unique=False, schema='energy')
     op.create_table('electricity_home_percapita',
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -378,7 +358,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'scenario', 'year'),
     schema='energy'
     )
-    op.create_index('electricity_home_percapita_index', 'electricity_home_percapita', ['mun', 'scenario', 'year'], unique=False, schema='energy')
     op.create_table('heat_source_change',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('rakennus_tyyppi', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -392,7 +371,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'rakennus_tyyppi', 'lammitysmuoto'),
     schema='energy'
     )
-    op.create_index('heat_source_change_index', 'heat_source_change', ['scenario', 'rakennus_tyyppi'], unique=False, schema='energy')
     op.create_table('heating_degree_days',
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('mun_name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -401,7 +379,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun'),
     schema='energy'
     )
-    op.create_index('heating_degree_days_index', 'heating_degree_days', ['mun'], unique=False, schema='energy')
     op.create_table('spaces_gco2kwh',
     sa.Column('vuosi', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('kaukolampo', sa.Integer(), nullable=False),
@@ -417,7 +394,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('vuosi'),
     schema='energy'
     )
-    op.create_index('spaces_gco2kwh_index', 'spaces_gco2kwh', ['vuosi'], unique=False, schema='energy')
     op.create_table('buildings',
     sa.Column('xyind', sa.VARCHAR(length=13), nullable=False),
     sa.Column('rakv', sa.Integer(), nullable=False),
@@ -558,7 +534,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'scenario', 'year'),
     schema='traffic'
     )
-    op.create_index('personal_traffic_index', 'citizen_traffic_stress', ['mun', 'scenario', 'year'], unique=False, schema='traffic')
     op.create_table('hlt_2015_tre',
     sa.Column('zone', sa.Integer(), nullable=False),
     sa.Column('jalkapyora', sa.Float(), nullable=False),
@@ -618,7 +593,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'kmuoto'),
     schema='traffic'
     )
-    op.create_index('industry_performance_index', 'industr_performance', ['scenario', 'year', 'kmuoto'], unique=False, schema='traffic')
     op.create_table('industr_transport_km',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -642,7 +616,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'kmuoto'),
     schema='traffic'
     )
-    op.create_index('industry_performance_km_index', 'industr_transport_km', ['scenario', 'year', 'kmuoto'], unique=False, schema='traffic')
     op.create_table('mode_power_distribution',
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -660,7 +633,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'scenario', 'year', 'kmuoto'),
     schema='traffic'
     )
-    op.create_index('mode_power_distribution_index', 'mode_power_distribution', ['scenario', 'year', 'kmuoto'], unique=False, schema='traffic')
     op.create_table('power_fossil_share',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -668,7 +640,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year'),
     schema='traffic'
     )
-    op.create_index('power_fossil_share_index', 'power_fossil_share', ['scenario', 'year'], unique=False, schema='traffic')
     op.create_table('power_kwhkm',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -685,7 +656,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'kmuoto'),
     schema='traffic'
     )
-    op.create_index('power_kwhkm_index', 'power_kwhkm', ['scenario', 'year', 'kmuoto'], unique=False, schema='traffic')
     op.create_table('service_performance',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -706,7 +676,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'kmuoto'),
     schema='traffic'
     )
-    op.create_index('service_performance_index', 'service_performance', ['scenario', 'year', 'kmuoto'], unique=False, schema='traffic')
     op.create_table('services_transport_km',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -727,7 +696,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('scenario', 'year', 'kmuoto'),
     schema='traffic'
     )
-    op.create_index('service_transport_index', 'services_transport_km', ['scenario', 'year', 'kmuoto'], unique=False, schema='traffic')
     op.create_table('workers_traffic_stress',
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -740,87 +708,51 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('mun', 'scenario', 'year'),
     schema='traffic'
     )
-    op.create_index('workers_traffic_stress_index', 'workers_traffic_stress', ['mun', 'scenario', 'year'], unique=False, schema='traffic')
 
 def downgrade() -> None:
-    op.drop_index('workers_traffic_stress_index', table_name='workers_traffic_stress', schema='traffic')
     op.drop_table('workers_traffic_stress', schema='traffic')
-    op.drop_index('service_transport_index', table_name='services_transport_km', schema='traffic')
     op.drop_table('services_transport_km', schema='traffic')
-    op.drop_index('service_performance_index', table_name='service_performance', schema='traffic')
     op.drop_table('service_performance', schema='traffic')
-    op.drop_index('power_kwhkm_index', table_name='power_kwhkm', schema='traffic')
     op.drop_table('power_kwhkm', schema='traffic')
-    op.drop_index('power_fossil_share_index', table_name='power_fossil_share', schema='traffic')
     op.drop_table('power_fossil_share', schema='traffic')
-    op.drop_index('mode_power_distribution_index', table_name='mode_power_distribution', schema='traffic')
     op.drop_table('mode_power_distribution', schema='traffic')
-    op.drop_index('industry_performance_km_index', table_name='industr_transport_km', schema='traffic')
     op.drop_table('industr_transport_km', schema='traffic')
-    op.drop_index('industry_performance_index', table_name='industr_performance', schema='traffic')
     op.drop_table('industr_performance', schema='traffic')
     op.drop_table('hlt_workshare', schema='traffic')
     op.drop_table('hlt_lookup', schema='traffic')
     op.drop_table('hlt_kmchange', schema='traffic')
     op.drop_table('hlt_2015_tre', schema='traffic')
-    op.drop_index('personal_traffic_index', table_name='citizen_traffic_stress', schema='traffic')
     op.drop_table('citizen_traffic_stress', schema='traffic')
     op.drop_table('pop', schema='grid_globals')
     op.drop_table('employ', schema='grid_globals')
     op.drop_table('clc', schema='grid_globals')
     op.drop_table('buildings', schema='grid_globals')
-    op.drop_index('spaces_gco2kwh_index', table_name='spaces_gco2kwh', schema='energy')
     op.drop_table('spaces_gco2kwh', schema='energy')
-    op.drop_index('heating_degree_days_index', table_name='heating_degree_days', schema='energy')
     op.drop_table('heating_degree_days', schema='energy')
-    op.drop_index('heat_source_change_index', table_name='heat_source_change', schema='energy')
     op.drop_table('heat_source_change', schema='energy')
-    op.drop_index('electricity_home_percapita_index', table_name='electricity_home_percapita', schema='energy')
     op.drop_table('electricity_home_percapita', schema='energy')
-    op.drop_index('electricity_index', table_name='electricity', schema='energy')
     op.drop_table('electricity', schema='energy')
-    op.drop_index('district_heating_index', table_name='district_heating', schema='energy')
     op.drop_table('district_heating', schema='energy')
-    op.drop_index('cooling_gco2kwh_index', table_name='cooling_gco2kwh', schema='energy')
     op.drop_table('cooling_gco2kwh', schema='energy')
-    op.drop_index('idx_grid_WKT', table_name='grid', schema='delineations', postgresql_using='gist')
     op.drop_table('grid', schema='delineations')
-    op.drop_index('idx_centroids_WKT', table_name='centroids', schema='delineations', postgresql_using='gist')
     op.drop_table('centroids', schema='delineations')
-    op.drop_index('water_kwhm2_index', table_name='water_kwhm2', schema='built')
     op.drop_table('water_kwhm2', schema='built')
-    op.drop_index('spaces_kwhm2_index', table_name='spaces_kwhm2', schema='built')
     op.drop_table('spaces_kwhm2', schema='built')
-    op.drop_index('spaces_efficiency_index', table_name='spaces_efficiency', schema='built')
     op.drop_table('spaces_efficiency', schema='built')
-    op.drop_index('occupancy_index', table_name='occupancy', schema='built')
     op.drop_table('occupancy', schema='built')
     op.drop_table('iwhs_sizes', schema='built')
-    op.drop_index('electricity_property_kwhkm_index', table_name='electricity_property_kwhm2', schema='built')
     op.drop_table('electricity_property_kwhm2', schema='built')
-    op.drop_index('electricity_property_change_index', table_name='electricity_property_change', schema='built')
     op.drop_table('electricity_property_change', schema='built')
-    op.drop_index('electricity_industry_index', table_name='electricity_iwhs_kwhm2', schema='built')
     op.drop_table('electricity_iwhs_kwhm2', schema='built')
-    op.drop_index('electricity_home_light_index', table_name='electricity_home_light', schema='built')
     op.drop_table('electricity_home_light', schema='built')
-    op.drop_index('electricity_home_device_index', table_name='electricity_home_device', schema='built')
     op.drop_table('electricity_home_device', schema='built')
-    op.drop_index('distribution_heating_system_index', table_name='distribution_heating_systems', schema='built')
     op.drop_table('distribution_heating_systems', schema='built')
-    op.drop_index('cooling_proportions_index', table_name='cooling_proportions_kwhm2', schema='built')
     op.drop_table('cooling_proportions_kwhm2', schema='built')
-    op.drop_index('build_renovation_energy_index', table_name='build_renovation_energy_gco2m2', schema='built')
     op.drop_table('build_renovation_energy_gco2m2', schema='built')
-    op.drop_index('build_rebuilding_share_index', table_name='build_rebuilding_share', schema='built')
     op.drop_table('build_rebuilding_share', schema='built')
-    op.drop_index('build_rebuilding_energy_index', table_name='build_rebuilding_energy_gco2m2', schema='built')
     op.drop_table('build_rebuilding_energy_gco2m2', schema='built')
-    op.drop_index('construction_index', table_name='build_new_construction_energy_gco2m2', schema='built')
     op.drop_table('build_new_construction_energy_gco2m2', schema='built')
-    op.drop_index('build_materia_index', table_name='build_materia_gco2m2', schema='built')
     op.drop_table('build_materia_gco2m2', schema='built')
-    op.drop_index('build_demolish_index', table_name='build_demolish_energy_gco2m2', schema='built')
     op.drop_table('build_demolish_energy_gco2m2', schema='built')
     op.execute("DROP SCHEMA built")
     op.execute("DROP SCHEMA delineations")

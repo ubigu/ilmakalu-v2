@@ -1,18 +1,11 @@
-from sqlmodel import SQLModel, Field, Index
+from sqlmodel import SQLModel, Field
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import REAL
 
 schema = 'built'
 
 class build_demolish_energy_gco2m2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "build_demolish_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -29,14 +22,7 @@ class build_demolish_energy_gco2m2(SQLModel, table=True):
     muut: float
 
 class build_materia_gco2m2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "build_materia_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -53,14 +39,7 @@ class build_materia_gco2m2(SQLModel, table=True):
     muut: float
 
 class build_new_construction_energy_gco2m2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "construction_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -77,14 +56,7 @@ class build_new_construction_energy_gco2m2(SQLModel, table=True):
     muut: float
 
 class build_rebuilding_energy_gco2m2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "build_rebuilding_energy_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -101,15 +73,7 @@ class build_rebuilding_energy_gco2m2(SQLModel, table=True):
     muut: float
 
 class build_rebuilding_share(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "build_rebuilding_share_index",
-            "scenario",
-            "year",
-            "rakv"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
@@ -127,14 +91,7 @@ class build_rebuilding_share(SQLModel, table=True):
     muut: float
 
 class build_renovation_energy_gco2m2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "build_renovation_energy_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -151,14 +108,7 @@ class build_renovation_energy_gco2m2(SQLModel, table=True):
     muut: float
 
 class cooling_proportions_kwhm2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "cooling_proportions_index",
-            "scenario",
-            "rakv"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
@@ -171,16 +121,7 @@ class cooling_proportions_kwhm2(SQLModel, table=True):
 
 
 class distribution_heating_systems(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "distribution_heating_system_index",
-            "scenario",
-            "year",
-            "rakv",
-            "rakennus_tyyppi"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
@@ -194,14 +135,7 @@ class distribution_heating_systems(SQLModel, table=True):
     muu_lammitys: float
 
 class electricity_home_device(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "electricity_home_device_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -209,14 +143,7 @@ class electricity_home_device(SQLModel, table=True):
     askert: float
 
 class electricity_home_light(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "electricity_home_light_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float
@@ -224,14 +151,7 @@ class electricity_home_light(SQLModel, table=True):
     askert: float
 
 class electricity_iwhs_kwhm2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "electricity_industry_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     myymal_hyper: float
@@ -267,14 +187,7 @@ class electricity_iwhs_kwhm2(SQLModel, table=True):
     myymal: float
 
 class electricity_property_change(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "electricity_property_change_index",
-            "scenario",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     c_9999: float = Field(sa_column_kwargs={'name': '9999'})
@@ -291,14 +204,7 @@ class electricity_property_change(SQLModel, table=True):
     c_2010: float = Field(sa_column_kwargs={'name': '2010'})
 
 class electricity_property_kwhm2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "electricity_property_kwhkm_index",
-            "scenario",
-            "rakv"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
@@ -311,14 +217,7 @@ class iwhs_sizes(SQLModel, table=True):
     single: int
 
 class occupancy(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "occupancy_index",
-            "mun",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     mun: int = Field(primary_key=True)
     year: int = Field(primary_key=True)
     erpien: float = Field(sa_column=Column(REAL))
@@ -326,15 +225,7 @@ class occupancy(SQLModel, table=True):
     askert: float = Field(sa_column=Column(REAL))
 
 class spaces_efficiency(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "spaces_efficiency_index",
-            "scenario",
-            "rakv",
-            "rakennus_tyyppi"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
@@ -350,15 +241,7 @@ class spaces_efficiency(SQLModel, table=True):
     muu_lammitys: float
 
 class spaces_kwhm2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "spaces_kwhm2_index",
-            "scenario",
-            "rakv",
-            "year"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
@@ -377,15 +260,7 @@ class spaces_kwhm2(SQLModel, table=True):
     muut: float
 
 class water_kwhm2(SQLModel, table=True):
-    __table_args__ = (
-        Index(
-            "water_kwhm2_index",
-            "scenario",
-            "rakv",
-            "rakennus_tyyppi"
-        ),
-        { "schema": schema }
-    )
+    __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
