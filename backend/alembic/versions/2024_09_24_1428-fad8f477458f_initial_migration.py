@@ -306,7 +306,7 @@ def upgrade() -> None:
     schema='built'
     )
     op.create_table('centroids',
-    sa.Column('WKT', geoalchemy2.types.Geometry(geometry_type='POINT', from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
+    sa.Column('geom', geoalchemy2.types.Geometry(geometry_type='POINT', from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('keskustyyp', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('keskusnimi', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -314,7 +314,7 @@ def upgrade() -> None:
     schema='delineations'
     )
     op.create_table('grid',
-    sa.Column('WKT', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON', from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
+    sa.Column('geom', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON', from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
     sa.Column('xyind', sa.VARCHAR(length=13), nullable=False),
     sa.Column('mun', sa.Integer(), nullable=False),
     sa.Column('zone', sa.BIGINT(), nullable=True),

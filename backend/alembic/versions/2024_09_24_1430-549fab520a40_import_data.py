@@ -27,10 +27,13 @@ delimiter = ';'
 encoding = 'utf-8-sig'
 
 def __import_from_sql(file, connection):
-    with open(file) as f:
-        stmt = sa.sql.text(f.read())
-        with connection.begin_nested():
-            connection.execute(stmt)
+    try:
+        with open(file) as f:
+            stmt = sa.sql.text(f.read())
+            with connection.begin_nested():
+                connection.execute(stmt)
+    except:
+        return
 
 def __import_from_csv(file, name, schema, connection):
     """ It is assumed that the file path follows
@@ -41,7 +44,7 @@ def __import_from_csv(file, name, schema, connection):
             with connection.begin_nested():
                 stmt = f"COPY {table_name} FROM STDIN DELIMITER '{delimiter}' CSV HEADER;"
                 connection.connection.cursor().copy_expert(stmt, f)
-    except Exception:
+    except:
         # If COPY fails, try to insert rows one by one (this is slow)
         if table_name not in tables:
             return
@@ -51,7 +54,7 @@ def __import_from_csv(file, name, schema, connection):
                 try:
                     with connection.begin_nested():
                         connection.execute(table.insert().values({k: v for k, v in row.items()}))
-                except Exception:
+                except:
                     continue
 
 def upgrade() -> None:

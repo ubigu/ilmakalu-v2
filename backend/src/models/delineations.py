@@ -7,14 +7,14 @@ schema = 'delineations'
 
 class centroids(SQLModel, table=True):
     __table_args__ = { "schema": schema }
-    WKT: object = Field(sa_column=Column(Geometry('POINT')))
+    geom: object = Field(sa_column=Column(Geometry('POINT')))
     id: int = Field(primary_key=True)
     keskustyyp: str
     keskusnimi: str
 
 class grid(SQLModel, table=True):
     __table_args__ = { "schema": schema }
-    WKT: object = Field(sa_column=Column(Geometry('MULTIPOLYGON')))
+    geom: object = Field(sa_column=Column(Geometry('MULTIPOLYGON')))
     xyind: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
     mun: int
     zone: int = Field(sa_column=Column(BIGINT))

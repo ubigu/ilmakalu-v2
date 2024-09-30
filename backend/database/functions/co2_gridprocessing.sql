@@ -43,7 +43,7 @@ IF calculationYear <= baseYear OR targetYear IS NULL OR plan_areas IS NULL THEN
     EXECUTE format(
     'CREATE TEMP TABLE IF NOT EXISTS grid AS SELECT
         DISTINCT ON (grid.xyind, grid.geom)
-        (ST_DUMP(grid.geom)).geom :: geometry(Polygon, 3067) AS geom,
+        ST_SetSRID((ST_DUMP(grid.geom)).geom, 3067) :: geometry(Polygon, 3067) AS geom,
         grid.xyind :: varchar(13),
         grid.mun :: int,
         grid.zone :: bigint,

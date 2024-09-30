@@ -1,7 +1,7 @@
 import os
-from fastapi import FastAPI, Query, Response
+from fastapi import FastAPI, Query, Response, HTTPException
 from sqlmodel import SQLModel, Session, create_engine, text
-from typing import Annotated
+from typing import Annotated, Literal
 from datetime import datetime
 import pandas as pd
 import geopandas as gp
@@ -42,23 +42,32 @@ def __execute(stmt, outputformat):
             case _:
                 return all
     
+def __validateYears(base, target):
+    if base is not None and target is not None and target <= base:
+        raise HTTPException(
+            status_code=400,
+            detail="The base year should be smaller than the target year"
+        )
+    
 @app.get("/co2-calculate-emissions/")
 def CO2_CalculateEmissions(
     mun: Annotated[list[int], Query()] = [],
     aoi: str | None = None,
-    includeLongDistance: bool = False,
-    includeBusinessTravel: bool = True,
-    year: Annotated[list[int], Query()] = [datetime.now().year,2017,2050],
+    calculationYear: int = datetime.now().year,
     calculationScenario: str = 'wem',
-    method: str = 'em',
-    electricityType: str = 'tuotanto',
+    method: Literal['em','hjm'] = 'em',
+    electricityType: Literal['hankinta','tuotanto'] = 'tuotanto',
     baseYear: int | None = None,
     targetYear: int | None = None,
     plan_areas: str | None = None,
-    plan_centers: str | None = None,
     plan_transit: str | None = None,
+    plan_centers: str | None = None,
+    includeLongDistance: bool = True,
+    includeBusinessTravel: bool = True,
     outputformat: str | None = None
 ):
+    __validateYears(baseYear, targetYear)
+
     stmt = text(
         f"""SELECT
             ST_AsText(geom) as {geometry_col}, xyind, mun, zone,
@@ -74,52 +83,54 @@ def CO2_CalculateEmissions(
         FROM functions.CO2_CalculateEmissions(
             municipalities => :municipalities,
             aoi => :aoi,
-            includeLongDistance => :includeLongDistance,
-            includeBusinessTravel => :includeBusinessTravel,
-            calculationYears => :calculationYears,
+            calculationYear => :calculationYear,
             calculationScenario => :calculationScenario,
             method => :method,
             electricityType => :electricityType,
             baseYear => :baseYear,
             targetYear => :targetYear,
             plan_areas => :plan_areas,
+            plan_transit => :plan_transit,
             plan_centers => :plan_centers,
-            plan_transit => :plan_transit 
+            includeLongDistance => :includeLongDistance,
+            includeBusinessTravel => :includeBusinessTravel
         );"""
     )
     stmt = stmt.bindparams(
         municipalities=mun,
         aoi=aoi,
-        includeLongDistance=includeLongDistance,
-        includeBusinessTravel=includeBusinessTravel,
-        calculationYears=year,
+        calculationYear=calculationYear,
         calculationScenario=calculationScenario,
         method=method,
         electricityType=electricityType,
         baseYear=baseYear,
         targetYear=targetYear,
         plan_areas=plan_areas,
+        plan_transit=plan_transit,
         plan_centers=plan_centers,
-        plan_transit=plan_transit
+        includeLongDistance=includeLongDistance,
+        includeBusinessTravel=includeBusinessTravel,
     )
     return __execute(stmt, outputformat)
     
 @app.get("/co2-calculate-emissions-loop/")
 def CO2_CalculateEmissionsLoop(
+    baseYear: int,
+    targetYear: int,
     mun: Annotated[list[int], Query()] = [],
     aoi: str | None = None,
-    includeLongDistance: bool = False,
-    includeBusinessTravel: bool = True,
     calculationScenario: str = 'wem',
-    method: str = 'em',
-    electricityType: str = 'tuotanto',
-    baseYear: int | None = None,
-    targetYear: int | None = None,
+    method: Literal['em','hjm'] = 'em',
+    electricityType: Literal['hankinta','tuotanto'] = 'tuotanto',
     plan_areas: str | None = None,
-    plan_centers: str | None = None,
     plan_transit: str | None = None,
+    plan_centers: str | None = None,
+    includeLongDistance: bool = True,
+    includeBusinessTravel: bool = True,
     outputformat: str | None = None
 ):
+    __validateYears(baseYear, targetYear)
+
     stmt = text(
         f"""SELECT
             ST_AsText(geom) as {geometry_col}, xyind, mun, zone,
@@ -135,30 +146,30 @@ def CO2_CalculateEmissionsLoop(
         FROM functions.CO2_CalculateEmissionsLoop(
             municipalities => :municipalities,
             aoi => :aoi,
-            includeLongDistance => :includeLongDistance,
-            includeBusinessTravel => :includeBusinessTravel,
             calculationScenario => :calculationScenario,
             method => :method,
             electricityType => :electricityType,
             baseYear => :baseYear,
             targetYear => :targetYear,
             plan_areas => :plan_areas,
+            plan_transit => :plan_transit,
             plan_centers => :plan_centers,
-            plan_transit => :plan_transit 
+            includeLongDistance => :includeLongDistance,
+            includeBusinessTravel => :includeBusinessTravel
         );"""
     ).bindparams(
         municipalities=mun,
         aoi=aoi,
-        includeLongDistance=includeLongDistance,
-        includeBusinessTravel=includeBusinessTravel,
         calculationScenario=calculationScenario,
         method=method,
         electricityType=electricityType,
         baseYear=baseYear,
         targetYear=targetYear,
         plan_areas=plan_areas,
+        plan_transit=plan_transit,
         plan_centers=plan_centers,
-        plan_transit=plan_transit
+        includeLongDistance=includeLongDistance,
+        includeBusinessTravel=includeBusinessTravel
     )
     return __execute(stmt, outputformat)
     
