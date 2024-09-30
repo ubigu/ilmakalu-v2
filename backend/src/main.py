@@ -2,7 +2,6 @@ import os
 from fastapi import FastAPI, Query, Response, HTTPException
 from sqlmodel import SQLModel, Session, create_engine, text
 from typing import Annotated, Literal
-from datetime import datetime
 import pandas as pd
 import geopandas as gp
 
@@ -51,9 +50,9 @@ def __validateYears(base, target):
     
 @app.get("/co2-calculate-emissions/")
 def CO2_CalculateEmissions(
+    calculationYear: int,
     mun: Annotated[list[int], Query()] = [],
     aoi: str | None = None,
-    calculationYear: int = datetime.now().year,
     calculationScenario: str = 'wem',
     method: Literal['em','hjm'] = 'em',
     electricityType: Literal['hankinta','tuotanto'] = 'tuotanto',
@@ -170,6 +169,51 @@ def CO2_CalculateEmissionsLoop(
         plan_centers=plan_centers,
         includeLongDistance=includeLongDistance,
         includeBusinessTravel=includeBusinessTravel
+    )
+    return __execute(stmt, outputformat)
+
+@app.get("/co2-grid-processing/")
+def CO2_GridProcessing(
+    calculationYear: int,
+    baseYear: int,
+    mun: Annotated[list[int], Query()] = [],
+    aoi: str | None = None,
+    targetYear: int | None = None,
+    plan_areas: str | None = None,
+    plan_transit: str | None = None,
+    plan_centers: str | None = None,
+    km2hm2: float = 1.25,
+    outputformat: str | None = None
+):
+    __validateYears(baseYear, targetYear)
+
+    stmt = text(
+        f"""SELECT
+            ST_AsText(geom) as {geometry_col}, xyind,
+            mun, zone, maa_ha, centdist, pop, employ,
+            k_ap_ala, k_ar_ala, k_ak_ala, k_muu_ala,
+            k_poistuma, alueteho
+        FROM functions.CO2_GridProcessing(
+            municipalities => :municipalities,
+            aoi => :aoi,
+            calculationYear => :calculationYear,
+            baseYear => :baseYear,
+            targetYear => :targetYear,
+            plan_areas => :plan_areas,
+            plan_transit => :plan_transit,
+            plan_centers => :plan_centers,
+            km2hm2 => :km2hm2
+        );"""
+    ).bindparams(
+        municipalities=mun,
+        aoi=aoi,
+        calculationYear=calculationYear,
+        baseYear=baseYear,
+        targetYear=targetYear,
+        plan_areas=plan_areas,
+        plan_transit=plan_transit,
+        plan_centers=plan_centers,
+        km2hm2=km2hm2
     )
     return __execute(stmt, outputformat)
     
