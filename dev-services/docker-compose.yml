@@ -35,7 +35,7 @@ services:
     volumes:
       - ilmakalu-data:/var/lib/postgresql # Add :cached if needed. This is for Linux env and now dev is done on windows. 
     ports:
-      - "5432:5432"
+      - "65432:5432"
     restart: on-failure
     healthcheck:
      test: "exit 0"
