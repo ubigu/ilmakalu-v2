@@ -90,7 +90,7 @@ if [ "$run_mode" = "azure" ]; then
     conn_string_adm_ilmakalu_data=$(echo $conn_string | sed "s/postgres?/${DATA_DATABASE}?/")
 else
     echo "Local"
-    PORT=5432
+    PORT=65432
     conn_string="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/postgres?sslmode=require"
     conn_string_adm_ilmakalu_data="postgresql://$ADMIN_USER:$ADMIN_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
     conn_string_ilmakalu_data="postgresql://$DATA_USER:$DATA_PASSWORD@$DBHOST_NAME:${PORT}/${DATA_DATABASE}?sslmode=require"
