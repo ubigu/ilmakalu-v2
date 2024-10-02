@@ -9,8 +9,8 @@ class centroids(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     geom: object = Field(sa_column=Column(Geometry('POINT')))
     id: int = Field(primary_key=True)
-    keskustyyp: str
-    keskusnimi: str
+    keskustyyp: str = Field(sa_column=Column(VARCHAR(50)))
+    keskusnimi: str = Field(sa_column=Column(VARCHAR(50)))
 
 class grid(SQLModel, table=True):
     __table_args__ = { "schema": schema }

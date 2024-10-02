@@ -8,69 +8,69 @@ class build_demolish_energy_gco2m2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
-    liike: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    teoll: float
-    varast: float
-    muut: float
+    erpien: int
+    rivita: int
+    askert: int
+    liike: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    teoll: int
+    varast: int
+    muut: int
 
 class build_materia_gco2m2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
-    liike: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    teoll: float
-    varast: float
-    muut: float
+    erpien: int
+    rivita: int
+    askert: int
+    liike: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    teoll: int
+    varast: int
+    muut: int
 
 class build_new_construction_energy_gco2m2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
-    liike: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    teoll: float
-    varast: float
-    muut: float
+    erpien: int
+    rivita: int
+    askert: int
+    liike: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    teoll: int
+    varast: int
+    muut: int
 
 class build_rebuilding_energy_gco2m2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
-    liike: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    teoll: float
-    varast: float
-    muut: float
+    erpien: int
+    rivita: int
+    askert: int
+    liike: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    teoll: int
+    varast: int
+    muut: int
 
 class build_rebuilding_share(SQLModel, table=True):
     __table_args__ = { "schema": schema }
@@ -94,25 +94,25 @@ class build_renovation_energy_gco2m2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
-    liike: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    teoll: float
-    varast: float
-    muut: float
+    erpien: int
+    rivita: int
+    askert: int
+    liike: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    teoll: int
+    varast: int
+    muut: int
 
 class cooling_proportions_kwhm2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
-    jaahdytys_osuus: float
+    jaahdytys_osuus: int
     jaahdytys_kwhm2: float
     jaahdytys_kaukok: float
     jaahdytys_sahko: float
@@ -154,37 +154,37 @@ class electricity_iwhs_kwhm2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    myymal_hyper: float
-    myymal_super: float
-    myymal_pien: float
-    myymal_muu: float
-    majoit: float
-    asla: float
-    ravint: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    muut: float
-    teoll_kaivos: float
-    teoll_elint: float
-    teoll_tekst: float
-    teoll_puu: float
-    teoll_paper: float
-    teoll_kemia: float
-    teoll_miner: float
-    teoll_mjalos: float
-    teoll_metal: float
-    teoll_kone: float
-    teoll_muu: float
-    teoll_energ: float
-    teoll_vesi: float
-    teoll_yhdysk: float
-    varast: float
-    teoll: float
-    liike: float
-    myymal: float
+    myymal_hyper: int
+    myymal_super: int
+    myymal_pien: int
+    myymal_muu: int
+    majoit: int
+    asla: int
+    ravint: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    muut: int
+    teoll_kaivos: int
+    teoll_elint: int
+    teoll_tekst: int
+    teoll_puu: int
+    teoll_paper: int
+    teoll_kemia: int
+    teoll_miner: int
+    teoll_mjalos: int
+    teoll_metal: int
+    teoll_kone: int
+    teoll_muu: int
+    teoll_energ: int
+    teoll_vesi: int
+    teoll_yhdysk: int
+    varast: int
+    teoll: int
+    liike: int
+    myymal: int
 
 class electricity_property_change(SQLModel, table=True):
     __table_args__ = { "schema": schema }
@@ -246,22 +246,22 @@ class spaces_kwhm2(SQLModel, table=True):
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
-    erpien: float
-    rivita: float
-    askert: float
-    liike: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    teoll: float
-    varast: float
-    muut: float
+    erpien: int
+    rivita: int
+    askert: int
+    liike: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    teoll: int
+    varast: int
+    muut: int
 
 class water_kwhm2(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
-    vesi_kwh_m2: float
+    vesi_kwh_m2: int

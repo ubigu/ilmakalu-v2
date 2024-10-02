@@ -7,9 +7,9 @@ class citizen_traffic_stress(SQLModel, table=True):
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    jalkapyora: float
-    bussi: float
-    raide: float
+    jalkapyora: int
+    bussi: int
+    raide: int
     hlauto: float
     muu: float
 
@@ -131,19 +131,19 @@ class service_performance(SQLModel, table=True):
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kmuoto: str = Field(primary_key=True)
-    myymal_hyper: float
-    myymal_super: float
-    myymal_pien: float
-    myymal_muu: float
-    majoit: float
-    asla: float
-    ravint: float
-    tsto: float
-    liiken: float
-    hoito: float
-    kokoon: float
-    opetus: float
-    muut: float
+    myymal_hyper: int
+    myymal_super: int
+    myymal_pien: int
+    myymal_muu: int
+    majoit: int
+    asla: int
+    ravint: int
+    tsto: int
+    liiken: int
+    hoito: int
+    kokoon: int
+    opetus: int
+    muut: int
 
 class services_transport_km(SQLModel, table=True):
     __table_args__ = { "schema": schema }

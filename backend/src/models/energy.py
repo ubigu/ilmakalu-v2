@@ -5,7 +5,7 @@ schema = 'energy'
 class cooling_gco2kwh(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
-    year: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
     kaukok: int
     sahko: int
     pumput: int
@@ -15,23 +15,23 @@ class district_heating(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
-    year: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
     em: int
     hjm: int
 
 class electricity(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     scenario: str = Field(primary_key=True)
-    year: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
     metodi: str = Field(primary_key=True)
     paastolaji: str = Field(primary_key=True)
-    gco2kwh: int
+    gco2kwh: float
 
 class electricity_home_percapita(SQLModel, table=True):
     __table_args__ = { "schema": schema }
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
-    year: str = Field(primary_key=True)
+    year: int = Field(primary_key=True)
     sahko_koti_as: int
 
 class heat_source_change(SQLModel, table=True):
@@ -55,7 +55,7 @@ class heating_degree_days(SQLModel, table=True):
 
 class spaces_gco2kwh(SQLModel, table=True):
     __table_args__ = { "schema": schema }
-    vuosi: str = Field(primary_key=True)
+    vuosi: int = Field(primary_key=True)
     kaukolampo: int
     kevyt_oljy: int
     raskas_oljy: int
