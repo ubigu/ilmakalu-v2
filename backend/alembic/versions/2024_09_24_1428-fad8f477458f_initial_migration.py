@@ -26,6 +26,7 @@ def upgrade() -> None:
     op.execute("CREATE SCHEMA energy")
     op.execute("CREATE SCHEMA grid_globals")
     op.execute("CREATE SCHEMA traffic")
+    op.execute("CREATE SCHEMA user_input")
     op.create_table('build_demolish_energy_gco2m2',
     sa.Column('scenario', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
@@ -760,3 +761,4 @@ def downgrade() -> None:
     op.execute("DROP SCHEMA energy")
     op.execute("DROP SCHEMA grid_globals")
     op.execute("DROP SCHEMA traffic")
+    op.execute("DROP SCHEMA user_input")

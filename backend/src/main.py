@@ -6,23 +6,26 @@ import pandas as pd
 import geopandas as gp
 
 app = FastAPI()
-DATABASE_URL = os.environ.get('DATABASE_URL')
-engine = create_engine(DATABASE_URL)
 
-from models import built, delineations, energy, grid_globals, traffic
-SQLModel.metadata.create_all(engine)
+engine = create_engine(os.environ.get('DATABASE_URL'))
 
 geometry_col = 'geom'
 crs = 'EPSG:3067'
 
-def __execute(stmt, outputformat):
-    if type(outputformat) == str:
-        outputformat = outputformat.lower()
+from models import built, delineations, energy, grid_globals, traffic
+SQLModel.metadata.create_all(engine)
+
+from routers import data
+app.include_router(data.router)
+
+def __execute(stmt, outputFormat):
+    if type(outputFormat) == str:
+        outputFormat = outputFormat.lower()
 
     with Session(engine) as session:
-        all =  session.exec(stmt).mappings().all()
+        all = session.exec(stmt).mappings().all()
         data = pd.DataFrame.from_records(all)
-        match outputformat:
+        match outputFormat:
             case 'xml':
                 return Response(
                     content=data.to_xml(index=False),
@@ -63,7 +66,7 @@ def CO2_CalculateEmissions(
     plan_centers: str | None = None,
     includeLongDistance: bool = True,
     includeBusinessTravel: bool = True,
-    outputformat: str | None = None
+    outputFormat: str | None = None
 ):
     __validateYears(baseYear, targetYear)
 
@@ -110,7 +113,7 @@ def CO2_CalculateEmissions(
         includeLongDistance=includeLongDistance,
         includeBusinessTravel=includeBusinessTravel,
     )
-    return __execute(stmt, outputformat)
+    return __execute(stmt, outputFormat)
     
 @app.get("/co2-calculate-emissions-loop/")
 def CO2_CalculateEmissionsLoop(
@@ -126,7 +129,7 @@ def CO2_CalculateEmissionsLoop(
     plan_centers: str | None = None,
     includeLongDistance: bool = True,
     includeBusinessTravel: bool = True,
-    outputformat: str | None = None
+    outputFormat: str | None = None
 ):
     __validateYears(baseYear, targetYear)
 
@@ -170,7 +173,7 @@ def CO2_CalculateEmissionsLoop(
         includeLongDistance=includeLongDistance,
         includeBusinessTravel=includeBusinessTravel
     )
-    return __execute(stmt, outputformat)
+    return __execute(stmt, outputFormat)
 
 @app.get("/co2-grid-processing/")
 def CO2_GridProcessing(
@@ -183,7 +186,7 @@ def CO2_GridProcessing(
     plan_transit: str | None = None,
     plan_centers: str | None = None,
     km2hm2: float = 1.25,
-    outputformat: str | None = None
+    outputFormat: str | None = None
 ):
     __validateYears(baseYear, targetYear)
 
@@ -215,5 +218,5 @@ def CO2_GridProcessing(
         plan_centers=plan_centers,
         km2hm2=km2hm2
     )
-    return __execute(stmt, outputformat)
+    return __execute(stmt, outputFormat)
     

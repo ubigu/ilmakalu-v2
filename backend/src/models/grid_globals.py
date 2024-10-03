@@ -1,7 +1,6 @@
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import REAL, SMALLINT, VARCHAR
-from typing import Union
 
 schema = 'grid_globals'
 
