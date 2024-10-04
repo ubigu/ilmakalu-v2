@@ -5,7 +5,7 @@ from sqlmodel import SQLModel, Session, text
 import warnings
 import shapely
 
-from main import engine, geometry_col
+from main import engine
 from models import user_input
 router = APIRouter()
 
@@ -24,7 +24,7 @@ def __get_base(base_name):
         case 'aoi':
             return user_input.aoi_base
         case _:
-            HTTPException(
+            raise HTTPException(
                 status_code=400,
                 detail=f"The base {base_name} was not found"
             )
@@ -37,7 +37,7 @@ def __geoJSON_to_mappings(features):
     if isinstance(features, dict) and features['features']:
         features = features['features']
     return [{
-        geometry_col: shapely.set_srid(shapely.geometry.shape(f['geometry']),3067).wkt,
+        "geom": shapely.set_srid(shapely.geometry.shape(f['geometry']),3067).wkt,
         **f['properties']
     } for f in features]
     
