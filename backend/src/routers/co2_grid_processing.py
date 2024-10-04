@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Query, Body
-from sqlmodel import text
-from typing import Annotated, Literal
+from sqlmodel import text, SQLModel
+from typing import Annotated
 
+from models.user_input import schema
 from db import execute, validate_years, insert_data, geom_col
 from typings import UserInput
 
@@ -11,84 +12,71 @@ router = APIRouter(
     tags=["CO2 Grid Processing"],
 )
 
-__stmt = text(
-    f"""SELECT
-        ST_AsText({geom_col}) as {geom_col}, xyind,
-        mun, zone, maa_ha, centdist, pop, employ,
-        k_ap_ala, k_ar_ala, k_ak_ala, k_muu_ala,
-        k_poistuma, alueteho
-    FROM functions.CO2_GridProcessing(
-        municipalities => :municipalities,
-        aoi => :aoi,
-        calculationYear => :calculationYear,
-        baseYear => :baseYear,
-        targetYear => :targetYear,
-        plan_areas => :plan_areas,
-        plan_transit => :plan_transit,
-        plan_centers => :plan_centers,
-        km2hm2 => :km2hm2
-    );"""
-)
+class __CommonParams(SQLModel):
+    calculationYear: int
+    baseYear: int
+    mun: Annotated[list[int], Query()] = []
+    aoi: str | None = None
+    targetYear: int | None = None
+    plan_areas: str | None = None
+    plan_transit: str | None = None
+    plan_centers: str | None = None
+    km2hm2: float = 1.25
+    outputFormat: str | None = None
+
+def __run_query(
+    p: Annotated[__CommonParams, Query()],
+    body: dict | None = None
+):
+    validate_years(p.baseYear, p.targetYear)
+    stmt = text(
+        f"""SELECT
+            ST_AsText({geom_col}) as {geom_col}, xyind,
+            mun, zone, maa_ha, centdist, pop, employ,
+            k_ap_ala, k_ar_ala, k_ak_ala, k_muu_ala,
+            k_poistuma, alueteho
+        FROM functions.CO2_GridProcessing(
+            municipalities => :municipalities,
+            aoi => :aoi,
+            calculationYear => :calculationYear,
+            baseYear => :baseYear,
+            targetYear => :targetYear,
+            plan_areas => :plan_areas,
+            plan_transit => :plan_transit,
+            plan_centers => :plan_centers,
+            km2hm2 => :km2hm2
+        );"""
+    )
+    stmt = stmt.bindparams(
+        municipalities=p.mun,
+        aoi=f'{schema}.aoi' if body is not None and 'aoi' in body.keys() else p.aoi,
+        calculationYear=p.calculationYear,
+        baseYear=p.baseYear,
+        targetYear=p.targetYear,
+        plan_areas=f'{schema}.plan_areas' if body is not None and 'plan_areas' in body.keys() else p.plan_areas,
+        plan_transit=f'{schema}.plan_transit' if body is not None and 'plan_transit' in body.keys() else p.plan_transit,
+        plan_centers=f'{schema}.plan_centers' if body is not None and 'plan_centers' in body.keys() else p.plan_centers,
+        km2hm2=p.km2hm2
+    )
+    return execute(stmt, p.outputFormat)
 
 @router.get(
-        "/",
-        responses={404: {"description": "Bad request"}},
+    "/",
+    responses={404: {"description": "Bad request"}},
 )
 def CO2_GridProcessing_get(
-    calculationYear: int,
-    baseYear: int,
-    mun: Annotated[list[int], Query()] = [],
-    aoi: str | None = None,
-    targetYear: int | None = None,
-    plan_areas: str | None = None,
-    plan_transit: str | None = None,
-    plan_centers: str | None = None,
-    km2hm2: float = 1.25,
-    outputFormat: str | None = None
+    params: Annotated[__CommonParams, Query()]
 ):
-    validate_years(baseYear, targetYear)
-
-    return execute(__stmt.bindparams(
-        municipalities=mun,
-        aoi=aoi,
-        calculationYear=calculationYear,
-        baseYear=baseYear,
-        targetYear=targetYear,
-        plan_areas=plan_areas,
-        plan_transit=plan_transit,
-        plan_centers=plan_centers,
-        km2hm2=km2hm2
-    ), outputFormat)
+    return __run_query(params)
 
 @router.post(
-        "/",
-        responses={404: {"description": "Bad request"}},
+    "/",
+    responses={404: {"description": "Bad request"}},
 )
 def CO2_GridProcessing_post(
-    body: Annotated[UserInput, Body()],
-    calculationYear: int,
-    baseYear: int,
-    mun: Annotated[list[int], Query()] = [],
-    aoi: str | None = None,
-    targetYear: int | None = None,
-    plan_areas: str | None = None,
-    plan_transit: str | None = None,
-    plan_centers: str | None = None,
-    km2hm2: float = 1.25,
-    outputFormat: str | None = None
+    params: Annotated[__CommonParams, Query()],
+    body: Annotated[UserInput, Body()]
 ):
     insert_data(body)
-    validate_years(baseYear, targetYear)
-    body_keys = body.keys()
-    return execute(__stmt.bindparams(
-        municipalities=mun,
-        aoi='user_input.aoi' if 'aoi' in body_keys else aoi,
-        calculationYear=calculationYear,
-        baseYear=baseYear,
-        targetYear=targetYear,
-        plan_areas='user_input.plan_areas' if 'plan_areas' in body_keys else plan_areas,
-        plan_transit='user_input.plan_transit' if 'plan_transit' in body_keys else plan_transit,
-        plan_centers='user_input.plan_centers' if 'plan_centers' in body_keys else plan_centers,
-        km2hm2=km2hm2
-    ), outputFormat)
+    return __run_query(params)
     
