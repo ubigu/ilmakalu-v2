@@ -77,14 +77,14 @@ def validate_years(base, target):
         )
 
 def execute(stmt, outputFormat):
-    if type(outputFormat) == str:
+    if isinstance(outputFormat, str):
         outputFormat = outputFormat.lower()
 
-    all = {}
+    all_mappings = {}
     with Session(engine) as session:
-        all = session.exec(stmt).mappings().all()
+        all_mappings = session.exec(stmt).mappings().all()
     
-    data = pd.DataFrame.from_records(all)
+    data = pd.DataFrame.from_records(all_mappings)
     match outputFormat:
         case 'xml':
             return Response(
@@ -102,4 +102,4 @@ def execute(stmt, outputFormat):
                 media_type="application/geo+json"
             )
         case _:
-            return all
+            return all_mappings

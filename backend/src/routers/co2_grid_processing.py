@@ -3,12 +3,12 @@ from sqlmodel import text, SQLModel
 from typing import Annotated
 
 from models.user_input import schema
-from db import execute, validate_years, insert_data, geom_col
+from db import execute, validate_years, insert_data
 from typings import UserInput
 
 route = 'co2-grid-processing'
 router = APIRouter(
-    prefix=f"/co2-grid-processing",
+    prefix="/co2-grid-processing",
     tags=["CO2 Grid Processing"],
 )
 
@@ -30,8 +30,8 @@ def __run_query(
 ):
     validate_years(p.baseYear, p.targetYear)
     stmt = text(
-        f"""SELECT
-            ST_AsText({geom_col}) as {geom_col}, xyind,
+        """SELECT
+            ST_AsText(geom) as geom, xyind,
             mun, zone, maa_ha, centdist, pop, employ,
             k_ap_ala, k_ar_ala, k_ak_ala, k_muu_ala,
             k_poistuma, alueteho

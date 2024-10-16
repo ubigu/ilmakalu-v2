@@ -3,11 +3,11 @@ from sqlmodel import text, SQLModel
 from typing import Annotated, Literal
 
 from models.user_input import schema
-from db import execute, validate_years, insert_data, geom_col
+from db import execute, validate_years, insert_data
 from typings import UserInput
 
 router = APIRouter(
-    prefix=f"/co2-calculate-emissions",
+    prefix="/co2-calculate-emissions",
     tags=["CO2 Calculate Emissions"]
 )
 
@@ -33,8 +33,8 @@ def __run_query(
 ):
     validate_years(p.baseYear, p.targetYear)
     stmt = text(
-        f"""SELECT
-            ST_AsText({geom_col}) as {geom_col}, xyind, mun, zone,
+        """SELECT
+            ST_AsText(geom) as geom, xyind, mun, zone,
             date_part('year', year) as year, floorspace, pop,
             employ, tilat_vesi_tco2, tilat_lammitys_tco2,
             tilat_jaahdytys_tco2, sahko_kiinteistot_tco2,
