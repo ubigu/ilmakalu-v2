@@ -1,80 +1,82 @@
 import os
-from sqlmodel import SQLModel, create_engine, Session
-from models import built, delineations, energy, grid_globals, traffic, user_input
-from fastapi import Response, HTTPException
-import pandas as pd
-import geopandas as gp
-import shapely
 import warnings
-from pydantic import create_model
 
-engine = create_engine(os.environ.get('DATABASE_URL'))
+import geopandas as gp
+import pandas as pd
+import shapely
+from fastapi import HTTPException, Response
+from pydantic import create_model
+from sqlmodel import Session, SQLModel, create_engine
+
+from models import built, delineations, energy, grid_globals, traffic, user_input
+
+built
+delineations
+energy
+grid_globals
+traffic
+
+engine = create_engine(os.environ.get("DATABASE_URL"))
 tables = SQLModel.metadata.tables
 
 geom_col = "geom"
-crs = 'EPSG:3067'
+crs = "EPSG:3067"
+
 
 def init_db():
     SQLModel.metadata.create_all(engine)
-    SQLModel.metadata.reflect(engine,schema=user_input.schema)
+    SQLModel.metadata.reflect(engine, schema=user_input.schema)
+
 
 def __get_base(base_name):
     match base_name:
-        case 'plan_areas':
+        case "plan_areas":
             return user_input.plan_areas_base
-        case 'plan_transit':
+        case "plan_transit":
             return user_input.plan_transit_base
-        case 'plan_centers':
+        case "plan_centers":
             return user_input.plan_centers_base
-        case 'aoi':
+        case "aoi":
             return user_input.aoi_base
         case _:
-            raise HTTPException(
-                status_code=400,
-                detail=f"The base {base_name} was not found"
-            )
+            raise HTTPException(status_code=400, detail=f"The base {base_name} was not found")
+
 
 def __drop_table(table):
     table.drop(engine)
     SQLModel.metadata.remove(table)
 
+
 def __geoJSON_to_mappings(features):
-    if isinstance(features, dict) and features['features']:
-        features = features['features']
-    return [{
-        geom_col: shapely.set_srid(shapely.geometry.shape(f['geometry']),3067).wkt,
-        **f['properties']
-    } for f in features]
+    if isinstance(features, dict) and features["features"]:
+        features = features["features"]
+    return [
+        {geom_col: shapely.set_srid(shapely.geometry.shape(f["geometry"]), 3067).wkt, **f["properties"]}
+        for f in features
+    ]
+
 
 def insert_data(body):
     with Session(engine) as session:
         for base_name in body.keys():
             base = __get_base(base_name)
-            full_name = f'{user_input.schema}.{base_name}'
+            full_name = f"{user_input.schema}.{base_name}"
             if full_name in tables:
                 warnings.warn(f"An already existing table {full_name} will be replaced", ImportWarning)
                 __drop_table(tables[full_name])
             try:
-                Model = create_model(
-                    base_name,
-                    __base__=base,
-                    __cls_kwargs__={"table": True}
-                )
+                Model = create_model(base_name, __base__=base, __cls_kwargs__={"table": True})
                 SQLModel.metadata.create_all(engine)
                 session.bulk_insert_mappings(Model, __geoJSON_to_mappings(body[base_name]))
             except Exception as error:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Failed to import the data: {error}"
-                )
+                raise HTTPException(status_code=400, detail=f"Failed to import the data: {error}")
         session.commit()
+
 
 def validate_years(base, target):
     if base is not None and target is not None and target <= base:
-        raise HTTPException(
-            status_code=400,
-            detail="The base year should be smaller than the target year"
-        )
+        raise HTTPException(status_code=400, detail="The base year should be smaller than the target year")
+
 
 def execute(stmt, outputFormat):
     if isinstance(outputFormat, str):
@@ -83,23 +85,17 @@ def execute(stmt, outputFormat):
     all_mappings = {}
     with Session(engine) as session:
         all_mappings = session.exec(stmt).mappings().all()
-    
+
     data = pd.DataFrame.from_records(all_mappings)
     match outputFormat:
-        case 'xml':
-            return Response(
-                content=data.to_xml(index=False),
-                media_type="application/xml"
-            )
-        case 'geojson':
+        case "xml":
+            return Response(content=data.to_xml(index=False), media_type="application/xml")
+        case "geojson":
             if geom_col not in data.columns:
                 gdf = gp.GeoDataFrame(columns=[geom_col], geometry=geom_col, crs=crs)
             else:
                 data[geom_col] = gp.GeoSeries.from_wkt(data[geom_col])
                 gdf = gp.GeoDataFrame(data, geometry=geom_col, crs=crs)
-            return Response(
-                content=gdf.to_json(drop_id=True),
-                media_type="application/geo+json"
-            )
+            return Response(content=gdf.to_json(drop_id=True), media_type="application/geo+json")
         case _:
             return all_mappings

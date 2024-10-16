@@ -1,9 +1,10 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
 
-schema = 'energy'
+schema = "energy"
+
 
 class cooling_gco2kwh(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     kaukok: int
@@ -11,31 +12,35 @@ class cooling_gco2kwh(SQLModel, table=True):
     pumput: int
     muu: int
 
+
 class district_heating(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     em: int
     hjm: int
 
+
 class electricity(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     metodi: str = Field(primary_key=True)
     paastolaji: str = Field(primary_key=True)
     gco2kwh: float
 
+
 class electricity_home_percapita(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     sahko_koti_as: int
 
+
 class heat_source_change(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     scenario: str = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
     lammitysmuoto: str = Field(primary_key=True)
@@ -46,15 +51,17 @@ class heat_source_change(SQLModel, table=True):
     puu: float
     maalampo: float
 
+
 class heating_degree_days(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     mun: int = Field(primary_key=True)
     mun_name: str
     degreedays: int
     multiplier: float
 
+
 class spaces_gco2kwh(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     vuosi: int = Field(primary_key=True)
     kaukolampo: int
     kevyt_oljy: int

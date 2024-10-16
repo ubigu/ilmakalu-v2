@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Query, Body
-from sqlmodel import text, SQLModel
 from typing import Annotated
 
+from fastapi import APIRouter, Body, Query
+from sqlmodel import SQLModel, text
+
+from db import execute, insert_data, validate_years
 from models.user_input import schema
-from db import execute, validate_years, insert_data
 from typings import UserInput
 
-route = 'co2-grid-processing'
+route = "co2-grid-processing"
 router = APIRouter(
     prefix="/co2-grid-processing",
     tags=["CO2 Grid Processing"],
 )
+
 
 class __CommonParams(SQLModel):
     calculationYear: int
@@ -24,10 +26,8 @@ class __CommonParams(SQLModel):
     km2hm2: float = 1.25
     outputFormat: str | None = None
 
-def __run_query(
-    p: Annotated[__CommonParams, Query()],
-    body: dict | None = None
-):
+
+def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None):
     validate_years(p.baseYear, p.targetYear)
     stmt = text(
         """SELECT
@@ -49,34 +49,30 @@ def __run_query(
     )
     stmt = stmt.bindparams(
         municipalities=p.mun,
-        aoi=f'{schema}.aoi' if body is not None and 'aoi' in body.keys() else p.aoi,
+        aoi=f"{schema}.aoi" if body is not None and "aoi" in body.keys() else p.aoi,
         calculationYear=p.calculationYear,
         baseYear=p.baseYear,
         targetYear=p.targetYear,
-        plan_areas=f'{schema}.plan_areas' if body is not None and 'plan_areas' in body.keys() else p.plan_areas,
-        plan_transit=f'{schema}.plan_transit' if body is not None and 'plan_transit' in body.keys() else p.plan_transit,
-        plan_centers=f'{schema}.plan_centers' if body is not None and 'plan_centers' in body.keys() else p.plan_centers,
-        km2hm2=p.km2hm2
+        plan_areas=f"{schema}.plan_areas" if body is not None and "plan_areas" in body.keys() else p.plan_areas,
+        plan_transit=f"{schema}.plan_transit" if body is not None and "plan_transit" in body.keys() else p.plan_transit,
+        plan_centers=f"{schema}.plan_centers" if body is not None and "plan_centers" in body.keys() else p.plan_centers,
+        km2hm2=p.km2hm2,
     )
     return execute(stmt, p.outputFormat)
+
 
 @router.get(
     "/",
     responses={404: {"description": "Bad request"}},
 )
-def CO2_GridProcessing_get(
-    params: Annotated[__CommonParams, Query()]
-):
+def CO2_GridProcessing_get(params: Annotated[__CommonParams, Query()]):
     return __run_query(params)
+
 
 @router.post(
     "/",
     responses={404: {"description": "Bad request"}},
 )
-def CO2_GridProcessing_post(
-    params: Annotated[__CommonParams, Query()],
-    body: Annotated[UserInput, Body()]
-):
+def CO2_GridProcessing_post(params: Annotated[__CommonParams, Query()], body: Annotated[UserInput, Body()]):
     insert_data(body)
     return __run_query(params)
-    

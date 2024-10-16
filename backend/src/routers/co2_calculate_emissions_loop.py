@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Query, Body
-from sqlmodel import text, SQLModel
 from typing import Annotated, Literal
 
+from fastapi import APIRouter, Body, Query
+from sqlmodel import SQLModel, text
+
+from db import execute, insert_data, validate_years
 from models.user_input import schema
-from db import execute, validate_years, insert_data
 from typings import UserInput
 
 router = APIRouter(
@@ -11,14 +12,15 @@ router = APIRouter(
     tags=["CO2 Calculate Emissions Loop"],
 )
 
+
 class __CommonParams(SQLModel):
     baseYear: int
     targetYear: int
     mun: Annotated[list[int], Query()] = []
     aoi: str | None = None
-    calculationScenario: str = 'wem'
-    method: Literal['em','hjm'] = 'em'
-    electricityType: Literal['hankinta','tuotanto'] = 'tuotanto'
+    calculationScenario: str = "wem"
+    method: Literal["em", "hjm"] = "em"
+    electricityType: Literal["hankinta", "tuotanto"] = "tuotanto"
     plan_areas: str | None = None
     plan_transit: str | None = None
     plan_centers: str | None = None
@@ -26,10 +28,8 @@ class __CommonParams(SQLModel):
     includeBusinessTravel: bool = True
     outputFormat: str | None = None
 
-def __run_query(
-    p: Annotated[__CommonParams, Query()],
-    body: dict | None = None
-):
+
+def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None):
     validate_years(p.baseYear, p.targetYear)
     stmt = text(
         """SELECT
@@ -60,28 +60,28 @@ def __run_query(
     )
     stmt = stmt.bindparams(
         municipalities=p.mun,
-        aoi=f'{schema}.aoi' if body is not None and 'aoi' in body.keys() else p.aoi,
+        aoi=f"{schema}.aoi" if body is not None and "aoi" in body.keys() else p.aoi,
         calculationScenario=p.calculationScenario,
         method=p.method,
         electricityType=p.electricityType,
         baseYear=p.baseYear,
         targetYear=p.targetYear,
-        plan_areas=f'{schema}.plan_areas' if body is not None and 'plan_areas' in body.keys() else p.plan_areas,
-        plan_transit=f'{schema}.plan_transit' if body is not None and 'plan_transit' in body.keys() else p.plan_transit,
-        plan_centers=f'{schema}.plan_centers' if body is not None and 'plan_centers' in body.keys() else p.plan_centers,
+        plan_areas=f"{schema}.plan_areas" if body is not None and "plan_areas" in body.keys() else p.plan_areas,
+        plan_transit=f"{schema}.plan_transit" if body is not None and "plan_transit" in body.keys() else p.plan_transit,
+        plan_centers=f"{schema}.plan_centers" if body is not None and "plan_centers" in body.keys() else p.plan_centers,
         includeLongDistance=p.includeLongDistance,
-        includeBusinessTravel=p.includeBusinessTravel
+        includeBusinessTravel=p.includeBusinessTravel,
     )
     return execute(stmt, p.outputFormat)
+
 
 @router.get(
     "/",
     responses={404: {"description": "Bad request"}},
 )
-def CO2_CalculateEmissionsLoop_get(
-    params: Annotated[__CommonParams, Query()]
-):
+def CO2_CalculateEmissionsLoop_get(params: Annotated[__CommonParams, Query()]):
     return __run_query(params)
+
 
 @router.post(
     "/",

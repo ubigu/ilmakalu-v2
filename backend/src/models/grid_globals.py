@@ -1,11 +1,12 @@
-from sqlmodel import SQLModel, Field
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import REAL, SMALLINT, VARCHAR
+from sqlmodel import Field, SQLModel
 
-schema = 'grid_globals'
+schema = "grid_globals"
+
 
 class buildings(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     xyind: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
     rakv: str = Field(primary_key=True)
     energiam: str = Field(primary_key=True)
@@ -49,8 +50,9 @@ class buildings(SQLModel, table=True):
     varast_ala: int
     muut_ala: int
 
+
 class clc(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     vuosi: int = Field(primary_key=True)
     kunta: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
     maa_ha: float = Field(sa_column=Column(REAL))
@@ -106,15 +108,17 @@ class clc(SQLModel, table=True):
     clc5231: float
     xyind: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
 
+
 class employ(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     vuosi: int = Field(primary_key=True)
     kunta: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
     tp_yht: int = Field(sa_column=Column(SMALLINT))
     xyind: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
 
+
 class pop(SQLModel, table=True):
-    __table_args__ = { "schema": schema }
+    __table_args__ = {"schema": schema}
     vuosi: int = Field(primary_key=True)
     kunta: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))
     xyind: str = Field(sa_column=Column(VARCHAR(13), primary_key=True))

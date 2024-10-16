@@ -5,17 +5,17 @@ Revises: fad8f477458f
 Create Date: 2024-09-24 14:30:03.831130
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 import sqlmodel
-import geoalchemy2
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '549fab520a40'
-down_revision: Union[str, None] = 'fad8f477458f'
+revision: str = "549fab520a40"
+down_revision: Union[str, None] = "fad8f477458f"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -23,8 +23,9 @@ import os
 from csv import DictReader
 
 tables = sqlmodel.SQLModel.metadata.tables
-delimiter = ';'
-encoding = 'utf-8-sig'
+delimiter = ";"
+encoding = "utf-8-sig"
+
 
 def __import_from_sql(file, connection):
     try:
@@ -35,9 +36,10 @@ def __import_from_sql(file, connection):
     except:
         return
 
+
 def __import_from_csv(file, name, schema, connection):
-    """ It is assumed that the file path follows
-    the pattern '{root_dir}/{schema}/{table_name}.csv' """
+    """It is assumed that the file path follows
+    the pattern '{root_dir}/{schema}/{table_name}.csv'"""
     table_name = f"{schema}.{name}"
     try:
         with open(file, encoding=encoding) as f:
@@ -57,22 +59,24 @@ def __import_from_csv(file, name, schema, connection):
                 except:
                     continue
 
+
 def upgrade() -> None:
     connection = op.get_bind()
-    root_dir = 'database'
+    root_dir = "database"
     for subdir, _, files in os.walk(root_dir):
         for file_name in files:
             file = os.path.join(subdir, file_name)
-            print(f'Importing from file {file}...')
+            print(f"Importing from file {file}...")
             name, ext = os.path.splitext(os.fsdecode(file_name))
             match ext:
-                case '.sql':
+                case ".sql":
                     __import_from_sql(file, connection)
-                case '.csv':
+                case ".csv":
                     dir = os.path.basename(os.path.normpath(subdir))
                     __import_from_csv(file, name, dir, connection)
                 case _:
                     continue
+
 
 def downgrade() -> None:
     pass
