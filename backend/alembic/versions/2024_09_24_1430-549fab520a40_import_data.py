@@ -6,6 +6,8 @@ Create Date: 2024-09-24 14:30:03.831130
 
 """
 
+import os
+from csv import DictReader
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -19,9 +21,6 @@ down_revision: Union[str, None] = "fad8f477458f"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-import os
-from csv import DictReader
-
 tables = sqlmodel.SQLModel.metadata.tables
 delimiter = ";"
 encoding = "utf-8-sig"
@@ -33,7 +32,7 @@ def __import_from_sql(file, connection):
             stmt = sa.sql.text(f.read())
             with connection.begin_nested():
                 connection.execute(stmt)
-    except:
+    except Exception:
         return
 
 
@@ -46,7 +45,7 @@ def __import_from_csv(file, name, schema, connection):
             with connection.begin_nested():
                 stmt = f"COPY {table_name} FROM STDIN DELIMITER '{delimiter}' CSV HEADER;"
                 connection.connection.cursor().copy_expert(stmt, f)
-    except:
+    except Exception:
         # If COPY fails, try to insert rows one by one (this is slow)
         if table_name not in tables:
             return
@@ -56,7 +55,7 @@ def __import_from_csv(file, name, schema, connection):
                 try:
                     with connection.begin_nested():
                         connection.execute(table.insert().values({k: v for k, v in row.items()}))
-                except:
+                except Exception:
                     continue
 
 
