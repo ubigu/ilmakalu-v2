@@ -19,7 +19,7 @@ services:
     depends_on:
       - ilmakalu_user
   ilmakalu_user:
-    image: kartoza/postgis:13.0
+    image: pgduckdb/pgduckdb:16-main
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

@@ -22,6 +22,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    op.execute("SET duckdb.force_execution = true;")
+    op.execute("SELECT duckdb.install_extension('spatial');")
+    op.execute("UPDATE duckdb.extensions SET enabled = true WHERE name = 'spatial';")
     op.execute("CREATE SCHEMA built")
     op.execute("CREATE SCHEMA delineations")
     op.execute("CREATE SCHEMA energy")
