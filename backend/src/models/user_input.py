@@ -3,11 +3,12 @@ from sqlalchemy.dialects.postgresql import VARCHAR
 from sqlmodel import Field, SQLModel
 
 schema = "user_input"
+srid = 3067
 
 
 class plan_areas_base(SQLModel):
     __table_args__ = {"schema": schema}
-    geom: object = Field(sa_type=Geometry("MULTIPOLYGON"))
+    geom: object = Field(sa_type=Geometry("MULTIPOLYGON", srid=srid))
     id: int | None = Field(default=None, primary_key=True)
     k_ap_ala: int | None = None
     k_ar_ala: int | None = None
@@ -24,7 +25,7 @@ class plan_areas_base(SQLModel):
 
 class plan_transit_base(SQLModel):
     __table_args__ = {"schema": schema}
-    geom: object = Field(sa_type=Geometry("POINT"))
+    geom: object = Field(sa_type=Geometry("POINT", srid=srid))
     id: int | None = Field(default=None, primary_key=True)
     k_jltyyp: str | None = Field(default=None)
     k_jlnimi: str | None = Field(sa_type=VARCHAR(50), default=None)
@@ -33,7 +34,7 @@ class plan_transit_base(SQLModel):
 
 class plan_centers_base(SQLModel):
     __table_args__ = {"schema": schema}
-    geom: object = Field(sa_type=Geometry("POINT"), primary_key=True)
+    geom: object = Field(sa_type=Geometry("POINT", srid=srid), primary_key=True)
     k_ktyyp: str
     k_knimi: str = Field(sa_type=VARCHAR(50))
     k_kalkuv: int | None = None

@@ -3,9 +3,10 @@ import warnings
 
 import geopandas as gp
 import pandas as pd
-import shapely
 from fastapi import HTTPException, Response
 from pydantic import create_model
+from pygeojson import FeatureCollection
+from shapely import geometry, wkb, wkt
 from sqlmodel import Session, SQLModel, create_engine
 
 from models import built, delineations, energy, grid_globals, traffic, user_input
@@ -42,32 +43,45 @@ def __get_base(base_name):
             raise HTTPException(status_code=400, detail=f"The base {base_name} was not found")
 
 
+def get_table_name(body, base, default):
+    if body is None:
+        return default
+    next_layer = next((layer for layer in body["layers"] if layer["base"] == base), None)
+    return default if next_layer is None else user_input.schema + "." + next_layer["name"]
+
+
 def __drop_table(table):
     table.drop(engine)
     SQLModel.metadata.remove(table)
 
 
 def __geoJSON_to_mappings(features):
-    if isinstance(features, dict) and features["features"]:
-        features = features["features"]
+    if isinstance(features, FeatureCollection):
+        features = features.features
+
     return [
-        {geom_col: shapely.set_srid(shapely.geometry.shape(f["geometry"]), 3067).wkt, **f["properties"]}
+        {
+            geom_col: wkb.dumps(wkt.loads(geometry.shape(f.geometry.__dict__).wkt), hex=True, srid=3067),
+            **f.properties,
+        }
         for f in features
     ]
 
 
 def insert_data(body):
     with Session(engine) as session:
-        for base_name in body.keys():
-            base = __get_base(base_name)
-            full_name = f"{user_input.schema}.{base_name}"
+        for layer in body["layers"]:
+            base = __get_base(layer["base"])
+
+            full_name = f"{user_input.schema}.{layer["name"]}"
             if full_name in tables:
                 warnings.warn(f"An already existing table {full_name} will be replaced", ImportWarning)
                 __drop_table(tables[full_name])
+
             try:
-                Model = create_model(base_name, __base__=base, __cls_kwargs__={"table": True})
+                Model = create_model(layer["name"], __base__=base, __cls_kwargs__={"table": True})
                 SQLModel.metadata.create_all(engine)
-                session.bulk_insert_mappings(Model, __geoJSON_to_mappings(body[base_name]))
+                session.bulk_insert_mappings(Model, __geoJSON_to_mappings(layer["features"]))
             except Exception as error:
                 raise HTTPException(status_code=400, detail=f"Failed to import the data: {error}")
         session.commit()

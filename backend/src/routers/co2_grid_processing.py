@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Query
 from sqlmodel import SQLModel, text
 
-from db import execute, insert_data, validate_years
+from db import execute, get_table_name, insert_data, validate_years
 from models.user_input import schema
 from typings import UserInput
 
@@ -53,9 +53,9 @@ def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None)
         calculationYear=p.calculationYear,
         baseYear=p.baseYear,
         targetYear=p.targetYear,
-        plan_areas=f"{schema}.plan_areas" if body is not None and "plan_areas" in body.keys() else p.plan_areas,
-        plan_transit=f"{schema}.plan_transit" if body is not None and "plan_transit" in body.keys() else p.plan_transit,
-        plan_centers=f"{schema}.plan_centers" if body is not None and "plan_centers" in body.keys() else p.plan_centers,
+        plan_areas=get_table_name(body, "plan_areas", p.plan_areas),
+        plan_transit=get_table_name(body, "plan_transit", p.plan_transit),
+        plan_centers=get_table_name(body, "plan_centers", p.plan_centers),
         km2hm2=p.km2hm2,
     )
     return execute(stmt, p.outputFormat)

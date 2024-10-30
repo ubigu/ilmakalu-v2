@@ -75,6 +75,8 @@ def upgrade() -> None:
                     __import_from_csv(file, name, dir, connection)
                 case _:
                     continue
+    op.execute("SELECT UpdateGeometrySRID('delineations','centroids','geom',3067)")
+    op.execute("SELECT UpdateGeometrySRID('delineations','grid','geom',3067)")
 
 
 def downgrade() -> None:
