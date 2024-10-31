@@ -4,7 +4,6 @@ from fastapi import APIRouter, Body, Query
 from sqlmodel import SQLModel, text
 
 from db import execute, get_table_name, insert_data, validate_years
-from models.user_input import schema
 from typings import UserInput
 
 route = "co2-grid-processing"
@@ -49,7 +48,7 @@ def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None)
     )
     stmt = stmt.bindparams(
         municipalities=p.mun,
-        aoi=f"{schema}.aoi" if body is not None and "aoi" in body.keys() else p.aoi,
+        aoi=get_table_name(body, "aoi", p.aoi),
         calculationYear=p.calculationYear,
         baseYear=p.baseYear,
         targetYear=p.targetYear,
