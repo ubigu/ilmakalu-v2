@@ -625,7 +625,7 @@ END IF;
                 FROM grid, pubtrans
                 /* Only those that are not already something else */
                 WHERE grid.xyind NOT IN (SELECT grid_new.xyind FROM grid_new)
-                AND pubtrans.k_jltyyp::int = 1
+                AND pubtrans.k_jltyyp::varchar = '1'
                 AND st_dwithin(grid.geom, pubtrans.geom, 1000) 
                 AND pubtrans.k_liikv <= calculationYear
                 ORDER BY grid.geom, st_distance(grid.geom, pubtrans.geom);
@@ -644,7 +644,7 @@ END IF;
                 FROM grid, pubtrans
                 /* Only those that are not already something else */
                 WHERE grid.xyind NOT IN (SELECT grid_new.xyind FROM grid_new)
-                AND pubtrans.k_jltyyp::int = 2
+                AND pubtrans.k_jltyyp::varchar = '2'
                 AND st_dwithin(grid.geom, pubtrans.geom, 800) 
                 AND pubtrans.k_liikv <= calculationYear
                 ORDER BY grid.geom, st_distance(grid.geom, pubtrans.geom);
@@ -663,7 +663,7 @@ END IF;
                 FROM grid, pubtrans
                 /* Only those that are not already something else */
                 WHERE grid.xyind NOT IN (SELECT grid_new.xyind FROM grid_new)
-                AND pubtrans.k_jltyyp::int = 3
+                AND pubtrans.k_jltyyp::varchar = '3'
                 AND st_dwithin(grid.geom, pubtrans.geom, 400) 
                 AND pubtrans.k_liikv <= calculationYear
                 ORDER BY grid.geom, st_distance(grid.geom, pubtrans.geom);
@@ -688,8 +688,8 @@ END IF;
                 AND st_dwithin(
                     grid_new.geom,
                     pubtrans.geom,
-                    CASE WHEN pubtrans.k_jltyyp = 1 THEN 1000
-                        WHEN pubtrans.k_jltyyp = 2 THEN 800 
+                    CASE WHEN pubtrans.k_jltyyp::varchar = '1' THEN 1000
+                        WHEN pubtrans.k_jltyyp::varchar = '2' THEN 800 
                         ELSE 400 END
                 ) AND pubtrans.k_liikv <= calculationYear;
         END IF;
