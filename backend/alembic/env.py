@@ -4,13 +4,14 @@ from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from alembic import context
-from src.models import built, delineations, energy, grid_globals, traffic
+from src.models import built, delineations, energy, grid_globals, traffic, user_output
 
 built
 delineations
 energy
 grid_globals
 traffic
+user_output
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

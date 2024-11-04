@@ -5,6 +5,7 @@ from sqlmodel import SQLModel, text
 
 from co2_query import CO2Query
 from db import get_table_name, validate_years
+from responses import responses
 from typings import UserInput
 
 route = "co2-grid-processing"
@@ -63,15 +64,15 @@ def __get_stmt(p: Annotated[__CommonParams, Query()], body: dict | None = None):
 
 @router.get(
     "/",
-    responses={404: {"description": "Bad request"}},
+    responses=responses,
 )
 def CO2_GridProcessing_get(params: Annotated[__CommonParams, Query()]):
-    return CO2Query(__get_stmt(params)).execute(params.outputFormat)
+    return CO2Query(__get_stmt(params), params).execute(params.outputFormat)
 
 
 @router.post(
     "/",
-    responses={404: {"description": "Bad request"}},
+    responses=responses,
 )
 def CO2_GridProcessing_post(params: Annotated[__CommonParams, Query()], body: Annotated[UserInput, Body()]):
-    return CO2Query(__get_stmt(params, body), body["layers"]).execute(params.outputFormat)
+    return CO2Query(__get_stmt(params, body), params, body).execute(params.outputFormat)

@@ -1,10 +1,11 @@
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Body, Query
+from fastapi import APIRouter, Body, Header, Query
 from sqlmodel import SQLModel, text
 
 from co2_query import CO2Query
 from db import get_table_name, validate_years
+from responses import responses
 from typings import UserInput
 
 router = APIRouter(prefix="/co2-calculate-emissions", tags=["CO2 Calculate Emissions"])
@@ -77,18 +78,24 @@ def __get_stmt(p: Annotated[__CommonParams, Query()], body: dict | None = None):
 
 @router.get(
     "/",
-    responses={404: {"description": "Bad request"}},
+    responses=responses,
 )
-def CO2_CalculateEmissions_get(params: Annotated[__CommonParams, Query()]):
-    return CO2Query(__get_stmt(params)).execute(params.outputFormat)
+def CO2_CalculateEmissions_get(
+    params: Annotated[__CommonParams, Query()], uuid: str = Header(None), user: str = Header(None)
+):
+    return CO2Query(stmt=__get_stmt(params), params=params, uuid=uuid, user=user).execute(params.outputFormat)
 
 
 @router.post(
     "/",
-    responses={404: {"description": "Bad request"}},
+    responses=responses,
 )
 def CO2_CalculateEmissions_post(
     params: Annotated[__CommonParams, Query()],
     body: Annotated[UserInput, Body()],
+    uuid: str = Header(None),
+    user: str = Header(None),
 ):
-    return CO2Query(__get_stmt(params, body), body["layers"]).execute(params.outputFormat)
+    return CO2Query(stmt=__get_stmt(params, body), params=params, body=body, uuid=uuid, user=user).execute(
+        params.outputFormat
+    )

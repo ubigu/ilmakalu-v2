@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import geopandas as gp
 import pandas as pd
 from fastapi import HTTPException, Response
@@ -8,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import Session, SQLModel, text
 
 from db import engine
-from models import user_input
+from models import user_input, user_output
 
 geom_col = "geom"
 
@@ -20,9 +22,12 @@ SQLModel.metadata.drop_all
 
 
 class CO2Query:
-    def __init__(self, stmt, layers=None):
+    def __init__(self, stmt, params, body, uuid, user):
         self.stmt = stmt
-        self.layers = layers
+        self.params = params
+        self.body = body
+        self.uuid = uuid
+        self.user = user
 
     def __get_base(self, base_name):
         match base_name:
@@ -57,10 +62,11 @@ class CO2Query:
         ]
 
     def __upload_layers(self, session):
-        if not self.layers:
+        layers = self.body["layers"]
+        if not layers:
             return
 
-        for layer in self.layers:
+        for layer in layers:
             base = self.__get_base(layer["base"])
             layer_name = layer["name"]
             self.__drop_table_if_exists(session, layer_name)
@@ -70,17 +76,20 @@ class CO2Query:
             session.bulk_insert_mappings(Model, self.__geoJSON_to_mappings(layer["features"]))
 
     def __clean_up(self, session):
-        if self.layers:
-            for layer in self.layers:
-                self.__drop_table_if_exists(session, layer["name"])
+        layers = self.body["layers"]
+        if not layers:
+            return
+
+        for layer in layers:
+            self.__drop_table_if_exists(session, layer["name"])
 
     def __format_output(self, result, outputFormat):
-        crs = "EPSG:3067"
         data = pd.DataFrame.from_records(result)
         match outputFormat:
             case "xml":
                 return Response(content=data.to_xml(index=False), media_type="application/xml")
             case "geojson":
+                crs = "EPSG:3067"
                 if geom_col not in data.columns:
                     gdf = gp.GeoDataFrame(columns=[geom_col], geometry=geom_col, crs=crs)
                 else:
@@ -89,6 +98,21 @@ class CO2Query:
                 return Response(content=gdf.to_json(drop_id=True), media_type="application/geojson")
             case _:
                 return result
+
+    def __write_session_info(self, session):
+        session.add(
+            user_output.sessions(
+                uuid=self.uuid,
+                user=self.user,
+                startTime=datetime.now().strftime("%Y%m%d_%H%M%S"),
+                baseYear=self.params.calculationYear if self.params.baseYear is None else self.params.baseYear,
+                targetYear=self.params.targetYear,
+                calculationScenario=self.params.calculationScenario,
+                method=self.params.method,
+                electricityType=self.params.electricityType,
+                geomArea=self.params.mun,
+            )
+        )
 
     def execute(self, outputFormat):
         if isinstance(outputFormat, str):
@@ -100,6 +124,8 @@ class CO2Query:
                 result = session.exec(self.stmt).mappings().all()
             except Exception:
                 raise HTTPException(status_code=500)
+            else:
+                self.__write_session_info(session)
             finally:
                 self.__clean_up(session)
                 session.commit()

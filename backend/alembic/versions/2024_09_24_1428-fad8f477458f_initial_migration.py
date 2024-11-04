@@ -11,6 +11,7 @@ from typing import Sequence, Union
 import geoalchemy2
 import sqlalchemy as sa
 import sqlmodel
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
@@ -28,6 +29,7 @@ def upgrade() -> None:
     op.execute("CREATE SCHEMA grid_globals")
     op.execute("CREATE SCHEMA traffic")
     op.execute("CREATE SCHEMA user_input")
+    op.execute("CREATE SCHEMA user_output")
     op.create_table(
         "build_demolish_energy_gco2m2",
         sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -762,9 +764,24 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("mun", "scenario", "year"),
         schema="traffic",
     )
+    op.create_table(
+        "sessions",
+        sa.Column("uuid", sa.VARCHAR(length=36), nullable=False),
+        sa.Column("user", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("startTime", sa.VARCHAR(length=15), nullable=False),
+        sa.Column("baseYear", sa.Integer(), nullable=False),
+        sa.Column("targetYear", sa.Integer(), nullable=True),
+        sa.Column("calculationScenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("method", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("electricityType", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("geomArea", postgresql.ARRAY(sa.Integer()), nullable=True),
+        sa.PrimaryKeyConstraint("uuid", "startTime"),
+        schema="user_output",
+    )
 
 
 def downgrade() -> None:
+    op.drop_table("sessions", schema="user_output")
     op.drop_table("workers_traffic_stress", schema="traffic")
     op.drop_table("services_transport_km", schema="traffic")
     op.drop_table("service_performance", schema="traffic")
@@ -815,3 +832,4 @@ def downgrade() -> None:
     op.execute("DROP SCHEMA grid_globals")
     op.execute("DROP SCHEMA traffic")
     op.execute("DROP SCHEMA user_input")
+    op.execute("DROP SCHEMA user_output")
