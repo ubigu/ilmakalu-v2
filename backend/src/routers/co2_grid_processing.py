@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Query
 from sqlmodel import SQLModel, text
 
-from db import execute, get_table_name, insert_data, validate_years
+from co2_query import CO2Query
+from db import get_table_name, validate_years
 from typings import UserInput
 
 route = "co2-grid-processing"
@@ -26,7 +27,7 @@ class __CommonParams(SQLModel):
     outputFormat: str | None = None
 
 
-def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None):
+def __get_stmt(p: Annotated[__CommonParams, Query()], body: dict | None = None):
     validate_years(p.baseYear, p.targetYear)
     stmt = text(
         """SELECT
@@ -57,7 +58,7 @@ def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None)
         plan_centers=get_table_name(body, "plan_centers", p.plan_centers),
         km2hm2=p.km2hm2,
     )
-    return execute(stmt, p.outputFormat)
+    return stmt
 
 
 @router.get(
@@ -65,7 +66,7 @@ def __run_query(p: Annotated[__CommonParams, Query()], body: dict | None = None)
     responses={404: {"description": "Bad request"}},
 )
 def CO2_GridProcessing_get(params: Annotated[__CommonParams, Query()]):
-    return __run_query(params)
+    return CO2Query(__get_stmt(params)).execute(params.outputFormat)
 
 
 @router.post(
@@ -73,5 +74,4 @@ def CO2_GridProcessing_get(params: Annotated[__CommonParams, Query()]):
     responses={404: {"description": "Bad request"}},
 )
 def CO2_GridProcessing_post(params: Annotated[__CommonParams, Query()], body: Annotated[UserInput, Body()]):
-    insert_data(body)
-    return __run_query(params)
+    return CO2Query(__get_stmt(params, body), body["layers"]).execute(params.outputFormat)
