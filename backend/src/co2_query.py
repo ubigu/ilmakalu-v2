@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from datetime import datetime
 
 import geopandas as gp
@@ -21,10 +22,12 @@ Base = declarative_base()
 SQLModel.metadata.drop_all
 
 
-class CO2Query:
-    def __init__(self, stmt, params, body, uuid, user):
-        self.stmt = stmt
-        self.params = params
+class CO2Query(ABC):
+    def __init__(self, params, body={}, uuid=None, user=None):
+        if params.baseYear is not None and params.targetYear is not None and params.targetYear <= params.baseYear:
+            raise HTTPException(status_code=400, detail="The base year should be smaller than the target year")
+
+        self.p = params
         self.body = body
         self.uuid = uuid
         self.user = user
@@ -41,6 +44,13 @@ class CO2Query:
                 return user_input.aoi_base
             case _:
                 raise HTTPException(status_code=400, detail=f"The base {base_name} was not found")
+
+    def get_table_name(self, base, default):
+        if "layers" not in self.body:
+            return default
+
+        next_layer = next((layer for layer in self.body["layers"] if layer["base"] == base), None)
+        return default if next_layer is None else user_input.schema + "." + next_layer["name"]
 
     def __drop_table_if_exists(self, session, name):
         full_name = f"{user_input.schema}.{name}"
@@ -62,11 +72,10 @@ class CO2Query:
         ]
 
     def __upload_layers(self, session):
-        layers = self.body["layers"]
-        if not layers:
+        if "layers" not in self.body:
             return
 
-        for layer in layers:
+        for layer in self.body["layers"]:
             base = self.__get_base(layer["base"])
             layer_name = layer["name"]
             self.__drop_table_if_exists(session, layer_name)
@@ -76,16 +85,18 @@ class CO2Query:
             session.bulk_insert_mappings(Model, self.__geoJSON_to_mappings(layer["features"]))
 
     def __clean_up(self, session):
-        layers = self.body["layers"]
-        if not layers:
+        if "layers" not in self.body:
             return
 
-        for layer in layers:
+        for layer in self.body["layers"]:
             self.__drop_table_if_exists(session, layer["name"])
 
-    def __format_output(self, result, outputFormat):
+    def __format_output(self, result):
+        if not isinstance(self.p.outputFormat, str):
+            return result
+
         data = pd.DataFrame.from_records(result)
-        match outputFormat:
+        match self.p.outputFormat.lower():
             case "xml":
                 return Response(content=data.to_xml(index=False), media_type="application/xml")
             case "geojson":
@@ -100,28 +111,28 @@ class CO2Query:
                 return result
 
     def __write_session_info(self, session):
+        if self.uuid is None or self.user is None:
+            return
         session.add(
             user_output.sessions(
                 uuid=self.uuid,
                 user=self.user,
                 startTime=datetime.now().strftime("%Y%m%d_%H%M%S"),
-                baseYear=self.params.calculationYear if self.params.baseYear is None else self.params.baseYear,
-                targetYear=self.params.targetYear,
-                calculationScenario=self.params.calculationScenario,
-                method=self.params.method,
-                electricityType=self.params.electricityType,
-                geomArea=self.params.mun,
+                baseYear=self.p.calculationYear if self.p.baseYear is None else self.p.baseYear,
+                targetYear=self.p.targetYear,
+                calculationScenario=self.p.calculationScenario,
+                method=self.p.method,
+                electricityType=self.p.electricityType,
+                geomArea=self.p.mun,
             )
         )
 
-    def execute(self, outputFormat):
-        if isinstance(outputFormat, str):
-            outputFormat = outputFormat.lower()
+    def execute(self):
         result = {}
         with Session(engine) as session:
             try:
                 self.__upload_layers(session)
-                result = session.exec(self.stmt).mappings().all()
+                result = session.exec(self.get_stmt()).mappings().all()
             except Exception:
                 raise HTTPException(status_code=500)
             else:
@@ -129,4 +140,8 @@ class CO2Query:
             finally:
                 self.__clean_up(session)
                 session.commit()
-        return self.__format_output(result, outputFormat)
+        return self.__format_output(result)
+
+    @abstractmethod
+    def get_stmt(self):
+        pass
