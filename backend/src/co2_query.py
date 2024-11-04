@@ -95,8 +95,12 @@ class CO2Query:
             outputFormat = outputFormat.lower()
         result = {}
         with Session(engine) as session:
-            self.__upload_layers(session)
-            result = session.exec(self.stmt).mappings().all()
-            self.__clean_up(session)
-            session.commit()
+            try:
+                self.__upload_layers(session)
+                result = session.exec(self.stmt).mappings().all()
+            except Exception:
+                raise HTTPException(status_code=500)
+            finally:
+                self.__clean_up(session)
+                session.commit()
         return self.__format_output(result, outputFormat)
