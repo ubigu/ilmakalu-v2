@@ -23,14 +23,13 @@ SQLModel.metadata.drop_all
 
 
 class CO2Query(ABC):
-    def __init__(self, params, body={}, uuid=None, user=None):
+    def __init__(self, params, headers=None, body={}):
         if params.baseYear is not None and params.targetYear is not None and params.targetYear <= params.baseYear:
             raise HTTPException(status_code=400, detail="The base year should be smaller than the target year")
 
         self.p = params
+        self.headers = headers
         self.body = body
-        self.uuid = uuid
-        self.user = user
 
     def __get_base(self, base_name):
         match base_name:
@@ -111,12 +110,13 @@ class CO2Query(ABC):
                 return result
 
     def __write_session_info(self, session):
-        if self.uuid is None or self.user is None:
+        if self.headers is None or self.headers.uuid is None or self.headers.user is None:
             return
+
         session.add(
             user_output.sessions(
-                uuid=self.uuid,
-                user=self.user,
+                uuid=self.headers.uuid,
+                user=self.headers.user,
                 startTime=datetime.now().strftime("%Y%m%d_%H%M%S"),
                 baseYear=self.p.calculationYear if self.p.baseYear is None else self.p.baseYear,
                 targetYear=self.p.targetYear,

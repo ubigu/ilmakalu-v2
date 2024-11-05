@@ -73,14 +73,19 @@ class __CommonParams(SQLModel):
     outputFormat: str | None = None
 
 
+class __CommonHeaders(SQLModel):
+    uuid: str | None = None
+    user: str | None = None
+
+
 @router.get(
     "/",
     responses=responses,
 )
 def CO2_CalculateEmissionsLoop_get(
-    params: Annotated[__CommonParams, Query()], uuid: str = Header(None), user: str = Header(None)
+    params: Annotated[__CommonParams, Query()], headers: Annotated[__CommonHeaders, Header()]
 ):
-    return CO2CalculateEmissionsLoop(params=params, uuid=uuid, user=user).execute()
+    return CO2CalculateEmissionsLoop(params=params, headers=headers).execute()
 
 
 @router.post(
@@ -89,8 +94,7 @@ def CO2_CalculateEmissionsLoop_get(
 )
 def CO2_CalculateEmissionsLoop_post(
     params: Annotated[__CommonParams, Query()],
+    headers: Annotated[__CommonHeaders, Header()],
     body: Annotated[UserInput, Body()],
-    uuid: str = Header(None),
-    user: str = Header(None),
 ):
-    return CO2CalculateEmissionsLoop(params=params, body=body, uuid=uuid, user=user).execute()
+    return CO2CalculateEmissionsLoop(params=params, body=body, headers=headers).execute()
