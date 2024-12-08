@@ -7,7 +7,6 @@ from fastapi import HTTPException, Response
 from pydantic import create_model
 from pygeojson import FeatureCollection
 from shapely import geometry, wkb, wkt
-from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import Session, SQLModel, text
 
 from db import engine
@@ -16,10 +15,6 @@ from models import user_input, user_output
 geom_col = "geom"
 
 tables = SQLModel.metadata.tables
-
-
-Base = declarative_base()
-SQLModel.metadata.drop_all
 
 
 class CO2Query(ABC):
