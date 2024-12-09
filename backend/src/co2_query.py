@@ -39,17 +39,12 @@ class CO2Query(ABC):
             case _:
                 raise HTTPException(status_code=400, detail=f"The base {base_name} was not found")
 
-    def get_table_name(self, base, default):
-        if "layers" not in self.body:
-            return default
-
-        next_layer = next((layer for layer in self.body["layers"] if layer["base"] == base), None)
-        return default if next_layer is None else user_input.schema + "." + next_layer["name"]
-
     def __drop_table_if_exists(self, session, name):
         full_name = f"{user_input.schema}.{name}"
         if full_name not in tables:
             return
+        """ For an unknown reason, the drop() method takes extremely long to
+        execute. Instead, use the plain SQL statement. """
         session.exec(text(f'DROP TABLE {user_input.schema}."{name}"'))
         SQLModel.metadata.remove(tables[full_name])
 
@@ -125,6 +120,13 @@ class CO2Query(ABC):
                 geomArea=self.p.mun,
             )
         )
+
+    def get_table_name(self, base, default):
+        if "layers" not in self.body:
+            return default
+
+        next_layer = next((layer for layer in self.body["layers"] if layer["base"] == base), None)
+        return default if next_layer is None else user_input.schema + "." + next_layer["name"]
 
     def execute(self):
         result = {}
