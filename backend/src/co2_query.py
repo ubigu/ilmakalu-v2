@@ -78,6 +78,10 @@ class CO2Query(ABC):
             tables[f"{user_input.schema}.{layer_name}"].create(engine, checkfirst=True)
             session.bulk_insert_mappings(Model, self.__geoJSON_to_mappings(layer["features"]))
 
+    def __execute(self, session):
+        result = session.exec(self.get_stmt()).mappings().all()
+        return self.__format_output(result)
+
     def __clean_up(self, session):
         if "layers" not in self.body:
             return
@@ -127,7 +131,7 @@ class CO2Query(ABC):
         with Session(engine) as session:
             try:
                 self.__upload_layers(session)
-                result = session.exec(self.get_stmt()).mappings().all()
+                result = self.__execute(session)
             except Exception:
                 raise HTTPException(status_code=500)
             else:
@@ -135,7 +139,7 @@ class CO2Query(ABC):
             finally:
                 self.__clean_up(session)
                 session.commit()
-        return self.__format_output(result)
+        return result
 
     @abstractmethod
     def get_stmt(self):
