@@ -1,20 +1,18 @@
+import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 
 import geopandas as gp
 import pandas as pd
 from fastapi import HTTPException, Response
-from pydantic import create_model
 from pygeojson import FeatureCollection
-from shapely import geometry, wkb, wkt
-from sqlmodel import Session, SQLModel, text
+from sqlmodel import Session, text
 
 from db import engine
 from models import user_input, user_output
 
 geom_col = "geom"
-
-tables = SQLModel.metadata.tables
+crs = "EPSG:3067"
 
 
 class CO2Query(ABC):
@@ -28,52 +26,28 @@ class CO2Query(ABC):
         self.db = engine
         self.input_tables = {}
 
-    def __get_base(self, base_name):
-        match base_name:
-            case "plan_areas":
-                return user_input.plan_areas_base
-            case "plan_transit":
-                return user_input.plan_transit_base
-            case "plan_centers":
-                return user_input.plan_centers_base
-            case "aoi":
-                return user_input.aoi_base
-            case _:
-                raise HTTPException(status_code=400, detail=f"The base {base_name} was not found")
-
     def __drop_table_if_exists(self, session, name):
-        full_name = f"{user_input.schema}.{name}"
-        if full_name not in tables:
-            return
-        """ For an unknown reason, the drop() method takes extremely long to
-        execute. Instead, use the plain SQL statement. """
         session.exec(text(f'DROP TABLE {user_input.schema}."{name}"'))
-        SQLModel.metadata.remove(tables[full_name])
 
-    def __geoJSON_to_mappings(self, features):
+    def __geoJSON_to_table(self, session, features, name):
         if isinstance(features, FeatureCollection):
             features = features.features
 
-        return [
-            {
-                geom_col: wkb.dumps(wkt.loads(geometry.shape(f.geometry.__dict__).wkt), hex=True, srid=3067),
-                **f.properties,
-            }
-            for f in features
-        ]
+        gp.GeoDataFrame.from_features(features, crs=crs).rename_geometry(geom_col).to_postgis(
+            name, self.db, schema=user_input.schema
+        )
 
     def __upload_layers(self, session):
         if "layers" not in self.body:
             return
 
-        for layer in self.body["layers"]:
+        layers = json.loads(self.body["layers"])
+        for layer in layers:
             base_name = layer["base"]
             layer_name = layer["name"]
             self.input_tables[base_name] = layer_name
 
-            Model = create_model(layer_name, __base__=self.__get_base(base_name), __cls_kwargs__={"table": True})
-            tables[f"{user_input.schema}.{layer_name}"].create(self.db, checkfirst=True)
-            session.bulk_insert_mappings(Model, self.__geoJSON_to_mappings(layer["features"]))
+            self.__geoJSON_to_table(session, layer["features"], layer_name)
 
     def __execute(self, session):
         result = session.exec(self.get_stmt()).mappings().all()
@@ -92,7 +66,6 @@ class CO2Query(ABC):
             case "xml":
                 return Response(content=data.to_xml(index=False), media_type="application/xml")
             case "geojson":
-                crs = "EPSG:3067"
                 if geom_col not in data.columns:
                     gdf = gp.GeoDataFrame(columns=[geom_col], geometry=geom_col, crs=crs)
                 else:
