@@ -25,6 +25,8 @@ class CO2Query(ABC):
         self.p = params
         self.headers = headers
         self.body = body
+        self.db = engine
+        self.input_tables = {}
 
     def __get_base(self, base_name):
         match base_name:
@@ -65,12 +67,12 @@ class CO2Query(ABC):
             return
 
         for layer in self.body["layers"]:
-            base = self.__get_base(layer["base"])
+            base_name = layer["base"]
             layer_name = layer["name"]
-            self.__drop_table_if_exists(session, layer_name)
+            self.input_tables[base_name] = layer_name
 
-            Model = create_model(layer_name, __base__=base, __cls_kwargs__={"table": True})
-            tables[f"{user_input.schema}.{layer_name}"].create(engine, checkfirst=True)
+            Model = create_model(layer_name, __base__=self.__get_base(base_name), __cls_kwargs__={"table": True})
+            tables[f"{user_input.schema}.{layer_name}"].create(self.db, checkfirst=True)
             session.bulk_insert_mappings(Model, self.__geoJSON_to_mappings(layer["features"]))
 
     def __execute(self, session):
@@ -78,11 +80,8 @@ class CO2Query(ABC):
         return self.__format_output(result)
 
     def __clean_up(self, session):
-        if "layers" not in self.body:
-            return
-
-        for layer in self.body["layers"]:
-            self.__drop_table_if_exists(session, layer["name"])
+        for table in self.input_tables.values():
+            self.__drop_table_if_exists(session, table)
 
     def __format_output(self, result):
         if not isinstance(self.p.outputFormat, str):
@@ -122,15 +121,11 @@ class CO2Query(ABC):
         )
 
     def get_table_name(self, base, default):
-        if "layers" not in self.body:
-            return default
-
-        next_layer = next((layer for layer in self.body["layers"] if layer["base"] == base), None)
-        return default if next_layer is None else user_input.schema + "." + next_layer["name"]
+        return default if base not in self.input_tables else user_input.schema + "." + self.input_tables[base]
 
     def execute(self):
         result = {}
-        with Session(engine) as session:
+        with Session(self.db) as session:
             try:
                 self.__upload_layers(session)
                 result = self.__execute(session)
