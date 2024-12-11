@@ -22,18 +22,22 @@ class CO2Query(ABC):
         if params.baseYear is not None and params.targetYear is not None and params.targetYear <= params.baseYear:
             raise HTTPException(status_code=400, detail="The base year should be smaller than the target year")
 
-        self.p = params
-        self.headers = headers
-        self.layers = None if "layers" not in body else body["layers"]
-        self.db = (
-            engine
-            if "connParams" not in body
-            else create_engine(
-                URL.create(**({"drivername": "postgresql"} | json.loads(body["connParams"]))), poolclass=NullPool
+        try:
+            self.p = params
+            self.headers = headers
+            self.layers = None if "layers" not in body else body["layers"]
+            self.db = (
+                engine
+                if "connParams" not in body
+                else create_engine(
+                    URL.create(**({"drivername": "postgresql"} | json.loads(body["connParams"]))), poolclass=NullPool
+                )
             )
-        )
 
-        self.input_tables = {}
+            self.input_tables = {}
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail=repr(e))
 
     def __drop_table_if_exists(self, session, name):
         session.exec(text(f'DROP TABLE {user_input.schema}."{name}"'))
