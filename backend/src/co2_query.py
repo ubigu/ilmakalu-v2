@@ -29,7 +29,7 @@ class CO2Query(ABC):
     def __drop_table_if_exists(self, session, name):
         session.exec(text(f'DROP TABLE {user_input.schema}."{name}"'))
 
-    def __geoJSON_to_table(self, session, features, name):
+    def __geoJSON_to_table(self, features, name):
         if isinstance(features, FeatureCollection):
             features = features.features
 
@@ -37,7 +37,7 @@ class CO2Query(ABC):
             name, self.db, schema=user_input.schema
         )
 
-    def __upload_layers(self, session):
+    def __upload_layers(self):
         if "layers" not in self.body:
             return
 
@@ -47,7 +47,7 @@ class CO2Query(ABC):
             layer_name = layer["name"]
             self.input_tables[base_name] = layer_name
 
-            self.__geoJSON_to_table(session, layer["features"], layer_name)
+            self.__geoJSON_to_table(layer["features"], layer_name)
 
     def __execute(self, session):
         result = session.exec(self.get_stmt()).mappings().all()
@@ -100,9 +100,11 @@ class CO2Query(ABC):
         result = {}
         with Session(self.db) as session:
             try:
-                self.__upload_layers(session)
+                self.__upload_layers()
                 result = self.__execute(session)
-            except Exception:
+            except Exception as e:
+                print(e)
+                session.rollback()
                 raise HTTPException(status_code=500)
             else:
                 self.__write_session_info(session)
