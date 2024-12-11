@@ -1,5 +1,6 @@
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 
 class UserInput(TypedDict):
-    layers: str
+    layers: NotRequired[str]
+    connParams: NotRequired[str]

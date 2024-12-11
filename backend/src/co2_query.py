@@ -6,7 +6,9 @@ import geopandas as gp
 import pandas as pd
 from fastapi import HTTPException, Response
 from pygeojson import FeatureCollection
-from sqlmodel import Session, text
+from sqlalchemy import URL
+from sqlalchemy.pool import NullPool
+from sqlmodel import Session, create_engine, text
 
 from db import engine
 from models import user_input, user_output
@@ -22,8 +24,15 @@ class CO2Query(ABC):
 
         self.p = params
         self.headers = headers
-        self.body = body
-        self.db = engine
+        self.layers = None if "layers" not in body else body["layers"]
+        self.db = (
+            engine
+            if "connParams" not in body
+            else create_engine(
+                URL.create(**({"drivername": "postgresql"} | json.loads(body["connParams"]))), poolclass=NullPool
+            )
+        )
+
         self.input_tables = {}
 
     def __drop_table_if_exists(self, session, name):
@@ -38,10 +47,10 @@ class CO2Query(ABC):
         )
 
     def __upload_layers(self):
-        if "layers" not in self.body:
+        if self.layers is None:
             return
 
-        layers = json.loads(self.body["layers"])
+        layers = json.loads(self.layers)
         for layer in layers:
             base_name = layer["base"]
             layer_name = layer["name"]
@@ -98,20 +107,24 @@ class CO2Query(ABC):
 
     def execute(self):
         result = {}
-        with Session(self.db) as session:
-            try:
-                self.__upload_layers()
-                result = self.__execute(session)
-            except Exception as e:
-                print(e)
-                session.rollback()
-                raise HTTPException(status_code=500)
-            else:
-                self.__write_session_info(session)
-            finally:
-                self.__clean_up(session)
-                session.commit()
-        return result
+        try:
+            with Session(self.db) as session:
+                session.begin()
+                try:
+                    self.__upload_layers()
+                    result = self.__execute(session)
+                except Exception:
+                    session.rollback()
+                    raise
+                else:
+                    self.__write_session_info(session)
+                finally:
+                    self.__clean_up(session)
+                    session.commit()
+            return result
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail=repr(e))
 
     @abstractmethod
     def get_stmt(self):
