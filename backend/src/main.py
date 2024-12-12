@@ -5,7 +5,7 @@ from routers import co2_calculate_emissions, co2_calculate_emissions_loop, co2_g
 
 init_db()
 
-app = FastAPI()
+app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False})
 
 app.include_router(co2_calculate_emissions.router)
 app.include_router(co2_calculate_emissions_loop.router)

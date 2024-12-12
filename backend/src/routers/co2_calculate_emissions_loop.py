@@ -15,6 +15,7 @@ router = APIRouter(
 
 class CO2CalculateEmissionsLoop(CO2Query):
     def get_stmt(self):
+        p = self.p
         return text(
             """SELECT
                 ST_AsText(geom) as geom, xyind, mun, zone,
@@ -42,18 +43,18 @@ class CO2CalculateEmissionsLoop(CO2Query):
                 includeBusinessTravel => :includeBusinessTravel
             );"""
         ).bindparams(
-            municipalities=self.p.mun,
-            aoi=self.get_table_name("aoi", self.p.aoi),
-            calculationScenario=self.p.calculationScenario,
-            method=self.p.method,
-            electricityType=self.p.electricityType,
-            baseYear=self.p.baseYear,
-            targetYear=self.p.targetYear,
-            plan_areas=self.get_table_name("plan_areas", self.p.plan_areas),
-            plan_transit=self.get_table_name("plan_transit", self.p.plan_transit),
-            plan_centers=self.get_table_name("plan_centers", self.p.plan_centers),
-            includeLongDistance=self.p.includeLongDistance,
-            includeBusinessTravel=self.p.includeBusinessTravel,
+            municipalities=p.mun,
+            aoi=self.get_table_name("aoi", p.aoi),
+            calculationScenario=p.calculationScenario,
+            method=p.method,
+            electricityType=p.electricityType,
+            baseYear=p.baseYear,
+            targetYear=p.targetYear,
+            plan_areas=self.get_table_name("plan_areas", p.plan_areas),
+            plan_transit=self.get_table_name("plan_transit", p.plan_transit),
+            plan_centers=self.get_table_name("plan_centers", p.plan_centers),
+            includeLongDistance=p.includeLongDistance,
+            includeBusinessTravel=p.includeBusinessTravel,
         )
 
 
