@@ -416,8 +416,8 @@ END IF;
         /* Add new centers to the central network only if the user has added such! */
         IF plan_centers IS NOT NULL THEN
             INSERT INTO centralnetwork
-            SELECT (SELECT MAX(k.id) FROM centralnetwork k) + row_number() over (order by plan.geom desc),
-                st_force2d((ST_DUMP(plan.geom)).geom) as geom,
+            SELECT st_force2d((ST_DUMP(plan.geom)).geom) as geom,
+				(SELECT MAX(k.id) FROM centralnetwork k) + row_number() over (order by plan.geom desc),
                 k_ktyyp AS keskustyyp,
                 k_knimi AS keskusnimi
             FROM kv plan
