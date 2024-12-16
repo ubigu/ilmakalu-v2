@@ -8,3 +8,5 @@ geoalchemy2
 geopandas
 lxml
 pygeojson
+fiona
+requests
