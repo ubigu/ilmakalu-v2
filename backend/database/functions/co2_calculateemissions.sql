@@ -44,7 +44,8 @@
         sum_lammonsaato_tco2 real,
         sum_liikenne_tco2 real,
         sum_sahko_tco2 real,
-        sum_rakentaminen_tco2 real
+        sum_rakentaminen_tco2 real,
+        sum_jatehuollon_paastot_tco2e real
     )
     AS $$
     DECLARE
@@ -278,7 +279,8 @@
             0::real sum_lammonsaato_tco2,
             0::real sum_liikenne_tco2,
             0::real sum_sahko_tco2,
-            0::real sum_rakentaminen_tco2
+            0::real sum_rakentaminen_tco2,
+            0::real sum_jatehuollon_paastot_tco2e
         FROM grid g
             WHERE (COALESCE(g.pop,0) > 0 OR COALESCE(g.employ,0) > 0 )
                 OR g.xyind::varchar IN (SELECT DISTINCT ON (grid2.xyind) grid2.xyind::varchar FROM grid2);
@@ -621,6 +623,17 @@
                     WHERE (g.pop IS NOT NULL AND g.pop > 0)
                     OR (g.employ IS NOT NULL AND g.employ > 0)
             GROUP BY g.xyind) pop
+        WHERE pop.xyind = results.xyind;
+
+        /*jatehuollon asukaskohtaisten päästöjen ennustemalli*/
+        UPDATE results SET
+            sum_jatehuollon_paastot_tco2e = COALESCE(pop.waste_emissions_per_person_sum, 0)
+        FROM
+            (SELECT g.xyind,
+                ((EXP(79.702742 - 0.040097 * calculationYear)) * g.pop) as waste_emissions_per_person_sum
+            FROM grid g
+                WHERE (g.pop IS NOT NULL AND g.pop > 0)
+            GROUP BY g.xyind, g.pop) pop
         WHERE pop.xyind = results.xyind;
 
         /* Add categorical total sums to results */
