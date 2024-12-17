@@ -664,7 +664,8 @@
                 COALESCE(r.sum_lammonsaato_tco2,0) +
                 COALESCE(r.sum_liikenne_tco2,0) +
                 COALESCE(r.sum_sahko_tco2,0) +
-                COALESCE(r.sum_rakentaminen_tco2,0);
+                COALESCE(r.sum_rakentaminen_tco2,0) +
+                COALESCE(r.sum_jatehuollon_paastot_tco2e);
 
         /* Lisätään päivitetyt kerrosneliömetrisummat kokonaiskerrosneliömäärään */
         UPDATE results res
