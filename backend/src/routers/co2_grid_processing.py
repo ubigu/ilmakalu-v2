@@ -15,7 +15,7 @@ router = APIRouter(
 
 class CO2GridProcessing(CO2Query):
     def get_stmt(self):
-        p = self.p
+        p = self.params
         return text(
             """SELECT
                 ST_AsText(geom) as geom, xyind,

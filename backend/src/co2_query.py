@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-import geopandas as gp
+import geopandas as gpd
 import pandas as pd
 from fastapi import HTTPException, Response
 from pygeojson import FeatureCollection
@@ -11,6 +11,7 @@ from sqlalchemy.pool import NullPool
 from sqlmodel import Session, create_engine, text
 
 from db import engine
+from grid import generate_grid
 from models import user_input, user_output
 
 geom_col = "geom"
@@ -23,7 +24,7 @@ class CO2Query(ABC):
             raise HTTPException(status_code=400, detail="The base year should be smaller than the target year")
 
         try:
-            self.p = params
+            self.params = params
             self.headers = headers
             self.layers = None if "layers" not in body else body["layers"]
             self.db = (
@@ -39,16 +40,26 @@ class CO2Query(ABC):
             print(e)
             raise HTTPException(status_code=500, detail=repr(e))
 
-    def __drop_table_if_exists(self, session, name):
-        session.exec(text(f'DROP TABLE {user_input.schema}."{name}"'))
-
     def __geoJSON_to_table(self, features, name):
         if isinstance(features, FeatureCollection):
             features = features.features
 
-        gp.GeoDataFrame.from_features(features, crs=crs).rename_geometry(geom_col).to_postgis(
+        gpd.GeoDataFrame.from_features(features, crs=crs).rename_geometry(geom_col).to_postgis(
             name, self.db, schema=user_input.schema
         )
+
+    def __generate_grid(self, session):
+        centroids = None
+        for mun in self.params.mun:
+            stmt = text("SELECT COUNT(xyind) FROM delineations.grid WHERE mun = :mun").bindparams(mun=mun)
+            # Do not generate a grid if it already exists
+            if session.exec(stmt).one()[0] > 0:
+                continue
+            if centroids is None:
+                centroids = gpd.GeoDataFrame.from_postgis(
+                    "SELECT geom, id FROM delineations.centroids", self.db, crs=3067
+                )
+            generate_grid(mun, centroids).to_postgis("grid", self.db, schema="delineations", if_exists="append")
 
     def __upload_layers(self):
         if self.layers is None:
@@ -68,22 +79,22 @@ class CO2Query(ABC):
 
     def __clean_up(self, session):
         for table in self.input_tables.values():
-            self.__drop_table_if_exists(session, table)
+            session.exec(text(f'DROP TABLE {user_input.schema}."{table}"'))
 
     def __format_output(self, result):
-        if not isinstance(self.p.outputFormat, str):
+        if not isinstance(self.params.outputFormat, str):
             return result
 
         data = pd.DataFrame.from_records(result)
-        match self.p.outputFormat.lower():
+        match self.params.outputFormat.lower():
             case "xml":
                 return Response(content=data.to_xml(index=False), media_type="application/xml")
             case "geojson":
                 if geom_col not in data.columns:
-                    gdf = gp.GeoDataFrame(columns=[geom_col], geometry=geom_col, crs=crs)
+                    gdf = gpd.GeoDataFrame(columns=[geom_col], geometry=geom_col, crs=crs)
                 else:
-                    data[geom_col] = gp.GeoSeries.from_wkt(data[geom_col])
-                    gdf = gp.GeoDataFrame(data, geometry=geom_col, crs=crs)
+                    data[geom_col] = gpd.GeoSeries.from_wkt(data[geom_col])
+                    gdf = gpd.GeoDataFrame(data, geometry=geom_col, crs=crs)
                 return Response(content=gdf.to_json(drop_id=True), media_type="application/geojson")
             case _:
                 return result
@@ -92,17 +103,18 @@ class CO2Query(ABC):
         if self.headers is None or self.headers.uuid is None or self.headers.user is None:
             return
 
+        p = self.params
         session.add(
             user_output.sessions(
                 uuid=self.headers.uuid,
                 user=self.headers.user,
                 startTime=datetime.now().strftime("%Y%m%d_%H%M%S"),
-                baseYear=self.p.calculationYear if self.p.baseYear is None else self.p.baseYear,
-                targetYear=self.p.targetYear,
-                calculationScenario=self.p.calculationScenario,
-                method=self.p.method,
-                electricityType=self.p.electricityType,
-                geomArea=self.p.mun,
+                baseYear=p.calculationYear if p.baseYear is None else p.baseYear,
+                targetYear=p.targetYear,
+                calculationScenario=p.calculationScenario,
+                method=p.method,
+                electricityType=p.electricityType,
+                geomArea=p.mun,
             )
         )
 
@@ -115,6 +127,7 @@ class CO2Query(ABC):
             with Session(self.db) as session:
                 session.begin()
                 try:
+                    self.__generate_grid(session)
                     self.__upload_layers()
                     result = self.__execute(session)
                 except Exception:

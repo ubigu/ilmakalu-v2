@@ -12,7 +12,7 @@ router = APIRouter(prefix="/co2-calculate-emissions", tags=["CO2 Calculate Emiss
 
 class CO2CalculateEmissions(CO2Query):
     def get_stmt(self):
-        p = self.p
+        p = self.params
         return text(
             """SELECT
                 ST_AsText(geom) as geom, xyind, mun, zone,
