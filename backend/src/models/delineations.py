@@ -21,3 +21,4 @@ class grid(SQLModel, table=True):
     mun: int
     zone: int = Field(sa_column=Column(BIGINT))
     centdist: int = Field(sa_column=Column(SMALLINT))
+    holidayhouses: int

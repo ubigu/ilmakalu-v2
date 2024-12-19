@@ -1,6 +1,8 @@
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import requests
+import requests.auth
 from fiona.io import ZipMemoryFile
 from shapely import distance
 from shapely.geometry import MultiPolygon
@@ -25,6 +27,13 @@ zone_mappings = {
     "ydinmaaseutu": 86,
     "harvaan asuttu maaseutu": 87,
 }
+crs = 3067
+crs_url = f"http://www.opengis.net/def/crs/EPSG/0/{crs}"
+
+
+def __point_to_multipolygon(x, y):
+    """Convert the bottom-left coordinate to a 250x250-square"""
+    return MultiPolygon([(((x, y), (x, y + 250), (x + 250, y + 250), (x + 250, y)), [])])
 
 
 def __import_ykr_zones(df, filename, target_col):
@@ -35,15 +44,22 @@ def __import_ykr_zones(df, filename, target_col):
     with ZipMemoryFile(r.content) as memfile:
         with memfile.open() as src:
             df = df.sjoin(
-                gpd.GeoDataFrame.from_features(src, crs=3067)[["geometry", target_col]], how="left", predicate="within"
+                gpd.GeoDataFrame.from_features(src, crs=crs)[["geometry", target_col]], how="left", predicate="within"
             ).drop(columns=["index_right"])
     df[target_col] = df[target_col].str.lower()
     return df
 
 
-def __point_to_multipolygon(x, y):
-    """Convert the bottom-left coordinate to a 250x250-square"""
-    return MultiPolygon([(((x, y), (x, y + 250), (x + 250, y + 250), (x + 250, y)), [])])
+def __import_buildings(bbox):
+    url = f"https://avoin-paikkatieto.maanmittauslaitos.fi/maastotiedot/features/v1/collections/rakennus/items?kohdeluokka=42230,42231,42232&limit=10000&crs={crs_url}&bbox={bbox}&bbox-crs={crs_url}"
+
+    buildings = gpd.GeoDataFrame()
+    while url is not None:
+        r = requests.get(url, auth=requests.auth.HTTPBasicAuth("fcd382c7-6e0c-44bc-9a54-f6406f36196e", ""))
+        data = r.json()
+        buildings = pd.concat([buildings, gpd.GeoDataFrame.from_features(data, crs=crs)])
+        url = next((link for link in data["links"] if link["rel"] == "next"), {"href": None})["href"]
+    return buildings
 
 
 def generate_grid(mun, centroids):
@@ -55,7 +71,7 @@ def generate_grid(mun, centroids):
     ).drop_duplicates(subset=["euref_x", "euref_y"])
 
     grid[geom_col] = grid.apply(lambda g: __point_to_multipolygon(g["euref_x"], g["euref_y"]), axis=1)
-    grid = gpd.GeoDataFrame(grid, geometry=geom_col, crs="epsg:3067").rename(columns={mun_col: "mun"})
+    grid = gpd.GeoDataFrame(grid, geometry=geom_col, crs=crs).rename(columns={mun_col: "mun"})
 
     # Generate xyind by concatenating the x and y coordinates of the square's centroid (EUREF-FIN EPSG:3067)
     grid["xyind"] = grid[geom_col].centroid.apply(lambda c: str(round(c.x)) + str(round(c.y)))
@@ -72,4 +88,8 @@ def generate_grid(mun, centroids):
         lambda g: zone_mappings[g["vyohselite"] if isinstance(g["vyohselite"], str) else g["Nimi"]], axis=1
     )
 
-    return grid[[geom_col, "xyind", "mun", "zone", "centdist"]]
+    # Calculate a number of holiday buildings within each square
+    buildings = __import_buildings(",".join(str(x) for x in grid.total_bounds))
+    grid["holidayhouses"] = grid[geom_col].apply(lambda g: np.sum(buildings["geometry"].intersects(g)))
+
+    return grid[[geom_col, "xyind", "mun", "zone", "centdist", "holidayhouses"]]

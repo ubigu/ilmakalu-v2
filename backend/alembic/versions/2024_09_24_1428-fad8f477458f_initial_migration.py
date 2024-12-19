@@ -351,6 +351,7 @@ def upgrade() -> None:
         sa.Column("mun", sa.Integer(), nullable=False),
         sa.Column("zone", sa.BIGINT(), nullable=True),
         sa.Column("centdist", sa.SMALLINT(), nullable=True),
+        sa.Column("holidayhouses", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("xyind"),
         schema="delineations",
     )
