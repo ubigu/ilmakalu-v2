@@ -6,16 +6,15 @@ Create Date: 2024-09-24 14:30:03.831130
 
 """
 
-import io
 import os
 from csv import DictReader
 from typing import Sequence, Union
 
-import fiona
 import geopandas as gpd
 import requests
 import sqlalchemy as sa
 import sqlmodel
+from fiona.io import ZipMemoryFile
 
 from alembic import op
 
@@ -70,13 +69,15 @@ def __import_centroids(conn):
     r = requests.get("https://wwwd3.ymparisto.fi/d3/gis_data/spesific/KeskustaAlueet2021.zip")
     if not r.ok:
         raise OSError("Failed to fetch the centroid data from the API")
-    with fiona.BytesCollection(io.BytesIO(r.content).read()) as src:
-        gdf = gpd.GeoDataFrame.from_features(src, crs=src.crs).rename_geometry(geom_col)
-        gdf[geom_col] = gdf[geom_col].centroid
-        gdf["id"] = gdf.index + 1
-        gdf = gdf[[geom_col, "id", "Keskustyyp", "KeskusNimi"]]
-        gdf.columns = [c.lower() for c in gdf.columns]
-        gdf.to_postgis("centroids", con=conn, if_exists="append", schema="delineations")
+
+    with ZipMemoryFile(r.content) as memfile:
+        with memfile.open() as src:
+            gdf = gpd.GeoDataFrame.from_features(src, crs=src.crs).rename_geometry(geom_col)
+            gdf[geom_col] = gdf[geom_col].centroid
+            gdf["id"] = gdf.index + 1
+            gdf = gdf[[geom_col, "id", "Keskustyyp", "KeskusNimi"]]
+            gdf.columns = [c.lower() for c in gdf.columns]
+            gdf.to_postgis("centroids", con=conn, if_exists="append", schema="delineations")
 
 
 def __update_delineations_srid(tbl):

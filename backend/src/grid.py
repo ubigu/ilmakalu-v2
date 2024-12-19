@@ -1,9 +1,7 @@
-import io
-
-import fiona
 import geopandas as gpd
 import pandas as pd
 import requests
+from fiona.io import ZipMemoryFile
 from shapely import distance
 from shapely.geometry import MultiPolygon
 from shapely.ops import nearest_points
@@ -34,10 +32,11 @@ def __import_ykr_zones(df, filename, target_col):
     if not r.ok:
         return df
 
-    with fiona.BytesCollection(io.BytesIO(r.content).read()) as src:
-        df = df.sjoin(
-            gpd.GeoDataFrame.from_features(src, crs=3067)[["geometry", target_col]], how="left", predicate="within"
-        ).drop(columns=["index_right"])
+    with ZipMemoryFile(r.content) as memfile:
+        with memfile.open() as src:
+            df = df.sjoin(
+                gpd.GeoDataFrame.from_features(src, crs=3067)[["geometry", target_col]], how="left", predicate="within"
+            ).drop(columns=["index_right"])
     df[target_col] = df[target_col].str.lower()
     return df
 
