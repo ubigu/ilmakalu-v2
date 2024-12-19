@@ -21,6 +21,7 @@ RETURNS TABLE(
     xyind varchar(13),
     mun int,
     zone bigint,
+    holidayhouses int,
     year date,
     floorspace int,
     pop smallint,
