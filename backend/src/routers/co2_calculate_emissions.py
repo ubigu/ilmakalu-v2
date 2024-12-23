@@ -1,18 +1,18 @@
-from typing import Annotated, Literal
+from typing import cast
 
-from fastapi import APIRouter, Body, Header, Query
-from sqlmodel import SQLModel, text
+from fastapi import APIRouter
+from sqlmodel import text
 
-from co2_query import CO2Query
+from co2_query import CO2CalculateEmissionsBase
+from ilmakalu_typing import CO2Body, CO2CalculateEmissionsParams, CO2Headers
 from responses import responses
-from typings import UserInput
 
 router = APIRouter(prefix="/co2-calculate-emissions", tags=["CO2 Calculate Emissions"])
 
 
-class CO2CalculateEmissions(CO2Query):
+class CO2CalculateEmissions(CO2CalculateEmissionsBase):
     def get_stmt(self):
-        p = self.params
+        p = cast(CO2CalculateEmissionsParams, self.params)
         return text(
             """SELECT
                 ST_AsText(geom) as geom, xyind, mun, zone, holidayhouses,
@@ -57,35 +57,11 @@ class CO2CalculateEmissions(CO2Query):
         )
 
 
-class __CommonParams(SQLModel):
-    calculationYear: int
-    mun: Annotated[list[int], Query()] = []
-    aoi: str | None = None
-    calculationScenario: str = "wem"
-    method: Literal["em", "hjm"] = "em"
-    electricityType: Literal["hankinta", "tuotanto"] = "tuotanto"
-    baseYear: int | None = None
-    targetYear: int | None = None
-    plan_areas: str | None = None
-    plan_transit: str | None = None
-    plan_centers: str | None = None
-    includeLongDistance: bool = True
-    includeBusinessTravel: bool = True
-    outputFormat: str | None = None
-
-
-class __CommonHeaders(SQLModel):
-    uuid: str | None = None
-    user: str | None = None
-
-
 @router.get(
     "/",
     responses=responses,
 )
-def CO2_CalculateEmissions_get(
-    params: Annotated[__CommonParams, Query()], headers: Annotated[__CommonHeaders, Header()]
-):
+def CO2_CalculateEmissions_get(params: CO2CalculateEmissionsParams, headers: CO2Headers):
     return CO2CalculateEmissions(params=params, headers=headers).execute()
 
 
@@ -94,8 +70,8 @@ def CO2_CalculateEmissions_get(
     responses=responses,
 )
 def CO2_CalculateEmissions_post(
-    params: Annotated[__CommonParams, Query()],
-    headers: Annotated[__CommonHeaders, Header()],
-    body: Annotated[UserInput, Body()],
+    params: CO2CalculateEmissionsParams,
+    headers: CO2Headers,
+    body: CO2Body,
 ):
     return CO2CalculateEmissions(params=params, body=body, headers=headers).execute()

@@ -10,7 +10,9 @@ energy
 grid_globals
 traffic
 
-engine = create_engine(os.environ.get("DATABASE_URL"))
+url = os.environ.get("DATABASE_URL")
+if url is not None:
+    engine = create_engine(url)
 
 
 def init_db():

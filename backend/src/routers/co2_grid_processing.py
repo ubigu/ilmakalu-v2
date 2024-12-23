@@ -1,11 +1,11 @@
-from typing import Annotated
+from typing import cast
 
-from fastapi import APIRouter, Body, Query
-from sqlmodel import SQLModel, text
+from fastapi import APIRouter
+from sqlmodel import text
 
 from co2_query import CO2Query
+from ilmakalu_typing import CO2Body, CO2GridProcessingParams
 from responses import responses
-from typings import UserInput
 
 router = APIRouter(
     prefix="/co2-grid-processing",
@@ -15,7 +15,7 @@ router = APIRouter(
 
 class CO2GridProcessing(CO2Query):
     def get_stmt(self):
-        p = self.params
+        p = cast(CO2GridProcessingParams, self.params)
         return text(
             """SELECT
                 ST_AsText(geom) as geom, xyind,
@@ -46,24 +46,11 @@ class CO2GridProcessing(CO2Query):
         )
 
 
-class __CommonParams(SQLModel):
-    calculationYear: int
-    baseYear: int
-    mun: Annotated[list[int], Query()] = []
-    aoi: str | None = None
-    targetYear: int | None = None
-    plan_areas: str | None = None
-    plan_transit: str | None = None
-    plan_centers: str | None = None
-    km2hm2: float = 1.25
-    outputFormat: str | None = None
-
-
 @router.get(
     "/",
     responses=responses,
 )
-def CO2_GridProcessing_get(params: Annotated[__CommonParams, Query()]):
+def CO2_GridProcessing_get(params: CO2GridProcessingParams):
     return CO2GridProcessing(params=params).execute()
 
 
@@ -71,5 +58,5 @@ def CO2_GridProcessing_get(params: Annotated[__CommonParams, Query()]):
     "/",
     responses=responses,
 )
-def CO2_GridProcessing_post(params: Annotated[__CommonParams, Query()], body: Annotated[UserInput, Body()]):
+def CO2_GridProcessing_post(params: CO2GridProcessingParams, body: CO2Body):
     return CO2GridProcessing(params=params, body=body).execute()
