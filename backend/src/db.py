@@ -11,10 +11,13 @@ grid_globals
 traffic
 
 url = os.environ.get("DATABASE_URL")
-if url is not None:
-    engine = create_engine(url)
+engine = create_engine(url) if url is not None else None
 
 
 def init_db():
+    """Initialize the database by creating tables stored in the
+    metadata and loading available table definitions from the schema user_input"""
+    if engine is None:
+        return
     SQLModel.metadata.create_all(engine)
     SQLModel.metadata.reflect(engine, schema=user_input.schema)

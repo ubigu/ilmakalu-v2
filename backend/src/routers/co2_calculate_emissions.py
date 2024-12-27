@@ -1,6 +1,7 @@
 from typing import cast
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
+from sqlalchemy.sql.expression import TextClause
 from sqlmodel import text
 
 from co2_query import CO2CalculateEmissionsBase
@@ -11,7 +12,11 @@ router = APIRouter(prefix="/co2-calculate-emissions", tags=["CO2 Calculate Emiss
 
 
 class CO2CalculateEmissions(CO2CalculateEmissionsBase):
-    def get_stmt(self):
+    def get_stmt(self) -> TextClause:
+        """Implementation of the get_stmt method. Constructs the SQL statement
+        that calls CO2_CalculateEmissions function with the HTTP parameters
+
+        :returns: The SQL statement as a literal SQL text fragment"""
         p = cast(CO2CalculateEmissionsParams, self.params)
         return text(
             """SELECT
@@ -61,7 +66,13 @@ class CO2CalculateEmissions(CO2CalculateEmissionsBase):
     "/",
     responses=responses,
 )
-def CO2_CalculateEmissions_get(params: CO2CalculateEmissionsParams, headers: CO2Headers):
+def CO2_CalculateEmissions_get(params: CO2CalculateEmissionsParams, headers: CO2Headers) -> Response:
+    """GET endpoint for /co2-calculate-emissions/
+
+    :param params: HTTP parameters
+    :param headers: HTTP headers
+    :returns: The result of the CO2_CalculateEmissions function as a response object
+    """
     return CO2CalculateEmissions(params=params, headers=headers).execute()
 
 
@@ -73,5 +84,12 @@ def CO2_CalculateEmissions_post(
     params: CO2CalculateEmissionsParams,
     headers: CO2Headers,
     body: CO2Body,
-):
+) -> Response:
+    """POST endpoint for /co2-calculate-emissions/
+
+    :param params: HTTP parameters
+    :param body: The body of the request. That is, input layers and/or connection parameters
+    :param headers: HTTP headers
+    :returns: The result of the CO2_CalculateEmissions function as a response object
+    """
     return CO2CalculateEmissions(params=params, body=body, headers=headers).execute()

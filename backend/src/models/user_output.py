@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer
 from sqlalchemy.dialects.postgresql import ARRAY, VARCHAR
 from sqlmodel import Field, SQLModel
 
+"""SQLModel models for the schema 'user_output'"""
+
 schema = "user_output"
 
 

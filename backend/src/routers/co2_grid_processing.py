@@ -1,6 +1,7 @@
 from typing import cast
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
+from sqlalchemy.sql.expression import TextClause
 from sqlmodel import text
 
 from co2_query import CO2Query
@@ -14,7 +15,11 @@ router = APIRouter(
 
 
 class CO2GridProcessing(CO2Query):
-    def get_stmt(self):
+    def get_stmt(self) -> TextClause:
+        """Implementation of the get_stmt method. Constructs the SQL statement
+        that calls CO2_GridProcessing function with the HTTP parameters
+
+        :returns: The SQL statement as a literal SQL text fragment"""
         p = cast(CO2GridProcessingParams, self.params)
         return text(
             """SELECT
@@ -50,7 +55,12 @@ class CO2GridProcessing(CO2Query):
     "/",
     responses=responses,
 )
-def CO2_GridProcessing_get(params: CO2GridProcessingParams):
+def CO2_GridProcessing_get(params: CO2GridProcessingParams) -> Response:
+    """GET endpoint for /co2-grid-processing/
+
+    :param params: HTTP parameters
+    :returns: The result of the CO2_GridProcessing function as a response object
+    """
     return CO2GridProcessing(params=params).execute()
 
 
@@ -58,5 +68,11 @@ def CO2_GridProcessing_get(params: CO2GridProcessingParams):
     "/",
     responses=responses,
 )
-def CO2_GridProcessing_post(params: CO2GridProcessingParams, body: CO2Body):
+def CO2_GridProcessing_post(params: CO2GridProcessingParams, body: CO2Body) -> Response:
+    """POST endpoint for /co2-grid-processing/
+
+    :param params: HTTP parameters
+    :param body: The body of the request. That is, input layers and/or connection parameters
+    :returns: The result of the CO2_GridProcessing function as a response object
+    """
     return CO2GridProcessing(params=params, body=body).execute()

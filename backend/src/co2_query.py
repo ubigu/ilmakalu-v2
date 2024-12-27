@@ -23,14 +23,14 @@ from ilmakalu_typing import (
 )
 from models import user_input, user_output
 
-geom_col = "geom"
-crs = "EPSG:3067"
-
 
 class CO2Query(ABC):
     """An abstract class containing all the common steps of each calculation type.
     The child classes must implement the get_stmt method, calling the right SQL function
     in the database"""
+
+    GEOM_COL = "geom"
+    CRS = "EPSG:3067"
 
     def __init__(
         self,
@@ -85,12 +85,12 @@ class CO2Query(ABC):
                 continue
             if centroids is None:
                 centroids = gpd.GeoDataFrame.from_postgis(
-                    "SELECT geom, id FROM delineations.centroids", self.db, crs=crs
+                    "SELECT geom, id FROM delineations.centroids", self.db, crs=self.CRS
                 )
             grid = pd.concat([grid, import_grid(mun, centroids)])
 
         if not grid.empty:
-            gpd.GeoDataFrame(grid, geometry=geom_col, crs=crs).to_postgis(  # type: ignore
+            gpd.GeoDataFrame(grid, geometry=self.GEOM_COL, crs=self.CRS).to_postgis(  # type: ignore
                 "grid", self.db, schema="delineations", if_exists="append"
             )
 
@@ -105,7 +105,7 @@ class CO2Query(ABC):
             if isinstance(features, FeatureCollection):
                 features = features.features
 
-            df: gpd.GeoDataFrame = gpd.GeoDataFrame.from_features(features, crs=crs).rename_geometry(geom_col)  # type: ignore
+            df: gpd.GeoDataFrame = gpd.GeoDataFrame.from_features(features, crs=self.CRS).rename_geometry(self.GEOM_COL)  # type: ignore
             df.to_postgis(layer["name"], self.db, schema=user_input.schema, if_exists="replace")
 
     def __execute(self, session: Session) -> Response:
@@ -144,11 +144,11 @@ class CO2Query(ABC):
             case "xml":
                 return {"content": df.to_xml(index=False), "media_type": "application/xml"}
             case "geojson":
-                if geom_col in df.columns:
-                    df[geom_col] = gpd.GeoSeries.from_wkt(df[geom_col])
+                if self.GEOM_COL in df.columns:
+                    df[self.GEOM_COL] = gpd.GeoSeries.from_wkt(df[self.GEOM_COL])
                 else:
-                    df.insert(0, geom_col, [])
-                content = gpd.GeoDataFrame(df, geometry=geom_col, crs=crs).to_json(drop_id=True)  # type: ignore
+                    df.insert(0, self.GEOM_COL, [])
+                content = gpd.GeoDataFrame(df, geometry=self.GEOM_COL, crs=self.CRS).to_json(drop_id=True)  # type: ignore
                 return {"content": content, "media_type": "application/geojson"}
             case _:
                 return {"content": df.to_json(orient="records"), "media_type": "application/json"}

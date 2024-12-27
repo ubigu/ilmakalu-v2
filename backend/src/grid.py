@@ -60,7 +60,7 @@ def __import_ykr_zones(df: gpd.GeoDataFrame, dataset: str, target_col: str) -> g
     return df
 
 
-def __import_buildings(bbox: list[float]) -> gpd.GeoDataFrame:
+def __import_holiday_houses(bbox: list[float]) -> gpd.GeoDataFrame:
     """Import holiday houses data within the bounding box received as a parameter
 
     :bbox: The bounding box as a list of the x and y coordinates of the bottom-left
@@ -117,8 +117,8 @@ def import_grid(mun: int, centroids: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         )
 
         # Calculate a number of holiday buildings within each square
-        buildings = __import_buildings(list(grid.total_bounds))
-        grid["holidayhouses"] = grid[geom_col].apply(lambda g: np.sum(buildings["geometry"].intersects(g)))  # type: ignore
+        houses = __import_holiday_houses(list(grid.total_bounds))
+        grid["holidayhouses"] = grid[geom_col].apply(lambda g: np.sum(houses["geometry"].intersects(g)))  # type: ignore
 
         return grid[columns]  # type: ignore
     except Exception:

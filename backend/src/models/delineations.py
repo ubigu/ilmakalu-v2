@@ -3,6 +3,8 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import BIGINT, SMALLINT, VARCHAR
 from sqlmodel import Field, SQLModel
 
+"""SQLModel models for the schema 'delineations'"""
+
 schema = "delineations"
 
 
