@@ -4,14 +4,14 @@ from fastapi import APIRouter, Response
 from sqlalchemy.sql.expression import TextClause
 from sqlmodel import text
 
-from co2_query import CO2CalculateEmissionsBase
+from co2_query import CO2Query
 from ilmakalu_typing import CO2Body, CO2CalculateEmissionsParams, CO2Headers
 from responses import responses
 
 router = APIRouter(prefix="/co2-calculate-emissions", tags=["CO2 Calculate Emissions"])
 
 
-class CO2CalculateEmissions(CO2CalculateEmissionsBase):
+class CO2CalculateEmissions(CO2Query):
     def get_stmt(self) -> TextClause:
         """Implementation of the get_stmt method. Constructs the SQL statement
         that calls CO2_CalculateEmissions function with the HTTP parameters

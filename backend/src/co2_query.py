@@ -1,7 +1,7 @@
 import json
+import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import cast
 
 import geopandas as gpd
 import pandas as pd
@@ -51,6 +51,7 @@ class CO2Query(ABC):
         expected to contain properties 'feature', 'base' and 'name'
         :attr db: A database instance. If connection parameters are provided, creates a
         new one, otherwise uses the default one
+        :attr session_id = The ID of the session
         """
         if params.baseYear is not None and params.targetYear is not None and params.targetYear <= params.baseYear:
             raise HTTPException(status_code=400, detail="The base year should be smaller than the target year")
@@ -67,6 +68,7 @@ class CO2Query(ABC):
                     URL.create(**({"drivername": "postgresql"} | json.loads(body["connParams"]))), poolclass=NullPool
                 )
             )
+            self.session_id = str(uuid.uuid4())
         except Exception as e:
             print(e)
             raise HTTPException(status_code=500, detail=repr(e))
@@ -81,7 +83,8 @@ class CO2Query(ABC):
         for mun in self.params.mun:
             stmt = text("SELECT COUNT(xyind) FROM delineations.grid WHERE mun = :mun").bindparams(mun=mun)
             # Do not generate a grid if it already exists
-            if session.exec(stmt).one()[0] > 0:
+            # Ignore type warnings at exec for now, see: https://github.com/fastapi/sqlmodel/issues/909
+            if session.exec(stmt).one()[0] > 0:  # type: ignore
                 continue
             if centroids is None:
                 centroids = gpd.GeoDataFrame.from_postgis(
@@ -97,7 +100,7 @@ class CO2Query(ABC):
     def __upload_layers(self):
         """Upload the input layers received in a request body to the database"""
         for layer in self.layers:
-            if "features" not in layer or "name" not in layer:
+            if "features" not in layer or "base" not in layer:
                 continue
 
             features = layer["features"]
@@ -106,7 +109,9 @@ class CO2Query(ABC):
                 features = features.features
 
             df: gpd.GeoDataFrame = gpd.GeoDataFrame.from_features(features, crs=self.CRS).rename_geometry(self.GEOM_COL)  # type: ignore
-            df.to_postgis(layer["name"], self.db, schema=user_input.schema, if_exists="replace")
+            name = (self.session_id + "_" + layer["base"])[:49]  # truncate tablename to under 63c
+            df.to_postgis(name, self.db, schema=user_input.schema, if_exists="replace")
+            layer["name"] = name
 
     def __execute(self, session: Session) -> Response:
         """Execute the SQL statement defined by the get_stmt method and return the
@@ -115,9 +120,32 @@ class CO2Query(ABC):
         :param session: The active database session
         :returns: A Response object with the returned rows in a desired format
         """
-        result = session.exec(self.get_stmt()).mappings().all()
+        result = session.exec(self.get_stmt()).mappings().all()  # type: ignore
 
-        return Response(**self.__get_response_params(result))
+        return Response(**(self.__get_response_params(result) | {"headers": {"id": self.session_id}}))
+
+    def __write_session_info(self, session: Session):
+        """Write the session info to the database if writeSessionInfo is true
+
+        :param session: The active database session
+        """
+        p = self.params
+        if not p.writeSessionInfo:
+            return
+
+        session.add(
+            user_output.sessions(
+                uuid=self.session_id,
+                user=getattr(self.headers, "user", None),
+                startTime=datetime.now().strftime("%Y%m%d_%H%M%S"),
+                baseYear=p.calculationYear if p.baseYear is None else p.baseYear,
+                targetYear=getattr(p, "targetYear", None),
+                calculationScenario=getattr(p, "calculationScenario", "wem"),
+                method=getattr(p, "method", "em"),
+                electricityType=getattr(p, "electricityType", "tuotanto"),
+                geomArea=getattr(p, "mun", []),
+            )
+        )
 
     def __clean_up(self, session: Session):
         """Clean up the database after a successful calculation. That is,
@@ -128,7 +156,7 @@ class CO2Query(ABC):
         for layer in self.layers:
             if "name" not in layer:
                 continue
-            session.exec(text(f'DROP TABLE IF EXISTS {user_input.schema}."{layer["name"]}"'))
+            session.exec(text(f'DROP TABLE IF EXISTS {user_input.schema}."{layer["name"]}"'))  # type: ignore
 
     def __get_response_params(self, result: list[RowMapping]) -> dict:
         """Construct the content and media_type parameters based on the desired output format.
@@ -183,7 +211,7 @@ class CO2Query(ABC):
                     session.rollback()
                     raise
                 else:
-                    self.write_session_info(session)
+                    self.__write_session_info(session)
                 finally:
                     self.__clean_up(session)
                     session.commit()
@@ -201,40 +229,3 @@ class CO2Query(ABC):
         :returns: The SQL statement as a literal SQL text fragment
         """
         pass
-
-    def write_session_info(self, session: Session):
-        """Write the session info to the database. Should be implemented by the child class
-
-        :param session: The active database session
-        """
-        pass
-
-
-class CO2CalculateEmissionsBase(CO2Query):
-    """A base class for the CO2CalculateEmissions and CO2CalculateEmissionsLoop classes.
-    Inherits the methods from CO2Query and implement the write_session_info method that the
-    children is expected to have in common
-    """
-
-    def write_session_info(self, session: Session):
-        """Write the session info to the database if writeSessionInfo is true and
-        headers are provided
-        """
-
-        p = cast(CO2CalculateEmissionsParams | CO2CalculateEmissionsLoopParams, self.params)
-        if not p.writeSessionInfo or self.headers is None or self.headers.uuid is None or self.headers.user is None:
-            return
-
-        session.add(
-            user_output.sessions(
-                uuid=self.headers.uuid,
-                user=self.headers.user,
-                startTime=datetime.now().strftime("%Y%m%d_%H%M%S"),
-                baseYear=p.calculationYear if p.baseYear is None else p.baseYear,
-                targetYear=p.targetYear,
-                calculationScenario=p.calculationScenario,
-                method=p.method,
-                electricityType=p.electricityType,
-                geomArea=p.mun,
-            )
-        )

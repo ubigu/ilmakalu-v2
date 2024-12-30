@@ -10,8 +10,8 @@ from typing import Sequence, Union
 
 import geoalchemy2
 import sqlalchemy as sa
-import sqlmodel
 from sqlalchemy.dialects import postgresql
+from sqlmodel.sql import sqltypes
 
 from alembic import op
 
@@ -32,7 +32,7 @@ def upgrade() -> None:
     op.execute("CREATE SCHEMA user_output")
     op.create_table(
         "build_demolish_energy_gco2m2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Integer(), nullable=False),
         sa.Column("rivita", sa.Integer(), nullable=False),
@@ -51,7 +51,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "build_materia_gco2m2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Integer(), nullable=False),
         sa.Column("rivita", sa.Integer(), nullable=False),
@@ -70,7 +70,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "build_new_construction_energy_gco2m2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Integer(), nullable=False),
         sa.Column("rivita", sa.Integer(), nullable=False),
@@ -89,7 +89,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "build_rebuilding_energy_gco2m2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Integer(), nullable=False),
         sa.Column("rivita", sa.Integer(), nullable=False),
@@ -108,7 +108,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "build_rebuilding_share",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Float(), nullable=False),
@@ -128,7 +128,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "build_renovation_energy_gco2m2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Integer(), nullable=False),
         sa.Column("rivita", sa.Integer(), nullable=False),
@@ -147,9 +147,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "cooling_proportions_kwhm2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
-        sa.Column("rakennus_tyyppi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
         sa.Column("jaahdytys_osuus", sa.Integer(), nullable=False),
         sa.Column("jaahdytys_kwhm2", sa.Float(), nullable=False),
         sa.Column("jaahdytys_kaukok", sa.Float(), nullable=False),
@@ -161,10 +161,10 @@ def upgrade() -> None:
     )
     op.create_table(
         "distribution_heating_systems",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
-        sa.Column("rakennus_tyyppi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
         sa.Column("kaukolampo", sa.Float(), nullable=False),
         sa.Column("kevyt_oljy", sa.Float(), nullable=False),
         sa.Column("kaasu", sa.Float(), nullable=False),
@@ -177,7 +177,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity_home_device",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Float(), nullable=False),
         sa.Column("rivita", sa.Float(), nullable=False),
@@ -187,7 +187,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity_home_light",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Float(), nullable=False),
         sa.Column("rivita", sa.Float(), nullable=False),
@@ -197,7 +197,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity_iwhs_kwhm2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("myymal_hyper", sa.Integer(), nullable=False),
         sa.Column("myymal_super", sa.Integer(), nullable=False),
@@ -235,7 +235,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity_property_change",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("9999", sa.Float(), nullable=False),
         sa.Column("1920", sa.Float(), nullable=False),
@@ -254,16 +254,16 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity_property_kwhm2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
-        sa.Column("rakennus_tyyppi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
         sa.Column("sahko_kiinteisto_kwhm2", sa.Float(), nullable=False),
         sa.PrimaryKeyConstraint("scenario", "rakv", "rakennus_tyyppi"),
         schema="built",
     )
     op.create_table(
         "iwhs_sizes",
-        sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("type", sqltypes.AutoString(), nullable=False),
         sa.Column("several", sa.Integer(), nullable=False),
         sa.Column("single", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("type"),
@@ -281,9 +281,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "spaces_efficiency",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
-        sa.Column("rakennus_tyyppi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
         sa.Column("kaukolampo", sa.Float(), nullable=False),
         sa.Column("kevyt_oljy", sa.Float(), nullable=False),
         sa.Column("raskas_oljy", sa.Float(), nullable=False),
@@ -300,7 +300,7 @@ def upgrade() -> None:
     op.create_table(
         "spaces_kwhm2",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
         sa.Column("erpien", sa.Integer(), nullable=False),
@@ -320,9 +320,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "water_kwhm2",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
-        sa.Column("rakennus_tyyppi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
         sa.Column("vesi_kwh_m2", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("scenario", "rakv", "rakennus_tyyppi"),
         schema="built",
@@ -357,7 +357,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "cooling_gco2kwh",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("kaukok", sa.Integer(), nullable=False),
         sa.Column("sahko", sa.Integer(), nullable=False),
@@ -369,7 +369,7 @@ def upgrade() -> None:
     op.create_table(
         "district_heating",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("em", sa.Integer(), nullable=False),
         sa.Column("hjm", sa.Integer(), nullable=False),
@@ -378,10 +378,10 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("metodi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("paastolaji", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("metodi", sqltypes.AutoString(), nullable=False),
+        sa.Column("paastolaji", sqltypes.AutoString(), nullable=False),
         sa.Column("gco2kwh", sa.Float(), nullable=False),
         sa.PrimaryKeyConstraint("scenario", "year", "metodi", "paastolaji"),
         schema="energy",
@@ -389,7 +389,7 @@ def upgrade() -> None:
     op.create_table(
         "electricity_home_percapita",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("sahko_koti_as", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("mun", "scenario", "year"),
@@ -397,9 +397,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "heat_source_change",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("rakennus_tyyppi", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("lammitysmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
+        sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
+        sa.Column("lammitysmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("kaukolampo", sa.Float(), nullable=False),
         sa.Column("kevyt_oljy", sa.Float(), nullable=False),
         sa.Column("kaasu", sa.Float(), nullable=False),
@@ -412,7 +412,7 @@ def upgrade() -> None:
     op.create_table(
         "heating_degree_days",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("mun_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("mun_name", sqltypes.AutoString(), nullable=False),
         sa.Column("degreedays", sa.Integer(), nullable=False),
         sa.Column("multiplier", sa.Float(), nullable=False),
         sa.PrimaryKeyConstraint("mun"),
@@ -437,8 +437,8 @@ def upgrade() -> None:
     op.create_table(
         "buildings",
         sa.Column("xyind", sa.VARCHAR(length=13), nullable=False),
-        sa.Column("rakv", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("energiam", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("rakv", sqltypes.AutoString(), nullable=False),
+        sa.Column("energiam", sqltypes.AutoString(), nullable=False),
         sa.Column("rakyht_lkm", sa.Integer(), nullable=False),
         sa.Column("teoll_lkm", sa.Integer(), nullable=False),
         sa.Column("varast_lkm", sa.Integer(), nullable=False),
@@ -569,7 +569,7 @@ def upgrade() -> None:
     op.create_table(
         "citizen_traffic_stress",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("jalkapyora", sa.Integer(), nullable=False),
         sa.Column("bussi", sa.Integer(), nullable=False),
@@ -604,7 +604,7 @@ def upgrade() -> None:
     op.create_table(
         "hlt_lookup",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("hlt_table", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("hlt_table", sqltypes.AutoString(), nullable=False),
         sa.PrimaryKeyConstraint("mun"),
         schema="traffic",
     )
@@ -621,9 +621,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "industr_performance",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("kmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("kmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("teoll_kaivos", sa.Integer(), nullable=False),
         sa.Column("teoll_elint", sa.Integer(), nullable=False),
         sa.Column("teoll_tekst", sa.Integer(), nullable=False),
@@ -645,9 +645,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "industr_transport_km",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("kmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("kmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("teoll_kaivos", sa.Integer(), nullable=False),
         sa.Column("teoll_elint", sa.Integer(), nullable=False),
         sa.Column("teoll_tekst", sa.Integer(), nullable=False),
@@ -670,9 +670,9 @@ def upgrade() -> None:
     op.create_table(
         "mode_power_distribution",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("kmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("kmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("kvoima_bensiini", sa.Float(), nullable=False),
         sa.Column("kvoima_etanoli", sa.Float(), nullable=False),
         sa.Column("kvoima_diesel", sa.Float(), nullable=False),
@@ -687,7 +687,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "power_fossil_share",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("share", sa.Float(), nullable=False),
         sa.PrimaryKeyConstraint("scenario", "year"),
@@ -695,9 +695,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "power_kwhkm",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("kmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("kmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("kvoima_bensiini", sa.Float(), nullable=False),
         sa.Column("kvoima_etanoli", sa.Float(), nullable=False),
         sa.Column("kvoima_diesel", sa.Float(), nullable=False),
@@ -712,9 +712,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "service_performance",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("kmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("kmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("myymal_hyper", sa.Float(), nullable=False),
         sa.Column("myymal_super", sa.Float(), nullable=False),
         sa.Column("myymal_pien", sa.Float(), nullable=False),
@@ -733,9 +733,9 @@ def upgrade() -> None:
     )
     op.create_table(
         "services_transport_km",
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("kmuoto", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("kmuoto", sqltypes.AutoString(), nullable=False),
         sa.Column("myymal_hyper", sa.Integer(), nullable=False),
         sa.Column("myymal_super", sa.Integer(), nullable=False),
         sa.Column("myymal_pien", sa.Integer(), nullable=False),
@@ -755,7 +755,7 @@ def upgrade() -> None:
     op.create_table(
         "workers_traffic_stress",
         sa.Column("mun", sa.Integer(), nullable=False),
-        sa.Column("scenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("jalkapyora", sa.Float(), nullable=False),
         sa.Column("bussi", sa.Float(), nullable=False),
@@ -768,13 +768,13 @@ def upgrade() -> None:
     op.create_table(
         "sessions",
         sa.Column("uuid", sa.VARCHAR(length=36), nullable=False),
-        sa.Column("user", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("user", sqltypes.AutoString(), nullable=True),
         sa.Column("startTime", sa.VARCHAR(length=15), nullable=False),
         sa.Column("baseYear", sa.Integer(), nullable=False),
         sa.Column("targetYear", sa.Integer(), nullable=True),
-        sa.Column("calculationScenario", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("method", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("electricityType", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("calculationScenario", sqltypes.AutoString(), nullable=False),
+        sa.Column("method", sqltypes.AutoString(), nullable=False),
+        sa.Column("electricityType", sqltypes.AutoString(), nullable=False),
         sa.Column("geomArea", postgresql.ARRAY(sa.Integer()), nullable=True),
         sa.PrimaryKeyConstraint("uuid", "startTime"),
         schema="user_output",

@@ -11,15 +11,15 @@ class __CO2Params(SQLModel):
     plan_transit: str | None = None
     plan_centers: str | None = None
     outputFormat: str | None = None
+    writeSessionInfo: bool | None = None
 
 
 class __CO2CalculateEmissionsParamsBase(__CO2Params):
-    calculationScenario: str = "wem"
+    calculationScenario: Literal["eu80", "kasvu", "muutos", "saasto", "wem", "pysahdys", "static"] = "wem"
     method: Literal["em", "hjm"] = "em"
     electricityType: Literal["hankinta", "tuotanto"] = "tuotanto"
     includeLongDistance: bool = True
     includeBusinessTravel: bool = True
-    writeSessionInfo: bool | None = None
 
 
 class __CO2GridProcessingParams(__CO2Params):
