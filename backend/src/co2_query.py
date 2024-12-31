@@ -13,7 +13,7 @@ from sqlalchemy.pool import NullPool
 from sqlmodel import Session, create_engine, text
 
 from db import engine
-from grid import import_grid
+from grid import Grid
 from ilmakalu_typing import (
     CO2Body,
     CO2CalculateEmissionsLoopParams,
@@ -90,7 +90,7 @@ class CO2Query(ABC):
                 centroids = gpd.GeoDataFrame.from_postgis(
                     "SELECT geom, id FROM delineations.centroids", self.db, crs=self.CRS
                 )
-            grid = pd.concat([grid, import_grid(mun, centroids)])
+            grid = pd.concat([grid, Grid(mun, centroids).get()])
 
         if not grid.empty:
             gpd.GeoDataFrame(grid, geometry=self.GEOM_COL, crs=self.CRS).to_postgis(  # type: ignore
