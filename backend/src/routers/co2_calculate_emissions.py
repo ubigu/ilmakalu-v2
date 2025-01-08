@@ -25,7 +25,7 @@ class CO2CalculateEmissions(CO2Query):
                 rak_korjaussaneeraus_tco2, rak_purku_tco2,
                 rak_uudis_tco2, sum_yhteensa_tco2, sum_lammonsaato_tco2,
                 sum_liikenne_tco2, sum_sahko_tco2, sum_rakentaminen_tco2,
-                sum_jatehuollon_paastot_tco2e
+                sum_jatehuollon_paastot_tco2e, sum_holidayhouses_tco2e
             FROM functions.CO2_CalculateEmissions(
                 municipalities => :municipalities,
                 aoi => :aoi,
