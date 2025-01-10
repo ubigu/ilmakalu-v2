@@ -44,7 +44,9 @@ RETURNS TABLE(
     sum_lammonsaato_tco2 real,
     sum_liikenne_tco2 real,
     sum_sahko_tco2 real,
-    sum_rakentaminen_tco2 real
+    sum_rakentaminen_tco2 real,
+    sum_jatehuollon_paastot_tco2e real,
+    sum_holidayhouses_tco2e real
 )
 AS $$
 DECLARE

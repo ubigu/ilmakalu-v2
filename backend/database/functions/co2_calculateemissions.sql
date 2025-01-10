@@ -1,53 +1,28 @@
-    CREATE SCHEMA IF NOT EXISTS functions;
+-- FUNCTION: functions.co2_calculateemissions(integer[], regclass, integer, character varying, character varying, character varying, integer, integer, regclass, regclass, regclass, boolean, boolean)
 
-    DROP FUNCTION IF EXISTS functions.CO2_CalculateEmissions;
-    CREATE OR REPLACE FUNCTION
-    functions.CO2_CalculateEmissions(
-        municipalities integer[],
-        aoi regclass, -- Tutkimusalue | area of interest
-        calculationYear integer, -- Calculation reference unit data year 
-        calculationScenario varchar default 'wem', -- PITKO-kehitysskenaario
-        method varchar default 'em', -- Päästöallokoinnin laskentamenetelmä
-        electricityType varchar default 'tuotanto', -- Sähkön päästölaji
-        baseYear integer default NULL, -- Laskennan lähtövuosi
-        targetYear integer default NULL, -- Laskennan tavoitevuosi
-        plan_areas regclass default NULL, -- Taulu, jossa käyttötarkoitusalueet tai vastaavat
-        plan_transit regclass default NULL, -- Taulu, jossa intensiivinen joukkoliikennejärjestelmä
-        plan_centers regclass default NULL, -- Taulu, jossa kkreskusverkkotiedot 
-        includeLongDistance boolean default true,
-        includeBusinessTravel boolean default true
-    )
-    RETURNS TABLE(
-        geom geometry(Polygon, 3067),
-        xyind varchar(13),
-        mun int,
-        zone bigint,
-        holidayhouses int,
-        year date,
-        floorspace int,
-        pop smallint,
-        employ smallint,
-        tilat_vesi_tco2 real,
-        tilat_lammitys_tco2 real,
-        tilat_jaahdytys_tco2 real,
-        sahko_kiinteistot_tco2 real,
-        sahko_kotitaloudet_tco2 real,
-        sahko_palv_tco2 real,
-        sahko_tv_tco2 real,
-        liikenne_as_tco2 real,
-        liikenne_tp_tco2 real,
-        liikenne_tv_tco2 real,
-        liikenne_palv_tco2 real,
-        rak_korjaussaneeraus_tco2 real,
-        rak_purku_tco2 real,
-        rak_uudis_tco2 real,
-        sum_yhteensa_tco2 real,
-        sum_lammonsaato_tco2 real,
-        sum_liikenne_tco2 real,
-        sum_sahko_tco2 real,
-        sum_rakentaminen_tco2 real
-    )
-    AS $$
+-- DROP FUNCTION IF EXISTS functions.co2_calculateemissions(integer[], regclass, integer, character varying, character varying, character varying, integer, integer, regclass, regclass, regclass, boolean, boolean);
+
+CREATE OR REPLACE FUNCTION functions.co2_calculateemissions(
+	municipalities integer[],
+	aoi regclass,
+	calculationyear integer,
+	calculationscenario character varying DEFAULT 'wem'::character varying,
+	method character varying DEFAULT 'em'::character varying,
+	electricitytype character varying DEFAULT 'tuotanto'::character varying,
+	baseyear integer DEFAULT NULL::integer,
+	targetyear integer DEFAULT NULL::integer,
+	plan_areas regclass DEFAULT NULL::regclass,
+	plan_transit regclass DEFAULT NULL::regclass,
+	plan_centers regclass DEFAULT NULL::regclass,
+	includelongdistance boolean DEFAULT true,
+	includebusinesstravel boolean DEFAULT true)
+    RETURNS TABLE(geom geometry, xyind character varying, mun integer, zone bigint, holidayhouses integer, year date, floorspace integer, pop smallint, employ smallint, tilat_vesi_tco2 real, tilat_lammitys_tco2 real, tilat_jaahdytys_tco2 real, sahko_kiinteistot_tco2 real, sahko_kotitaloudet_tco2 real, sahko_palv_tco2 real, sahko_tv_tco2 real, liikenne_as_tco2 real, liikenne_tp_tco2 real, liikenne_tv_tco2 real, liikenne_palv_tco2 real, rak_korjaussaneeraus_tco2 real, rak_purku_tco2 real, rak_uudis_tco2 real, sum_yhteensa_tco2 real, sum_lammonsaato_tco2 real, sum_liikenne_tco2 real, sum_sahko_tco2 real, sum_rakentaminen_tco2 real, sum_jatehuollon_paastot_tco2e real, sum_holidayhouses_tco2e real) 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
+
+AS $BODY$
     DECLARE
         loopYear integer;
         localbuildings boolean;
@@ -280,7 +255,9 @@
             0::real sum_lammonsaato_tco2,
             0::real sum_liikenne_tco2,
             0::real sum_sahko_tco2,
-            0::real sum_rakentaminen_tco2
+            0::real sum_rakentaminen_tco2,
+            0::real sum_jatehuollon_paastot_tco2e,
+			0::real sum_holidayhouses_tco2e
         FROM grid g
             WHERE (COALESCE(g.pop,0) > 0 OR COALESCE(g.employ,0) > 0 )
                 OR g.xyind::varchar IN (SELECT DISTINCT ON (grid2.xyind) grid2.xyind::varchar FROM grid2);
@@ -625,6 +602,27 @@
             GROUP BY g.xyind) pop
         WHERE pop.xyind = results.xyind;
 
+        /*jatehuollon asukaskohtaisten päästöjen ennustemalli*/
+        UPDATE results SET
+            sum_jatehuollon_paastot_tco2e = COALESCE(pop.waste_emissions_per_person_sum, 0)
+        FROM
+            (SELECT g.xyind,
+                ((EXP(79.702742 - 0.040097 * calculationYear)) * g.pop) as waste_emissions_per_person_sum
+            FROM grid g
+                WHERE (g.pop IS NOT NULL AND g.pop > 0)
+            GROUP BY g.xyind, g.pop) pop
+        WHERE pop.xyind = results.xyind;
+		
+		 /*mökkien päästöt*/
+        UPDATE results SET
+            sum_holidayhouses_tco2e = COALESCE(holidayhouse.holidayhouses_emissions_sum * grams_to_tons, 0)
+        FROM (SELECT g.xyind,
+            functions.co2_holidayhouses(calculationyear, method, electricitytype, g.holidayhouses, calculationscenario) AS holidayhouses_emissions_sum
+            FROM grid g
+                WHERE g.holidayhouses IS NOT NULL AND g.holidayhouses > 0
+        GROUP BY g.xyind, g.holidayhouses) holidayhouse
+        WHERE holidayhouse.xyind = results.xyind;
+
         /* Add categorical total sums to results */
         UPDATE results r SET
             year = to_date(loopYear::varchar, 'YYYY'),
@@ -653,7 +651,9 @@
                 COALESCE(r.sum_lammonsaato_tco2,0) +
                 COALESCE(r.sum_liikenne_tco2,0) +
                 COALESCE(r.sum_sahko_tco2,0) +
-                COALESCE(r.sum_rakentaminen_tco2,0);
+                COALESCE(r.sum_rakentaminen_tco2,0) +
+                COALESCE(r.sum_jatehuollon_paastot_tco2e, 0) +
+				COALESCE(r.sum_holidayhouses_tco2e, 0);
 
         /* Lisätään päivitetyt kerrosneliömetrisummat kokonaiskerrosneliömäärään */
         UPDATE results res
@@ -680,4 +680,8 @@
         DROP TABLE results;
 
     END;
-    $$ LANGUAGE plpgsql;
+    
+$BODY$;
+
+ALTER FUNCTION functions.co2_calculateemissions(integer[], regclass, integer, character varying, character varying, character varying, integer, integer, regclass, regclass, regclass, boolean, boolean)
+    OWNER TO docker;
