@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from db import init_db
 from routers import co2_calculate_emissions, co2_calculate_emissions_loop, co2_grid_processing
 
+""" Initialize database and include routers at api startup """
 init_db()
 
 app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False})

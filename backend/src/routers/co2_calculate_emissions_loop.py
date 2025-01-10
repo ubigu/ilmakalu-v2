@@ -1,11 +1,12 @@
-from typing import Annotated, Literal
+from typing import cast
 
-from fastapi import APIRouter, Body, Header, Query
-from sqlmodel import SQLModel, text
+from fastapi import APIRouter, Response
+from sqlalchemy.sql.expression import TextClause
+from sqlmodel import text
 
 from co2_query import CO2Query
+from ilmakalu_typing import CO2Body, CO2CalculateEmissionsLoopParams, CO2Headers
 from responses import responses
-from typings import UserInput
 
 router = APIRouter(
     prefix="/co2-calculate-emissions-loop",
@@ -14,8 +15,12 @@ router = APIRouter(
 
 
 class CO2CalculateEmissionsLoop(CO2Query):
-    def get_stmt(self):
-        p = self.params
+    def get_stmt(self) -> TextClause:
+        """Implementation of the get_stmt method. Constructs the SQL statement
+        that calls CO2_CalculateEmissionsLoop function with the HTTP parameters
+
+        :returns: The SQL statement as a literal SQL text fragment"""
+        p = cast(CO2CalculateEmissionsLoopParams, self.params)
         return text(
             """SELECT
                 ST_AsText(geom) as geom, xyind, mun, zone, holidayhouses,
@@ -59,34 +64,17 @@ class CO2CalculateEmissionsLoop(CO2Query):
         )
 
 
-class __CommonParams(SQLModel):
-    baseYear: int
-    targetYear: int
-    mun: Annotated[list[int], Query()] = []
-    aoi: str | None = None
-    calculationScenario: str = "wem"
-    method: Literal["em", "hjm"] = "em"
-    electricityType: Literal["hankinta", "tuotanto"] = "tuotanto"
-    plan_areas: str | None = None
-    plan_transit: str | None = None
-    plan_centers: str | None = None
-    includeLongDistance: bool = True
-    includeBusinessTravel: bool = True
-    outputFormat: str | None = None
-
-
-class __CommonHeaders(SQLModel):
-    uuid: str | None = None
-    user: str | None = None
-
-
 @router.get(
     "/",
     responses=responses,
 )
-def CO2_CalculateEmissionsLoop_get(
-    params: Annotated[__CommonParams, Query()], headers: Annotated[__CommonHeaders, Header()]
-):
+def CO2_CalculateEmissionsLoop_get(params: CO2CalculateEmissionsLoopParams, headers: CO2Headers) -> Response:
+    """GET endpoint for /co2-calculate-emissions-loop/
+
+    :param params: HTTP parameters
+    :param headers: HTTP headers
+    :returns: The result of the CO2_CalculateEmissionsLoop function as a response object
+    """
     return CO2CalculateEmissionsLoop(params=params, headers=headers).execute()
 
 
@@ -95,8 +83,15 @@ def CO2_CalculateEmissionsLoop_get(
     responses=responses,
 )
 def CO2_CalculateEmissionsLoop_post(
-    params: Annotated[__CommonParams, Query()],
-    headers: Annotated[__CommonHeaders, Header()],
-    body: Annotated[UserInput, Body()],
-):
+    params: CO2CalculateEmissionsLoopParams,
+    headers: CO2Headers,
+    body: CO2Body,
+) -> Response:
+    """POST endpoint for /co2-calculate-emissions-loop/
+
+    :param params: HTTP parameters
+    :param body: The body of the request. That is, input layers and/or connection parameters
+    :param headers: HTTP headers
+    :returns: The result of the CO2_CalculateEmissionsLoop function as a response object
+    """
     return CO2CalculateEmissionsLoop(params=params, body=body, headers=headers).execute()

@@ -2,6 +2,8 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import REAL
 from sqlmodel import Field, SQLModel
 
+"""SQLModel models for the schema 'built'"""
+
 schema = "built"
 
 

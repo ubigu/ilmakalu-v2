@@ -1,5 +1,7 @@
 from sqlmodel import Field, SQLModel
 
+"""SQLModel models for the schema 'traffic'"""
+
 schema = "traffic"
 
 

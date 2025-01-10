@@ -2,6 +2,8 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import REAL, SMALLINT, VARCHAR
 from sqlmodel import Field, SQLModel
 
+"""SQLModel models for the schema 'grid_globals'"""
+
 schema = "grid_globals"
 
 
