@@ -24,11 +24,9 @@ DECLARE
 BEGIN
 
 /* Palautetaan nolla, mikäli ruudun kerrosala on 0, -1 tai NULL */
-/* Returning zero, if grid cell has 0, -1 or NULL built floor area */
 IF buildingsRemoval <= 0 OR buildingsRemoval IS NULL THEN
     RETURN 0;
 /* Muussa tapauksessa jatka laskentaan */
-/* In other cases continue with the calculation */
 ELSE
 
     /* Haetaan laskentavuoden ja kehitysskenaarion perusteella rakennustyyppikohtaiset uudisrakentamisen energiankulutuksen kasvihuonekaasupäästöt */
