@@ -41,8 +41,7 @@ BEGIN
                 FROM energy.electricity el
                     WHERE el.year = %3$L 
                     AND el.scenario = %2$L
-                    AND el.metodi = ''em''
-                    AND el.paastolaji = ''tuotanto'' LIMIT 1
+                    LIMIT 1
             )
             -- rakennustyypissä tapahtuvan toiminnan sähköintensiteetti kerrosneliömetriä kohti [kWh/m2]
             SELECT ry.%1$I * %4$L::int * el.gco2
