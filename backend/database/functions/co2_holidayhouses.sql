@@ -4,8 +4,6 @@
 
 CREATE OR REPLACE FUNCTION functions.co2_holidayhouses(
 	calculationyear integer,
-	method character varying,
-	electricitytype character varying,
 	holidayhouses integer,
 	calculationscenario character varying)
     RETURNS real
@@ -22,13 +20,14 @@ BEGIN
         RETURN 0;
     END IF;
 
-    -- Fetch the e.gco2kWh value based on the calculationyear, method, and electricitytype
+    -- Fetch the e.gco2kWh value based on the calculationyear and scenario
     EXECUTE FORMAT('
         SELECT e.gco2kWh
         FROM energy.electricity e
-        WHERE e.year = %L AND e.metodi = %L AND e.paastolaji = %L AND e.scenario = %L
+            WHERE e.year::int = %1$L::int 
+                AND e.scenario = %2$L
         LIMIT 1', 
-        calculationyear, method, electricitytype, calculationscenario) INTO e_gco2kWh;
+    calculationyear, calculationscenario) INTO e_gco2kWh;
 
     -- Calculate holidayhouses emissions
     holidayhouses_emissions := ((holidayhouses * 4100) * e_gco2kWh) + (holidayhouses * 416.58 * 1000);
