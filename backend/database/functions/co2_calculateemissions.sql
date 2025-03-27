@@ -6,9 +6,7 @@ CREATE OR REPLACE FUNCTION functions.co2_calculateemissions(
 	municipalities integer[],
 	aoi regclass,
 	calculationyear integer,
-	calculationscenario character varying DEFAULT 'wem'::character varying,
-	method character varying DEFAULT 'em'::character varying,
-	electricitytype character varying DEFAULT 'tuotanto'::character varying,
+	calculationscenario character varying DEFAULT 'wemp'::character varying,
 	baseyear integer DEFAULT NULL::integer,
 	targetyear integer DEFAULT NULL::integer,
 	plan_areas regclass DEFAULT NULL::regclass,
@@ -30,9 +28,9 @@ AS $BODY$
         grams_to_tons real default 0.000001; -- Muuntaa grammat tonneiksi (0.000001) [t/g].
     BEGIN
 
-        /* Jos valitaan 'static'-skenaario, eli huomioidaan laskennassa vain yhdyskuntarakenteen muutos, asetetaan PITKO-skenaarioksi 'wem'.
+        /* Jos valitaan 'static'-skenaario, eli huomioidaan laskennassa vain yhdyskuntarakenteen muutos, asetetaan PEIKKO-skenaarioksi 'wemp'.
             Samalla sidotaan laskennan referenssivuodeksi laskennan aloitusyear.
-            If the 'static' skenaario is selected, i.e. only changes in the urban structure are taken into account, set the PITKO skenaario to 'wem'.
+            If the 'static' skenaario is selected, i.e. only changes in the urban structure are taken into account, set the PEIKKO skenaario to 'wemp'.
             At the same time, fix the calculation reference year into current year / baseYear */
         /* Kun käytetään static-skenaariota tulevaisuuslaskennassa, aseta laskenta lähtövuoden referenssitasolle */
         /* When using a 'static' scenario in the future scenario calculation, set the calculation reference year to baseYear */
@@ -43,7 +41,7 @@ AS $BODY$
 
         IF calculationScenario = 'static'
             THEN
-                calculationScenario := 'wem';
+                calculationScenario := 'wemp';
                 calculationYear := baseYear;
         END IF;
 
@@ -282,32 +280,32 @@ AS $BODY$
             FROM
                 (SELECT DISTINCT ON (g2.xyind) g2.xyind,
                 /* Käyttöveden lämmitys | Heating of water */
-                SUM((SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv, method, g2.energiam)))
+                SUM((SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv,, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv, g2.energiam)))
                 AS property_water_gco2,
                 /* Rakennusten lämmitys | Heating of buildings */
-                SUM((SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv, method, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv, method, g2.energiam)))
+                SUM((SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv, g2.energiam)))
                 AS property_heat_gco2
                 FROM grid2 g2
                     GROUP BY g2.xyind) buildings
@@ -321,32 +319,32 @@ AS $BODY$
             FROM
                 (SELECT DISTINCT ON (g2.xyind) g2.xyind,
                 /* Käyttöveden lämmitys | Heating of water */
-                SUM((SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv, method)))
+                SUM((SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv)))
                 AS property_water_gco2,
                 /* Rakennusten lämmitys | Heating of buildings */
-                SUM((SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv, method)) +
-                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv, method)))
+                SUM((SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, erpien_ala, 'erpien', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, rivita_ala, 'rivita', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, askert_ala, 'askert', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast', g2.rakv)) +
+                    (SELECT functions.CO2_PropertyHeat(g2.mun, calculationYear, calculationScenario, muut_ala, 'muut', g2.rakv)))
                 AS property_heat_gco2
                 FROM grid2 g2
                 GROUP BY g2.xyind) buildings
@@ -617,7 +615,7 @@ AS $BODY$
         UPDATE results SET
             sum_holidayhouses_tco2e = COALESCE(holidayhouse.holidayhouses_emissions_sum * grams_to_tons, 0)
         FROM (SELECT g.xyind,
-            functions.co2_holidayhouses(calculationyear, method, electricitytype, g.holidayhouses, calculationscenario) AS holidayhouses_emissions_sum
+            functions.co2_holidayhouses(calculationyear, g.holidayhouses, calculationscenario) AS holidayhouses_emissions_sum
             FROM grid g
                 WHERE g.holidayhouses IS NOT NULL AND g.holidayhouses > 0
         GROUP BY g.xyind, g.holidayhouses) holidayhouse
