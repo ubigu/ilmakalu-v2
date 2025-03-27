@@ -58,8 +58,6 @@ BEGIN
             FROM energy.electricity el
                 WHERE el.year = %1$L
                 AND el.scenario = %2$L
-                AND el.metodi = ''em''
-                AND el.paastolaji = ''tuotanto''
         )
         -- Lasketaan päästöt CO2-ekvivalentteina | Calculate emissions as gCO2-equivalents 
         SELECT %5$L * kwhm2.kwh * gco2kwh.gco2 * change.change
