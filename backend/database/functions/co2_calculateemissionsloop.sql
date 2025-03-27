@@ -6,8 +6,6 @@ functions.CO2_CalculateEmissionsLoop(
     municipalities integer[],
     aoi regclass, -- Tutkimusalue | area of interest
     calculationScenario varchar, -- PITKO:n mukainen scenario
-    method varchar, -- Päästöallokointimenetelmä, 'em' tai 'hjm'
-    electricityType varchar, -- Sähkön päästölaji, 'hankinta' tai 'tuotanto'
     baseYear integer, -- Laskennan lähtövuosi
     targetYear integer, -- Laskennan tavoitevuosi
     plan_areas regclass default null, -- Taulu, jossa käyttötarkoitusalueet tai vastaavat
@@ -64,13 +62,13 @@ BEGIN
             CREATE TEMP TABLE res AS
             SELECT * FROM
                 functions.CO2_CalculateEmissions(
-                    municipalities, aoi, calculationYear, calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_transit, plan_centers, includeLongDistance, includeBusinessTravel
+                    municipalities, aoi, calculationYear, calculationScenario, baseYear, targetYear, plan_areas, plan_transit, plan_centers, includeLongDistance, includeBusinessTravel
                 );
         ELSE 
             INSERT INTO res
             SELECT * FROM
                 functions.CO2_CalculateEmissions(
-                    municipalities, aoi, calculationYear, calculationScenario, method, electricityType, baseYear, targetYear, plan_areas, plan_transit, plan_centers, includeLongDistance, includeBusinessTravel
+                    municipalities, aoi, calculationYear, calculationScenario, baseYear, targetYear, plan_areas, plan_transit, plan_centers, includeLongDistance, includeBusinessTravel
                 );
         END IF;
         
