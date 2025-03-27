@@ -20,7 +20,6 @@ CREATE INDEX IF NOT EXISTS spaces_kwhm2_index ON built.spaces_kwhm2 (scenario, r
 CREATE INDEX IF NOT EXISTS water_kwhm2_index ON built.water_kwhm2 (scenario, rakv, rakennus_tyyppi);
 
 -- Schema ENERGY
-CREATE INDEX IF NOT EXISTS cooling_gco2kwh_index ON energy.cooling_gco2kwh (scenario, year);
 CREATE INDEX IF NOT EXISTS district_heating_index ON energy.district_heating (scenario, mun, year);
 CREATE INDEX IF NOT EXISTS electricity_index ON energy.electricity (scenario, year);
 CREATE INDEX IF NOT EXISTS electricity_home_percapita_index ON energy.electricity_home_percapita (mun, scenario, year);
