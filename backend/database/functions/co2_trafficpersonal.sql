@@ -178,8 +178,7 @@ END IF;
         FROM energy.electricity el
             WHERE el.year::int = %1$s::int
             AND el.scenario::varchar = %2$L
-            AND el.metodi = ''em''
-            AND el.paastolaji = ''tuotanto'' LIMIT 1
+            LIMIT 1
     ), gco2kwh_matrix as (
         SELECT 
         -- Käyttövoimien  kasvihuonekaasujen ominaispäästökerroin käytettyä energiayksikköä kohti [gCO2-ekv/kWh].
