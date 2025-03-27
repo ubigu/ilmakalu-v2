@@ -34,7 +34,6 @@ functions.CO2_PropertyHeat(
     floorSpace int, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna. Arvo riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta ja paikallista aineistoa käytettäessä lämmitysmuodosta [m2]
     buildingType varchar, -- buildingType, esim. 'erpien', 'rivita'S
     buildingYear int, -- buildingYear decade tai -vuosi (2017 alkaen)
-    method varchar,
     heatSource varchar default null -- Rakennuksen lämmityksessä käytettävä primäärinen energiamuoto 'energiam', mikäli tällainen on lisätty YKR/rakennusdataan
 )
 RETURNS real AS
@@ -97,12 +96,10 @@ BEGIN
                 SELECT %6$I as kwhm2
                 FROM built.spaces_kwhm2
                     WHERE scenario = %1$L AND rakv = %2$L AND year = %4$L LIMIT 1),
-                heating as (
-                    SELECT ((1 - 0.005 * (%4$L::int - 2015)) * multiplier)::real as scaler
-                        FROM energy.heating_degree_days dd
-                            WHERE dd.mun::int = %3$L
-                ) SELECT spaces.kwhm2 * heating.scaler * %5$L
-                    FROM spaces, heating
+                heatingthen as (SELECT degreedays WHERE dd.year::int = 2018 AND dd.mun::int = %3$L FROM energy.heating_degree_days dd LIMIT 1),
+                heatingnow as (SELECT degreedays WHERE dd.year::int = %4$L AND dd.mun::int = %3$L FROM energy.heating_degree_days dd LIMIT 1)
+                ) SELECT spaces.kwhm2 * heatingnow.degreedays/heatingthen.degreedays * %5$L
+                    FROM spaces, heatingthen, heatingnow
                 ', calculationScenario, buildingYear, municipality, calculationYear, floorSpace, buildingType
         ) INTO heating_kwh;
 
@@ -110,24 +107,22 @@ BEGIN
         /* Emission values for district heating (first finding out the name of the correct district heating table) */
         EXECUTE FORMAT(
             'WITH district_heating AS (
-                SELECT %3$I as gco2kwh -- Laskentavuonna kulutetun kaukolämmön ominaispäästökerroin [gCO2-ekv/kWh]
+                SELECT gco2kwh -- Laskentavuonna kulutetun kaukolämmön ominaispäästökerroin [gCO2-ekv/kWh]
                 FROM energy.district_heating heat
-                WHERE heat.year = %1$L
-                AND heat.scenario = %2$L
-                AND heat.mun::int = %4$L
-                ORDER BY %3$I DESC LIMIT 1
+                    WHERE heat.year = %1$L
+                        AND heat.scenario = %2$L
+                        AND heat.mun::int = %3$L
+                        ORDER BY %3$I DESC LIMIT 1
             ), electricity AS (
                 SELECT el.gco2kwh::int AS gco2kwh
                 FROM energy.electricity el
                     WHERE el.year = %1$L
                     AND el.scenario = %2$L
-                    AND el.metodi = ''em''
-                    AND el.paastolaji = ''tuotanto''
             ), spaces AS (
                 --  Lämmönlähteiden kasvihuonekaasupäästöjen ominaispäästökertoimet [gCO2-ekv/kWh]
                 SELECT array[kevyt_oljy, kaasu, puu, muu_lammitys] as gco2kwh 
                 FROM energy.spaces_gco2kwh t
-                WHERE t.vuosi = %1$L
+                WHERE t.year = %1$L
             ) SELECT
                 array[
                     district_heating.gco2kwh, -- kaukolämpö
@@ -138,8 +133,7 @@ BEGIN
                     electricity.gco2kwh, -- maalampo
                     spaces.gco2kwh[4] -- muu_lammitys
                 ] FROM district_heating, spaces, electricity
-            ',
-            calculationYear, calculationScenario, method, municipality
+            ', calculationYear, calculationScenario, municipality
         ) INTO gco2kwh_a;
 
             /* Lasketaan päästöt tilanteessa, jossa käytetään paikallista rakennusaineistoa */
