@@ -1,0 +1,12 @@
+alembic
+fastapi[standard]
+sqlmodel
+uvicorn
+psycopg2
+pandas
+geoalchemy2
+geopandas
+lxml
+pygeojson
+fiona
+requests

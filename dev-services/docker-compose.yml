@@ -7,12 +7,23 @@ volumes:
     external: false
     
 services:
+  ilmakalu_api:
+    build:
+      context: ./../backend
+      dockerfile: Dockerfile
+    ports:
+      - '4000:4000'
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ilmakalu_user:5432/ilmakalu_data
+    depends_on:
+      - ilmakalu_user
   ilmakalu_user:
     image: kartoza/postgis:13.0
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ilmakalu_data
 #      POSTGRES_MULTIPLE_EXTENSIONS: postgis,"uuid-ossp"
       DEFAULT_CTYPE: 'fi_FI.UTF8'
       DEFAULT_COLLATION: 'fi_FI.UTF8'
@@ -24,5 +35,9 @@ services:
       - "65432:5432"
     restart: on-failure
     healthcheck:
-     test: "exit 0"
+      test: pg_isready -h db
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 0s
     shm_size: 1g
