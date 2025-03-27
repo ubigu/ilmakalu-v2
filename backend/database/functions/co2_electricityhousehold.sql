@@ -43,8 +43,6 @@ BEGIN
                     FROM energy.electricity el
                         WHERE el.year = %1$L
                         AND el.scenario = %2$L
-                        AND el.metodi = ''em''
-                        AND el.paastolaji = ''tuotanto''
                 )
                 SELECT %3$L * percapita.kwh * gco2kwh.gco2
                 FROM electricity_home_percapita percapita, electricity_gco2kwh gco2kwh
@@ -67,8 +65,6 @@ BEGIN
                     FROM energy.electricity el
                         WHERE el.year = %1$L
                         AND el.scenario = %2$L
-                        AND el.metodi = ''em''
-                        AND el.paastolaji = ''tuotanto''
                 )
                 SELECT  %4$L * (devices.kwh + lights.kwh) * gco2kwh.gco2
                 FROM electricity_home_devices devices,   
