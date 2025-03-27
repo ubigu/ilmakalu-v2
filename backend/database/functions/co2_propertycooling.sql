@@ -38,9 +38,6 @@ BEGIN
     /* Dummy-kertoimet jäähdytysmuodoille | Dummy multipliers by method of cooling */
     /* Jäähdytyksen ominaispäästökertoimet | Emission values for cooling */
 
-    -- SELECT array[kaukok, sahko, pumput, muu] FROM energy.cooling_gco2kwh ej WHERE ej.year = calculationYear AND ej.scenario = calculationScenario INTO j_gco2kwh;
-    -- SELECT array(SELECT unnest(array[0, 1, 1, 0]) * sahko_gco2kwh + unnest(j_gco2kwh) * unnest(array[1, 0, 0, 1])) INTO jaahdytys_gco2kwh;
-
         -- Tällä hetkellä luvut sähkön osalta, jaahdytys_sahko = aina 1
         EXECUTE FORMAT(
             'WITH coolingchange AS
@@ -58,8 +55,6 @@ BEGIN
                 FROM energy.electricity el
                     WHERE el.year = %3$L
                     AND el.scenario = %2$L
-                    AND el.metodi = ''em''
-                    AND el.paastolaji = ''tuotanto''
             )
             SELECT coolingchange.change * coolingkwhm2.kwhm2 * %6$L * gco2kwh.gco2 
                 FROM coolingchange, coolingkwhm2, gco2kwh
