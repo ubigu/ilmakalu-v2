@@ -8,7 +8,7 @@ Teollisuus- ja varastorakennuksiin sisältyvät teollisuusrakennukset (teoll) ja
 */
 
 /*  Test : 
-    SELECT co2_traffic_iwhs_co2('837', 2021::int, 'wem', 3000::int, 'myymal_hyper', array[23, 53, 25, 43, 66, 22, 11, 5, 4])
+    SELECT co2_traffic_iwhs_co2('837', 2021::int, 'wemp', 3000::int, 'myymal_hyper', array[23, 53, 25, 43, 66, 22, 11, 5, 4])
 */
 DROP FUNCTION IF EXISTS functions.CO2_TrafficIWHS;
 CREATE OR REPLACE FUNCTION
@@ -69,8 +69,7 @@ BEGIN
             FROM energy.electricity el
                 WHERE el.year = %1$L
                 AND el.scenario = %2$L
-                AND el.metodi = ''em''
-                AND el.paastolaji = ''tuotanto'' LIMIT 1
+                LIMIT 1
         ),
         gco2kwh_matrix as (
             SELECT 
