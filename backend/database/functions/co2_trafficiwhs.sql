@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION
 functions.CO2_TrafficIWHS(
     municipality integer, -- Municipality, for which the values are calculated
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
-    calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario
+    calculationScenario varchar, -- PEIKKO:n mukainen kehitysskenaario
     floorSpace integer, -- Rakennusten kerrosala tai lukumäärä (vain teoll ja varast - tapauksissa)
     buildingType varchar -- buildingType | Building type. esim. | e.g. 'erpien', 'rivita'
 )

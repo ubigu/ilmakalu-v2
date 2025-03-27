@@ -1,15 +1,9 @@
 /* Sähkön käyttö, teollisuus, varastot ja palvelut | Electricity consumption, industry, warehouses and services
 
-Palvelusektorin sekä teollisuuden ja varastojen sähkön käyttö muuhun kuin rakennusten lämmitykseen, jäähdytykseen ja kiinteistön laitteisiin sahko_palv_kwh [kWh/a] perustuu kaavaan
-
-    sahko_ptv_kwh  = rakennus_ala * sahko_ptv_kwhm2
-
-Palvelusektorin sekä teollisuuden ja varastojen muuhun lämmitykseen ja kiinteistöshköön käytetyn sähkön kasvihuonekaasupäästöt sahko_palv_co2 [CO2-ekv/a] ovat 
-
-    sahko_ptv_co2 = sahko_ptv_kwh  * sahko_gco2kwh
-
+Palvelusektorin sekä teollisuuden ja varastojen sähkön käyttö ja päästöt muuhun kuin rakennusten lämmitykseen, jäähdytykseen ja kiinteistön laitteisiin perustuu kaavoihin
+    sähkön käyttö kWh/a = kerrosala * [kWh/m2/a] 
+    sähkön käytön päästöt gco2e/a = sähkön käyttö kWh/a * sähkön ominaispäästöt gco2/kWh
 Teollisuus- ja varastorakennusten sähkön käyttö sisältää myös niiden kiinteistösähkön kulutuksen.
-
 */
 
 CREATE SCHEMA IF NOT EXISTS functions;
@@ -17,7 +11,7 @@ DROP FUNCTION IF EXISTS functions.CO2_ElectricityIWHS;
 CREATE OR REPLACE FUNCTION
 functions.CO2_ElectricityIWHS(
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
-    calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
+    calculationScenario varchar, -- PEIKKO-kehitysskenaario | PEIKKO development scenario
     floorSpace real, -- rakennustyypin kerrosala YKR-ruudussa laskentavuonna [m2]. Riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta.
     buildingType varchar -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'
 )
@@ -33,20 +27,19 @@ BEGIN
         RETURN 0;
     ELSE
 
+        /* Kulutetun sähkön ominaispäästökerroin [gCO2-ekv/kWh] * 
+        Rakennustyypissä tapahtuvan toiminnan sähköintensiteetti kerrosneliömetriä kohti [kWh/m2] * kerrosala */
         EXECUTE FORMAT('
-            WITH 
-            electricity_gco2kwh AS (
-                -- Kulutetun sähkön ominaispäästökerroin [gCO2-ekv/kWh]
-                SELECT el.gco2kwh::real AS gco2 
-                FROM energy.electricity el
-                    WHERE el.year = %3$L 
-                    AND el.scenario = %2$L
-                    LIMIT 1
-            )
-            -- rakennustyypissä tapahtuvan toiminnan sähköintensiteetti kerrosneliömetriä kohti [kWh/m2]
+            WITH electricity_gco2kwh AS 
+                (SELECT el.gco2kwh::real AS gco2 
+                    FROM energy.electricity el
+                        WHERE el.year = %3$L 
+                        AND el.scenario = %2$L
+                        LIMIT 1
+                )
             SELECT ry.%1$I * %4$L::int * el.gco2
-            FROM built.electricity_iwhs_kwhm2 ry, electricity_gco2kwh el
-                WHERE ry.scenario = %2$L AND ry.year = %3$L LIMIT 1',
+                FROM built.electricity_iwhs_kwhm2 ry, electricity_gco2kwh el
+                    WHERE ry.scenario = %2$L AND ry.year = %3$L LIMIT 1',
             buildingType,
             calculationScenario,
             calculationYear,

@@ -20,7 +20,7 @@ functions.CO2_BuildRenovate(
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar,  -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'
     buildingYear integer, -- Rakennusvuosikymmen tai -vuosi (2017 alkaen) | Building decade or year (2017 onwards)
-    calculationScenario varchar) -- PITKO-kehitysskenaario | PITKO development scenario
+    calculationScenario varchar) -- PEIKKO-kehitysskenaario | PEIKKO development scenario
 RETURNS real AS
 $$
 DECLARE

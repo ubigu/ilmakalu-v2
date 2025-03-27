@@ -10,7 +10,7 @@ functions.CO2_BuildConstruct(
 	floorSpace real, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna [m2]. Lukuarvo riippuu laskentavuodesta ja rakennuksen tyypistä.
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar, -- Rakennustyyppi, esim. 'erpien', 'rivita'
-    calculationScenario varchar -- PITKO:n mukainen kehitysskenaario
+    calculationScenario varchar -- PEIKKO:n mukainen kehitysskenaario
 )
 RETURNS real AS
 $$

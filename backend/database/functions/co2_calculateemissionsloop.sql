@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION
 functions.CO2_CalculateEmissionsLoop(
     municipalities integer[],
     aoi regclass, -- Tutkimusalue | area of interest
-    calculationScenario varchar, -- PITKO:n mukainen scenario
+    calculationScenario varchar, -- PEIKKO:n mukainen scenario
     baseYear integer, -- Laskennan lähtövuosi
     targetYear integer, -- Laskennan tavoitevuosi
     plan_areas regclass default null, -- Taulu, jossa käyttötarkoitusalueet tai vastaavat

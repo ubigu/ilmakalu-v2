@@ -17,7 +17,7 @@ CREATE OR REPLACE FUNCTION
 functions.CO2_PropertyWater(
 	municipality int,
     calculationYear integer, -- Year based on which emission values are calculated
-    calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario
+    calculationScenario varchar, -- PEIKKO:n mukainen kehitysskenaario
     floorSpace int, -- Rakennustyypin ikäluokkakohtainen kerrosala YKR-ruudussa laskentavuonna. Lukuarvo riippuu laskentavuodesta sekä rakennuksen tyypistä ja ikäluokasta [m2]
     buildingType varchar, -- buildingType, esim. 'erpien', 'rivita'
     buildingYear integer, -- buildingYearkymmen tai -vuosi (2017 alkaen)

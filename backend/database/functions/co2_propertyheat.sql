@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION
 functions.CO2_PropertyHeat(
     municipality int,
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
-    calculationScenario varchar, -- PITKO:n mukainen kehitysskenaario
+    calculationScenario varchar, -- PEIKKO:n mukainen kehitysskenaario
     floorSpace int, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna. Arvo riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta ja paikallista aineistoa käytettäessä lämmitysmuodosta [m2]
     buildingType varchar, -- buildingType, esim. 'erpien', 'rivita'S
     buildingYear int, -- buildingYear decade tai -vuosi (2017 alkaen)

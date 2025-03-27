@@ -7,7 +7,7 @@ functions.CO2_UpdateBuildingsLocal(
     calculationYear int, -- [year based on which emission values are calculated, min, max calculation years]
     baseYear int,
 	targetYear int,
-    kehitysskenaario varchar -- PITKO:n mukainen kehitysskenaario
+    kehitysskenaario varchar -- PEIKKO:n mukainen kehitysskenaario
 )
 RETURNS TABLE (
     xyind varchar,

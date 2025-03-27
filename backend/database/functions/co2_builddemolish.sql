@@ -15,7 +15,7 @@ functions.CO2_BuildDemolish(
 	buildingsRemoval real, -- rakennustyypin (erpien, rivita, askert, liike, tsto, liiken, hoito, kokoon, opetus, teoll, varast, muut) kerrosalan poistuma YKR-ruudussa laskentavuonna [m2].
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     buildingType varchar, -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'
-    calculationScenario varchar -- PITKO-kehitysskenaario | PITKO development scenario
+    calculationScenario varchar -- PEIKKO-kehitysskenaario | PEIKKO development scenario
 )
 RETURNS real AS
 $$

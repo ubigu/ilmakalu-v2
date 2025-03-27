@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION
 functions.CO2_ElectricityHousehold(
     municipality int,
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
-    calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
+    calculationScenario varchar, -- PEIKKO-kehitysskenaario | PEIKKO development scenario
     area_or_pop real, -- Rakennustyypin ikäluokkakohtainen kerrosala YKR-ruudussa laskentavuonna [m2] tai väestö laskentavuonna.
     buildingType varchar -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'
 )

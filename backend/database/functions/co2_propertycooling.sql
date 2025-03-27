@@ -13,7 +13,7 @@ DROP FUNCTION IF EXISTS functions.CO2_PropertyCooling;
 CREATE OR REPLACE FUNCTION
 functions.CO2_PropertyCooling(
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
-    calculationScenario varchar, -- PITKO-kehitysskenaario | PITKO development scenario
+    calculationScenario varchar, -- PEIKKO-kehitysskenaario | PEIKKO development scenario
     floorSpace integer, -- Rakennustyypin tietyn ikäluokan kerrosala YKR-ruudussa laskentavuonna. Lukuarvo riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta [m2]
     buildingType varchar, -- Rakennustyyppi | Building type. esim. | e.g. 'erpien', 'rivita'
     buildingYear integer -- Rakennusvuosikymmen tai -vuosi (2017 alkaen) | Building decade or year (2017 onwards)
