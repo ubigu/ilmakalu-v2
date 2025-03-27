@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION functions.co2_calculateemissions(
 	plan_centers regclass DEFAULT NULL::regclass,
 	includelongdistance boolean DEFAULT true,
 	includebusinesstravel boolean DEFAULT true)
-    RETURNS TABLE(geom geometry, xyind character varying, mun integer, zone bigint, holidayhouses integer, year date, floorspace integer, pop smallint, employ smallint, tilat_vesi_tco2 real, tilat_lammitys_tco2 real, tilat_jaahdytys_tco2 real, sahko_kiinteistot_tco2 real, sahko_kotitaloudet_tco2 real, sahko_palv_tco2 real, sahko_tv_tco2 real, liikenne_as_tco2 real, liikenne_tp_tco2 real, liikenne_tv_tco2 real, liikenne_palv_tco2 real, rak_korjaussaneeraus_tco2 real, rak_purku_tco2 real, rak_uudis_tco2 real, sum_yhteensa_tco2 real, sum_lammonsaato_tco2 real, sum_liikenne_tco2 real, sum_sahko_tco2 real, sum_rakentaminen_tco2 real, sum_jatehuollon_paastot_tco2e real, sum_holidayhouses_tco2e real) 
+    RETURNS TABLE(geom geometry, xyind character varying, mun integer, zone bigint, year date, floorspace integer, pop smallint, employ smallint, tilat_vesi_tco2 real, tilat_lammitys_tco2 real, tilat_jaahdytys_tco2 real, sahko_kiinteistot_tco2 real, sahko_kotitaloudet_tco2 real, sahko_palv_tco2 real, sahko_tv_tco2 real, sahko_mokit_tco2 real, liikenne_as_tco2 real, liikenne_tp_tco2 real, liikenne_tv_tco2 real, liikenne_palv_tco2 real, rak_korjaussaneeraus_tco2 real, rak_purku_tco2 real, rak_uudis_tco2 real, sum_yhteensa_tco2 real, sum_lammonsaato_tco2 real, sum_liikenne_tco2 real, sum_sahko_tco2 real, sum_rakentaminen_tco2 real, sum_jatehuolto_tco2 real) 
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE PARALLEL UNSAFE
@@ -230,7 +230,6 @@ AS $BODY$
             g.xyind::varchar(13),
             g.mun::int,
             g.zone::bigint,
-            g.holidayhouses::int,
             NULL::date as year,
             0::int floorspace,
             COALESCE(g.pop, 0)::smallint pop,
@@ -242,6 +241,7 @@ AS $BODY$
             0::real sahko_kotitaloudet_tco2,
             0::real sahko_palv_tco2,
             0::real sahko_tv_tco2,
+            0::real sahko_mokit_tco2,
             0::real liikenne_as_tco2,
             0::real liikenne_tp_tco2,
             0::real liikenne_tv_tco2,
@@ -254,8 +254,7 @@ AS $BODY$
             0::real sum_liikenne_tco2,
             0::real sum_sahko_tco2,
             0::real sum_rakentaminen_tco2,
-            0::real sum_jatehuollon_paastot_tco2e,
-			0::real sum_holidayhouses_tco2e
+            0::real sum_jatehuolto_tco2
         FROM grid g
             WHERE (COALESCE(g.pop,0) > 0 OR COALESCE(g.employ,0) > 0 )
                 OR g.xyind::varchar IN (SELECT DISTINCT ON (grid2.xyind) grid2.xyind::varchar FROM grid2);
@@ -286,7 +285,7 @@ AS $BODY$
                     (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike', g2.rakv, g2.energiam)) +
                     (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto', g2.rakv, g2.energiam)) +
                     (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken', g2.rakv, g2.energiam)) +
-                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv,, g2.energiam)) +
+                    (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito', g2.rakv, g2.energiam)) +
                     (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon', g2.rakv, g2.energiam)) +
                     (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus', g2.rakv, g2.energiam)) +
                     (SELECT functions.CO2_PropertyWater(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll', g2.rakv, g2.energiam)) +
@@ -600,9 +599,9 @@ AS $BODY$
             GROUP BY g.xyind) pop
         WHERE pop.xyind = results.xyind;
 
-        /*jatehuollon asukaskohtaisten päästöjen ennustemalli*/
+        /* Jätehuollon asukaskohtaisten päästöjen ennustemalli */
         UPDATE results SET
-            sum_jatehuollon_paastot_tco2e = COALESCE(pop.waste_emissions_per_person_sum, 0)
+            sum_jatehuolto_tco2 = COALESCE(pop.waste_emissions_per_person_sum, 0)
         FROM
             (SELECT g.xyind,
                 ((EXP(79.702742 - 0.040097 * calculationYear)) * g.pop) as waste_emissions_per_person_sum
@@ -613,13 +612,13 @@ AS $BODY$
 		
 		 /*mökkien päästöt*/
         UPDATE results SET
-            sum_holidayhouses_tco2e = COALESCE(holidayhouse.holidayhouses_emissions_sum * grams_to_tons, 0)
+            sahko_mokit_tco2 = COALESCE(hh.holidayhouses_emissions_sum * grams_to_tons, 0)
         FROM (SELECT g.xyind,
             functions.co2_holidayhouses(calculationyear, g.holidayhouses, calculationscenario) AS holidayhouses_emissions_sum
             FROM grid g
                 WHERE g.holidayhouses IS NOT NULL AND g.holidayhouses > 0
-        GROUP BY g.xyind, g.holidayhouses) holidayhouse
-        WHERE holidayhouse.xyind = results.xyind;
+        GROUP BY g.xyind, g.holidayhouses) hh
+        WHERE hh.xyind = results.xyind;
 
         /* Add categorical total sums to results */
         UPDATE results r SET
@@ -637,7 +636,8 @@ AS $BODY$
                 COALESCE(r.sahko_kiinteistot_tco2, 0) +
                 COALESCE(r.sahko_kotitaloudet_tco2, 0) +
                 COALESCE(r.sahko_palv_tco2, 0) +
-                COALESCE(r.sahko_tv_tco2, 0),
+                COALESCE(r.sahko_tv_tco2, 0) +
+                COALESCE(r.sahko_mokit_tco2, 0)
             sum_rakentaminen_tco2 =
                 COALESCE(r.rak_korjaussaneeraus_tco2, 0) +
                 COALESCE(r.rak_purku_tco2, 0) +
@@ -646,12 +646,11 @@ AS $BODY$
         /* Add total emission sum to results */
         UPDATE results r SET
             sum_yhteensa_tco2 =
-                COALESCE(r.sum_lammonsaato_tco2,0) +
-                COALESCE(r.sum_liikenne_tco2,0) +
-                COALESCE(r.sum_sahko_tco2,0) +
-                COALESCE(r.sum_rakentaminen_tco2,0) +
-                COALESCE(r.sum_jatehuollon_paastot_tco2e, 0) +
-				COALESCE(r.sum_holidayhouses_tco2e, 0);
+                COALESCE(r.sum_lammonsaato_tco2, 0) +
+                COALESCE(r.sum_liikenne_tco2, 0) +
+                COALESCE(r.sum_sahko_tco2, 0) +
+                COALESCE(r.sum_rakentaminen_tco2, 0) +
+                COALESCE(r.sum_jatehuolto_tco2, 0);
 
         /* Lisätään päivitetyt kerrosneliömetrisummat kokonaiskerrosneliömäärään */
         UPDATE results res

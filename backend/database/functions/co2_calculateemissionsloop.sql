@@ -19,7 +19,6 @@ RETURNS TABLE(
     xyind varchar(13),
     mun int,
     zone bigint,
-    holidayhouses int,
     year date,
     floorspace int,
     pop smallint,
@@ -31,6 +30,7 @@ RETURNS TABLE(
     sahko_kotitaloudet_tco2 real,
     sahko_palv_tco2 real,
     sahko_tv_tco2 real,
+    sahko_mokit_tco2 real,
     liikenne_as_tco2 real,
     liikenne_tp_tco2 real,
     liikenne_tv_tco2 real,
@@ -43,8 +43,7 @@ RETURNS TABLE(
     sum_liikenne_tco2 real,
     sum_sahko_tco2 real,
     sum_rakentaminen_tco2 real,
-    sum_jatehuollon_paastot_tco2e real,
-    sum_holidayhouses_tco2e real
+    sum_jatehuolto_tco2 real
 )
 AS $$
 DECLARE
