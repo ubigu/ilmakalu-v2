@@ -21,7 +21,6 @@ functions.CO2_PropertyWater(
     floorSpace int, -- Rakennustyypin ikäluokkakohtainen kerrosala YKR-ruudussa laskentavuonna. Lukuarvo riippuu laskentavuodesta sekä rakennuksen tyypistä ja ikäluokasta [m2]
     buildingType varchar, -- buildingType, esim. 'erpien', 'rivita'
     buildingYear integer, -- buildingYearkymmen tai -vuosi (2017 alkaen)
-    method varchar, 
     heatSource varchar default null -- Rakennuksen lämmityksessä käytettävä primäärinen energiamuoto 'energiam', mikäli tällainen on lisätty YKR/rakennusdataan
 )
 RETURNS real AS
@@ -85,22 +84,20 @@ BEGIN
         /* Emission values for district heating (first finding out the name of the correct district heating table) */
         EXECUTE FORMAT(
             'WITH district_heating AS (
-                SELECT %3$I as gco2kwh
+                SELECT gco2kwh
                 FROM energy.district_heating heat
-                WHERE heat.year = %1$L
-                AND heat.scenario = %2$L
-                AND heat.mun::int = %4$L::int
+                    WHERE heat.year = %1$L
+                        AND heat.scenario = %2$L
+                        AND heat.mun::int = %3$L::int
             ), electricity AS (
                 SELECT el.gco2kwh::int AS gco2kwh
                 FROM energy.electricity el
                     WHERE el.year = %1$L
                     AND el.scenario = %2$L
-                    AND el.metodi = ''em''
-                    AND el.paastolaji = ''tuotanto''
             ), spaces AS (
                 SELECT array[kevyt_oljy, kaasu, puu, muu_lammitys] as gco2kwh
                 FROM energy.spaces_gco2kwh t
-                WHERE t.vuosi = %1$L LIMIT 1
+                WHERE t.year = %1$L LIMIT 1
             ) SELECT
                 array[
                     district_heating.gco2kwh, -- kaukolampö
@@ -112,8 +109,7 @@ BEGIN
                     spaces.gco2kwh[4] -- muu_lammitys
                 ]
                 FROM district_heating, spaces, electricity
-            ',
-            calculationYear, calculationScenario, method, municipality
+            ', calculationYear, calculationScenario, municipality
         ) INTO gco2kwh_a;
     
 
