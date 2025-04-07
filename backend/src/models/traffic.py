@@ -115,13 +115,19 @@ class mode_power_distribution(SQLModel, table=True):
     kvoima_vety: float
     kvoima_muut: float
 
-
 class power_fossil_share(SQLModel, table=True):
     __table_args__ = {"schema": schema}
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    share: float
-
+    kvoima_bensiini: float
+    kvoima_etanoli: float
+    kvoima_diesel: float
+    kvoima_kaasu: float
+    kvoima_phev_b: float
+    kvoima_phev_d: float
+    kvoima_ev: float
+    kvoima_vety: float
+    kvoima_muut: float
 
 class power_kwhkm(SQLModel, table=True):
     __table_args__ = {"schema": schema}
