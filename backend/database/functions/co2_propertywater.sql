@@ -52,7 +52,7 @@ BEGIN
                     FROM built.spaces_efficiency
                     WHERE rakennus_tyyppi = %2$L
                         AND rakv::int = %3$s::int LIMIT 1
-                ', heatSource, buildingType, buildingYear, calculationScenario
+                ', heatSource, buildingType, buildingYear
             ) INTO hyotysuhde;
         ELSE
 
@@ -111,7 +111,6 @@ BEGIN
                 FROM district_heating, spaces, electricity
             ', calculationYear, calculationScenario, municipality
         ) INTO gco2kwh_a;
-    
 
         /* Lasketaan päästöt tilanteessa, jossa käytetään paikallista rakennusaineistoa */
         /* Calculating final emission when using local building data */
