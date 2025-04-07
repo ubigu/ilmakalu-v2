@@ -164,6 +164,7 @@ class electricity_home_light(SQLModel, table=True):
 
 class electricity_iwhs_kwhm2(SQLModel, table=True):
     __table_args__ = {"schema": schema}
+    mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
     myymal_hyper: int
@@ -243,7 +244,6 @@ class occupancy(SQLModel, table=True):
 
 class spaces_efficiency(SQLModel, table=True):
     __table_args__ = {"schema": schema}
-    scenario: str = Field(primary_key=True)
     rakv: int = Field(primary_key=True)
     rakennus_tyyppi: str = Field(primary_key=True)
     kaukolampo: float
