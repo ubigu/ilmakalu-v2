@@ -59,7 +59,7 @@ BEGIN
         ),
         fossils as (
             -- Käyttövoimien fossiiliset osuudet [ei yksikköä].
-            SELECT array[share, 1, share, 1, share, share, 1, 1, share] as share
+            SELECT array[kvoima_bensiini,kvoima_etanoli,kvoima_diesel,kvoima_kaasu,kvoima_phev_b,kvoima_phev_d,kvoima_ev,kvoima_vety,kvoima_muut] as share
             FROM traffic.power_fossil_share pfs
                 WHERE pfs.year = %1$L
                 AND pfs.scenario =  %2$L LIMIT 1
