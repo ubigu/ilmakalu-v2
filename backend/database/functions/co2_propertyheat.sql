@@ -63,7 +63,7 @@ BEGIN
                     FROM built.spaces_efficiency
                     WHERE rakennus_tyyppi = %2$L
                         AND rakv::int = %3$s::int LIMIT 1
-                ', heatSource, buildingType, buildingYear, calculationScenario
+                ', heatSource, buildingType, buildingYear
             ) INTO hyotysuhde;
         ELSE
             /* Used when basing the analysis on pure YKR data */
@@ -89,16 +89,18 @@ BEGIN
             ja tässä valittu  aiemman ilmastonmuutosmallinnuksen IPCC:n SRES-kasvihuonekaasuinventaarion A1B-skenaario;
             Tämä vastaa uusien kasvihuonekaasujen pitoisuuksien kehityskulkuja mallintavien RCP-päästöskenaarioiden optimistisimman RCP4.5- ja pessimistisen RCP8.5-skenaarion välimaastoa.
         */
+
+        -- Rakennustyypin ikäluokkakohtainen kerrosneliömetrin lämmittämiseen vuodessa tarvittu nettolämmitysenergia.
+        -- Kerroin huomioi olevan rakennuskannan energiatehokkuuden kehityksen [kWh/m2/a].
+
         EXECUTE FORMAT('
             WITH spaces AS (
-                -- Rakennustyypin ikäluokkakohtainen kerrosneliömetrin lämmittämiseen vuodessa tarvittu nettolämmitysenergia.
-                -- Kerroin huomioi olevan rakennuskannan energiatehokkuuden kehityksen [kWh/m2/a].
                 SELECT %6$I as kwhm2
                 FROM built.spaces_kwhm2
                     WHERE scenario = %1$L AND rakv = %2$L AND year = %4$L LIMIT 1),
-                heatingthen as (SELECT degreedays WHERE dd.year::int = 2018 AND dd.mun::int = %3$L FROM energy.heating_degree_days dd LIMIT 1),
-                heatingnow as (SELECT degreedays WHERE dd.year::int = %4$L AND dd.mun::int = %3$L FROM energy.heating_degree_days dd LIMIT 1)
-                ) SELECT spaces.kwhm2 * heatingnow.degreedays/heatingthen.degreedays * %5$L
+                heatingthen as (SELECT degreedays FROM energy.heating_degree_days dd WHERE dd.year::int = 2018 AND dd.mun::int = %3$L::int LIMIT 1),
+                heatingnow as (SELECT degreedays FROM energy.heating_degree_days dd WHERE dd.year::int = %4$L::int AND dd.mun::int = %3$L::int LIMIT 1)
+                SELECT spaces.kwhm2 * heatingnow.degreedays/heatingthen.degreedays * %5$L::int
                     FROM spaces, heatingthen, heatingnow
                 ', calculationScenario, buildingYear, municipality, calculationYear, floorSpace, buildingType
         ) INTO heating_kwh;
@@ -111,8 +113,7 @@ BEGIN
                 FROM energy.district_heating heat
                     WHERE heat.year = %1$L
                         AND heat.scenario = %2$L
-                        AND heat.mun::int = %3$L
-                        ORDER BY %3$I DESC LIMIT 1
+                        AND heat.mun::int = %3$L LIMIT 1
             ), electricity AS (
                 SELECT el.gco2kwh::int AS gco2kwh
                 FROM energy.electricity el
