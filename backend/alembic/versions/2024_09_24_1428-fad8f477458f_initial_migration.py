@@ -197,6 +197,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "electricity_iwhs_kwhm2",
+        sa.Column("mun", sa.Integer(), nullable=False),
         sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("myymal_hyper", sa.Integer(), nullable=False),
@@ -281,7 +282,6 @@ def upgrade() -> None:
     )
     op.create_table(
         "spaces_efficiency",
-        sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("rakv", sa.Integer(), nullable=False),
         sa.Column("rakennus_tyyppi", sqltypes.AutoString(), nullable=False),
         sa.Column("kaukolampo", sa.Float(), nullable=False),
@@ -689,7 +689,15 @@ def upgrade() -> None:
         "power_fossil_share",
         sa.Column("scenario", sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("share", sa.Float(), nullable=False),
+        sa.Column("kvoima_bensiini", sa.Float(), nullable=False),
+        sa.Column("kvoima_etanoli", sa.Float(), nullable=False),
+        sa.Column("kvoima_diesel", sa.Float(), nullable=False),
+        sa.Column("kvoima_kaasu", sa.Float(), nullable=False),
+        sa.Column("kvoima_phev_b", sa.Float(), nullable=False),
+        sa.Column("kvoima_phev_d", sa.Float(), nullable=False),
+        sa.Column("kvoima_ev", sa.Float(), nullable=False),
+        sa.Column("kvoima_vety", sa.Float(), nullable=False),
+        sa.Column("kvoima_muut", sa.Float(), nullable=False),
         sa.PrimaryKeyConstraint("scenario", "year"),
         schema="traffic",
     )
