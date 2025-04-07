@@ -16,8 +16,6 @@ class __CO2Params(SQLModel):
 
 class __CO2CalculateEmissionsParamsBase(__CO2Params):
     calculationScenario: Literal["eu80", "kasvu", "muutos", "saasto", "wem", "pysahdys", "static"] = "wem"
-    method: Literal["em", "hjm"] = "em"
-    electricityType: Literal["hankinta", "tuotanto"] = "tuotanto"
     includeLongDistance: bool = True
     includeBusinessTravel: bool = True
 

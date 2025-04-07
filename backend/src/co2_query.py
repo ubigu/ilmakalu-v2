@@ -141,8 +141,6 @@ class CO2Query(ABC):
                 baseYear=p.calculationYear if p.baseYear is None else p.baseYear,
                 targetYear=getattr(p, "targetYear", None),
                 calculationScenario=getattr(p, "calculationScenario", "wem"),
-                method=getattr(p, "method", "em"),
-                electricityType=getattr(p, "electricityType", "tuotanto"),
                 geomArea=getattr(p, "mun", []),
             )
         )

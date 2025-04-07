@@ -20,16 +20,13 @@ class district_heating(SQLModel, table=True):
     mun: int = Field(primary_key=True)
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    em: int
-    hjm: int
+    gco2kwh: float
 
 
 class electricity(SQLModel, table=True):
     __table_args__ = {"schema": schema}
     scenario: str = Field(primary_key=True)
     year: int = Field(primary_key=True)
-    metodi: str = Field(primary_key=True)
-    paastolaji: str = Field(primary_key=True)
     gco2kwh: float
 
 
@@ -48,30 +45,27 @@ class heat_source_change(SQLModel, table=True):
     lammitysmuoto: str = Field(primary_key=True)
     kaukolampo: float
     kevyt_oljy: float
+    raskas_oljy: float
     kaasu: float
     sahko: float
     puu: float
+    turve: float
+    hiili: float
     maalampo: float
+    muu_lammitys: float
 
 
 class heating_degree_days(SQLModel, table=True):
     __table_args__ = {"schema": schema}
     mun: int = Field(primary_key=True)
-    mun_name: str
+    year: int = Field(primary_key=True)
     degreedays: int
-    multiplier: float
 
 
 class spaces_gco2kwh(SQLModel, table=True):
     __table_args__ = {"schema": schema}
-    vuosi: int = Field(primary_key=True)
-    kaukolampo: int
+    year: int = Field(primary_key=True)
     kevyt_oljy: int
-    raskas_oljy: int
     kaasu: int
-    sahko: int
     puu: int
-    turve: int
-    hiili: int
-    maalampo: int
     muu_lammitys: int

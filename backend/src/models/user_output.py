@@ -15,6 +15,4 @@ class sessions(SQLModel, table=True):
     baseYear: int
     targetYear: int | None
     calculationScenario: str
-    method: str
-    electricityType: str
     geomArea: list[int] = Field(sa_column=Column(ARRAY(Integer)))

@@ -23,7 +23,7 @@ class CO2CalculateEmissionsLoop(CO2Query):
         p = cast(CO2CalculateEmissionsLoopParams, self.params)
         return text(
             """SELECT
-                ST_AsText(geom) as geom, xyind, mun, zone, holidayhouses,
+                ST_AsText(geom) as geom, xyind, mun, zone,
                 date_part('year', year) as year, floorspace, pop,
                 employ, tilat_vesi_tco2, tilat_lammitys_tco2,
                 tilat_jaahdytys_tco2, sahko_kiinteistot_tco2,
@@ -32,14 +32,11 @@ class CO2CalculateEmissionsLoop(CO2Query):
                 liikenne_tv_tco2, liikenne_palv_tco2,
                 rak_korjaussaneeraus_tco2, rak_purku_tco2,
                 rak_uudis_tco2, sum_yhteensa_tco2, sum_lammonsaato_tco2,
-                sum_liikenne_tco2, sum_sahko_tco2, sum_rakentaminen_tco2,
-                sum_jatehuollon_paastot_tco2e, sum_holidayhouses_tco2e
+                sum_liikenne_tco2, sum_sahko_tco2, sum_rakentaminen_tco2
             FROM functions.CO2_CalculateEmissionsLoop(
                 municipalities => :municipalities,
                 aoi => :aoi,
                 calculationScenario => :calculationScenario,
-                method => :method,
-                electricityType => :electricityType,
                 baseYear => :baseYear,
                 targetYear => :targetYear,
                 plan_areas => :plan_areas,
@@ -52,8 +49,6 @@ class CO2CalculateEmissionsLoop(CO2Query):
             municipalities=p.mun,
             aoi=self.get_table_name("aoi", p.aoi),
             calculationScenario=p.calculationScenario,
-            method=p.method,
-            electricityType=p.electricityType,
             baseYear=p.baseYear,
             targetYear=p.targetYear,
             plan_areas=self.get_table_name("plan_areas", p.plan_areas),
