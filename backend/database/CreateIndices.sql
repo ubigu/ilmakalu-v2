@@ -11,11 +11,11 @@ CREATE INDEX IF NOT EXISTS cooling_proportions_index ON built.cooling_proportion
 CREATE INDEX IF NOT EXISTS distribution_heating_system_index ON built.distribution_heating_systems (scenario, year, rakv, rakennus_tyyppi);
 CREATE INDEX IF NOT EXISTS electricity_home_device_index ON built.electricity_home_device (scenario, year);
 CREATE INDEX IF NOT EXISTS electricity_home_light_index ON built.electricity_home_light (scenario, year);
-CREATE INDEX IF NOT EXISTS electricity_industry_index ON built.electricity_iwhs_kwhm2 (scenario, year);
+CREATE INDEX IF NOT EXISTS electricity_industry_index ON built.electricity_iwhs_kwhm2 (mun, scenario, year);
 CREATE INDEX IF NOT EXISTS electricity_property_change_index ON built.electricity_property_change (scenario, year);
 CREATE INDEX IF NOT EXISTS electricity_property_kwhkm_index ON built.electricity_property_kwhm2 (scenario, rakv);
 CREATE INDEX IF NOT EXISTS occupancy_index ON built.occupancy (mun, year);
-CREATE INDEX IF NOT EXISTS spaces_efficiency_index ON built.spaces_efficiency (scenario, rakv, rakennus_tyyppi);
+CREATE INDEX IF NOT EXISTS spaces_efficiency_index ON built.spaces_efficiency (rakv, rakennus_tyyppi);
 CREATE INDEX IF NOT EXISTS spaces_kwhm2_index ON built.spaces_kwhm2 (scenario, rakv, year);
 CREATE INDEX IF NOT EXISTS water_kwhm2_index ON built.water_kwhm2 (scenario, rakv, rakennus_tyyppi);
 
