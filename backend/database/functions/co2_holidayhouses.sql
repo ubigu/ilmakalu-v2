@@ -38,5 +38,5 @@ BEGIN
 END;
 $BODY$;
 
-ALTER FUNCTION functions.co2_holidayhouses(integer, character varying, character varying, integer, character varying)
-    OWNER TO docker;
+-- ALTER FUNCTION functions.co2_holidayhouses(integer, character varying, character varying, integer, character varying)
+-- OWNER TO docker;
