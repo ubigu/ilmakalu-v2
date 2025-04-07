@@ -419,16 +419,16 @@ AS $BODY$
             FROM
                 (SELECT DISTINCT ON (g2.xyind) g2.xyind,
                 /* Palveluiden sähkönkulutus | Electricity consumption of services */
-                SUM((SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, liike_ala, 'liike')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, tsto_ala, 'tsto')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, liiken_ala, 'liiken')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, hoito_ala, 'hoito')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, kokoon_ala, 'kokoon')) +	
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, opetus_ala, 'opetus')))
+                SUM((SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, liike_ala, 'liike')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon')) +	
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus')))
                 AS sahko_palv_co2,
                 /* Teollisuus ja varastot, sähkönkulutus | Electricity consumption of industry and warehouses */
-                SUM((SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_ala, 'teoll')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, varast_ala, 'varast')))
+                SUM((SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast')))
                 AS sahko_tv_co2,
                 /* Teollisuus- ja varastoliikenne | Industry and logistics traffic */
                 SUM((SELECT functions.CO2_TrafficIWHS(g2.mun, calculationYear, calculationScenario, teoll_ala, 'teoll')) +
@@ -459,35 +459,35 @@ AS $BODY$
             FROM
                 (SELECT DISTINCT ON (g2.xyind) g2.xyind,
                 /* Palveluiden sähkönkulutus | Electricity consumption of services */
-                SUM((SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, myymal_hyper_ala, 'myymal_hyper')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, myymal_super_ala, 'myymal_super')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, myymal_pien_ala, 'myymal_pien')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, myymal_muu_ala, 'myymal_muu')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, majoit_ala, 'majoit')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, asla_ala, 'asla')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, ravint_ala, 'ravint')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, tsto_ala, 'tsto')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, liiken_ala, 'liiken')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, hoito_ala, 'hoito')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, kokoon_ala, 'kokoon')) +	
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, opetus_ala, 'opetus')))
+                SUM((SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, myymal_hyper_ala, 'myymal_hyper')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, myymal_super_ala, 'myymal_super')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, myymal_pien_ala, 'myymal_pien')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, myymal_muu_ala, 'myymal_muu')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, majoit_ala, 'majoit')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, asla_ala, 'asla')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, ravint_ala, 'ravint')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, tsto_ala, 'tsto')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, liiken_ala, 'liiken')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, hoito_ala, 'hoito')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, kokoon_ala, 'kokoon')) +	
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, opetus_ala, 'opetus')))
                 AS sahko_palv_co2,
                 /* Teollisuus ja varastot, sähkönkulutus | Electricity consumption of industry and warehouses */
-                SUM((SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_kaivos_ala, 'teoll_kaivos')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_elint_ala, 'teoll_elint')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_tekst_ala, 'teoll_tekst')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_puu_ala, 'teoll_puu')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_paper_ala, 'teoll_paper')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_kemia_ala, 'teoll_kemia')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_miner_ala, 'teoll_miner')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_mjalos_ala, 'teoll_mjalos')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_metal_ala, 'teoll_metal')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_kone_ala, 'teoll_kone')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_muu_ala, 'teoll_muu')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_energ_ala, 'teoll_energ')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_vesi_ala, 'teoll_vesi')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, teoll_yhdysk_ala, 'teoll_yhdysk')) +
-                    (SELECT functions.CO2_ElectricityIWHS(calculationYear, calculationScenario, varast_ala, 'varast')))
+                SUM((SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_kaivos_ala, 'teoll_kaivos')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_elint_ala, 'teoll_elint')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_tekst_ala, 'teoll_tekst')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_puu_ala, 'teoll_puu')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_paper_ala, 'teoll_paper')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_kemia_ala, 'teoll_kemia')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_miner_ala, 'teoll_miner')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_mjalos_ala, 'teoll_mjalos')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_metal_ala, 'teoll_metal')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_kone_ala, 'teoll_kone')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_muu_ala, 'teoll_muu')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_energ_ala, 'teoll_energ')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_vesi_ala, 'teoll_vesi')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, teoll_yhdysk_ala, 'teoll_yhdysk')) +
+                    (SELECT functions.CO2_ElectricityIWHS(g2.mun, calculationYear, calculationScenario, varast_ala, 'varast')))
                 AS sahko_tv_co2,
                 /* Teollisuus- ja varastoliikenne | Industry and logistics traffic */
                 SUM((SELECT functions.CO2_TrafficIWHS(g2.mun, calculationYear, calculationScenario, teoll_kaivos_ala, 'teoll_kaivos')) +
@@ -637,7 +637,7 @@ AS $BODY$
                 COALESCE(r.sahko_kotitaloudet_tco2, 0) +
                 COALESCE(r.sahko_palv_tco2, 0) +
                 COALESCE(r.sahko_tv_tco2, 0) +
-                COALESCE(r.sahko_mokit_tco2, 0)
+                COALESCE(r.sahko_mokit_tco2, 0),
             sum_rakentaminen_tco2 =
                 COALESCE(r.rak_korjaussaneeraus_tco2, 0) +
                 COALESCE(r.rak_purku_tco2, 0) +
@@ -680,5 +680,5 @@ AS $BODY$
     
 $BODY$;
 
-ALTER FUNCTION functions.co2_calculateemissions(integer[], regclass, integer, character varying, character varying, character varying, integer, integer, regclass, regclass, regclass, boolean, boolean)
-    OWNER TO docker;
+-- ALTER FUNCTION functions.co2_calculateemissions(integer[], regclass, integer, character varying, character varying, character varying, integer, integer, regclass, regclass, regclass, boolean, boolean)
+--    OWNER TO docker;
