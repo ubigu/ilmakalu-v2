@@ -10,6 +10,7 @@ CREATE SCHEMA IF NOT EXISTS functions;
 DROP FUNCTION IF EXISTS functions.CO2_ElectricityIWHS;
 CREATE OR REPLACE FUNCTION
 functions.CO2_ElectricityIWHS(
+    municipality int,
     calculationYear integer, -- [year based on which emission values are calculated, min, max calculation years]
     calculationScenario varchar, -- PEIKKO-kehitysskenaario | PEIKKO development scenario
     floorSpace real, -- rakennustyypin kerrosala YKR-ruudussa laskentavuonna [m2]. Riippuu laskentavuodesta, rakennuksen tyypistä ja ikäluokasta.
@@ -39,11 +40,12 @@ BEGIN
                 )
             SELECT ry.%1$I * %4$L::int * el.gco2
                 FROM built.electricity_iwhs_kwhm2 ry, electricity_gco2kwh el
-                    WHERE ry.scenario = %2$L AND ry.year = %3$L LIMIT 1',
+                    WHERE ry.scenario = %2$L AND ry.year = %3$L AND ry.mun::int = %5$L LIMIT 1',
             buildingType,
             calculationScenario,
             calculationYear,
-            floorSpace
+            floorSpace,
+            municipality
         ) INTO result_gco2;
         
         RETURN result_gco2;
